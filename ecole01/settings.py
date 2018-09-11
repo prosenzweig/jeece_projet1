@@ -163,8 +163,8 @@ LOGIN_EXEMPT_URLS = (
     r'^intranet/reset-password/complete/$',
 )
 
-STRIPE_SECRET_KEY = 'sk_test_ffBg3gGxgl24Q9FE5r6t11Zb'
-STRIPE_PUBLISHABLE_KEY = 'pk_test_BqdCT8ollohJHeGZY3myqxcC'
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
 
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
