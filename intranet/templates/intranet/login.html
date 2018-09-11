@@ -148,7 +148,7 @@ body, html {
 {% block content %}
  <div class="container">
         <div class="card card-container">
-            <img id="profile-img" class="profile-img-card" src="{{ STATIC_URL }}/static/img/efp_logo.png" />
+            <img id="profile-img" class="profile-img-card" src="{% static 'intranet/img/efp_logo.png' %}" />
             <p id="profile-name" class="profile-name-card">Connexion</p>
             {% include 'intranet/messages.html' with messages=messages %}
             {% if error %}
