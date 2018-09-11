@@ -1,0 +1,8 @@
+Bonjour,
+
+Nous vous invitons &agrave; cr&eacute;er un compte sur l'Intranet de votre &eacute;cole de piano pr&eacute;f&eacute;r&eacute;e: l'Ecole01
+Pour vous inscrire il vous suffit de cliquer sur ce lien:
+{{ protocol }}://{{ domain }}{% url 'intranet:creation' uuid=uuid %}
+Musicalement v&ocirc;tre,
+
+L'admnistrateur du site {{ site_name }}

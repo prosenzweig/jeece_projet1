@@ -1,0 +1,37 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Account{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+ <div class="container container_extras">
+        <!--<div class="card card-container ">-->
+            <h3 class="text-center mt-2 mb-3">Profile de {{ user }} </h3>
+            <h5>Vos informations personnelles:</h5>
+            {% if not user.is_adherent %}
+            <p>Vous n'êtes pas encore adhérent d'Ecole01 ! Inscrivez-vous dans la section "Mes Documents"</p>
+            {% endif %}
+            {% include 'intranet/messages.html' with messages=messages %}
+            <p>Pseudo: {{ user }}</p>
+            <p>Nom/Prénom: {{ user.last_name }} {{ user.first_name }}</p>
+            <p>Téléphone: {{ user.userprofile.phone_number }}</p>
+            <p>Email: {{ user.email }}</p>
+            <p>Adresse: {{ user.userprofile.address }}</p>
+            <p>Ville: {{ user.userprofile.city }}</p>
+            <p>Code postal: {{ user.userprofile.zip_code }}</p>
+            <p>Pays: {{ user.userprofile.country }} </p>
+            <p>IBAN: {{ user.userprofile.iban }}</p>
+            {% if user.userprofile.avatar %}
+            <img src="{{ user.userprofile.avatar.url }}" width="240">
+            {% endif %}
+            <a class="btn btn-info btn-sm" href="{{ STATIC_URL }}edit_compte" role="button">Modifier mon profile</a>
+            <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_pass' %}" role="button">Modifier mon mot de passe</a>
+        <!--</div>-->
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

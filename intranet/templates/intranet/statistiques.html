@@ -1,0 +1,87 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container">
+     <h3 class="text-center mt-2"> Mes Statistiques </h3>
+     <h5> Différentes données statistiques: </h5>
+     <div>
+        <img src="{% url 'intranet:graphs_membres' %}" width="426" height="320" class="img-responsive rounded">
+        <img src="{% url 'intranet:graphs_nb_cours' %}" class="img-responsive rounded">
+     </div>
+
+    <div class="main_maps text-center">
+        <div class="maps_text" onload="showmap();">
+            <h3>Adresses des Membres d'Ecole01</h3>
+            <div id="map_canvas" class="mapheight"></div>
+        </div>
+    </div>
+ </div>
+{% endblock content %}
+
+
+{% block footer_javascript_page %}
+<script src="http://maps.google.com/maps/api/js?key=AIzaSyD_tAQD36pKp9v4at5AnpGbvBUsLCOSJx8"></script>
+<script type="text/javascript">
+    var map;
+    function showmap() {
+        var mapOptions = {
+            zoom: 12,
+            scrollwheel: false,
+            center: new google.maps.LatLng(48.864716, 2.349014),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
+        $('.mapheight').css('height', '350');
+        google.maps.event.addListenerOnce(map, 'tilesloaded', addMarkers);
+    }
+
+    function addMarkers() {
+        {% for user in geo_list %}
+            var point = new google.maps.LatLng({{user.lat}},{{user.lgn}});
+            {% if user.user.is_superuser %}
+            var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+            var marker = new google.maps.Marker({
+            position: point,
+            map: map,
+            icon: image,
+            title: '{{ user.city }}',
+            });
+            {% elif user.user.is_staff %}
+            var image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+            var marker = new google.maps.Marker({
+            position: point,
+            map: map,
+            icon: image,
+            title: '{{ user.city }}',
+            });
+            {% else %}
+            var marker = new google.maps.Marker({
+            position: point,
+            icon: image,
+            map: map,
+            title: '{{ user.city }}',
+            });
+            {% endif %}
+
+
+            marker['infowindow']  = new google.maps.InfoWindow({
+                 content: "<h5>{{user.user}}</h5><p>{{ user.user.last_name }} {{ user.user.first_name }}</p><p>{{ user.address }} {{ user.city }}</p>"
+
+            });
+            google.maps.event.addListener(marker, 'click', function() {
+                //window.location.href = this.url;
+                 this['infowindow'].open(map, this);
+            });
+        {% endfor %}
+    }
+    window.onload = showmap;
+</script>
+{% endblock footer_javascript_page %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

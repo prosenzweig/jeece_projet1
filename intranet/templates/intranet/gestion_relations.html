@@ -1,0 +1,50 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Mes Membres{% endblock %}
+
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Créer une relation</h3>
+        <p>Assignez un élève à un professeur pour lui permettre de suivre des cours avec celui-ci:</p>
+        {% include 'intranet/messages.html' with messages=messages %}
+        <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:relation' %}">
+            {% csrf_token %}
+            {{ form2.as_p }}
+            <button class="btn btn-sm btn-primary btn-signin" type="submit">Valider</button>
+        </form>
+        <h3 class="text-center mt-2"> Liste des Relations</h3>
+        {% if relations_list %}
+            <div class="table-responsive p-2 pb-5">
+                <!--table-bordered-->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>Professeur</th>
+                        <th>Elève</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for relation in relations_list %}
+                        <tr>
+                        <td>{{ relation.teacher }}</td>
+                        <td>{{ relation.student }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+        <p>Vous n'avez pas de duo professeur/élève !</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

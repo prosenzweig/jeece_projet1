@@ -1,0 +1,24 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+ <div class="container container_extras" >
+     <h3 class="text-center mt-2"> Bienvenue sur l'intranet !</h3>
+     <h5>Veillez renseigner vos informations personnelles:</h5>
+     {% include 'intranet/messages.html' with messages=messages %}
+     <form method="post">
+        {% csrf_token %}
+        {% include 'intranet/bs4_form.html' with form=user_form %}
+        {% include 'intranet/bs4_form.html' with form=profile_form %}
+        <button type="submit" class="btn btn-primary">Valider</button>
+    </form>
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

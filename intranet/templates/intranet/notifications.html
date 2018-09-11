@@ -1,0 +1,37 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+ <div class="container container_extras" >
+        <!--<div class="card card-container text-center">-->
+            <h3 class="text-center mt-2"> Section Notifications </h3>
+            <h5>Voici la liste des dernières notifications:</h5>
+            {% include 'intranet/messages.html' with messages=messages %}
+            {% if notifications_list %}
+                {% for notif in notifications_list %}
+                <div class="card mb-3">
+                    <div class="card-header"><i class="fa fa-envelope-o" aria-hidden="true"></i>  {{notif.from_user}}  <i class="fa fa-at ml-3" aria-hidden="true"></i>  {{notif.to_user}}  <i class="fa fa-calendar ml-3" aria-hidden="true"></i>  <span class="text-xl-right">{{notif.date}}</span></div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{notif.object}}</h5>
+                        <p class="card-text">{{notif.text}}
+                        {% if 'Modifications' in notif.object %}
+                        <a href="{% url 'admin:intranet_userprofile_change' notif.to_user.id %}">cliquer ici</a>
+                        {% endif %}
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p>Vous n'avez pas reçu de notifications</p>
+            {% endif %}
+        <!--</div>-->
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

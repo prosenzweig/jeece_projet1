@@ -1,0 +1,73 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Mes Membres{% endblock %}
+
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Mes Membres </h3>
+        <h5> Liste des Membres </h5>
+        {% if users_list %}
+            <div class="table-responsive p-2 pb-5">
+                <!--table-bordered-->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>Pseudo</th>
+                        <th>Prénom</th>
+                        <th>Nom</th>
+                        <th>E-mail</th>
+                        <th>Tél</th>
+                        <th>Ville</th>
+                        <th>Statut</th>
+                        <th>Adhérent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users_list %}
+                        <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.userprofile.phone_number }}</td>
+                        <td>{{ user.userprofile.city }}</td>
+                            {% if user.is_superuser %}
+                            <td>Admin</td>
+                            {% elif user.is_staff %}
+                            <td>Professeur</td>
+                            {% else %}
+                            <td>Elève</td>
+                            {% endif %}
+                            {% if user.userprofile.is_adherent %}
+                            <td>
+                                 <a class="li-ic btn" style="color: black;cursor: default;padding: 0;">
+                                    <i class="fa fa-check fa-lg white-text" style="color: black;cursor: default;padding: 0;"></i>
+                                 </a>
+                             </td>
+                            {% else %}
+                            <td>
+                                 <a class="li-ic btn" style="color: black;cursor: default;padding: 0;">
+                                    <i class="fa fa-times fa-lg white-text" style="color: black;cursor: default;padding: 0;"></i>
+                                 </a>
+                             </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+        <h5>Vous n'avez pas encore de membres !</h5>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

@@ -1,0 +1,27 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Mes Membres{% endblock %}
+
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Ecrire un Article</h3>
+        <p>Remplir le formulaire pour publier un article:</p>
+        {% include 'intranet/messages.html' with messages=messages %}
+        <form class="form-signin" method="POST" enctype="multipart/form-data" role="form" action="{% url 'intranet:article' %}">
+            {% csrf_token %}
+            {% include 'intranet/bs4_form.html' with form=form %}
+            <button class="btn btn-sm btn-primary btn-signin" type="submit">valider</button>
+        </form>
+    </div>
+</div>
+
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

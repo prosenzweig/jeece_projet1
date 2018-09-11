@@ -1,0 +1,58 @@
+{% load intranet_extras %}
+{% if factures_list %}
+    <div class="table-responsive p-2 pb-5">
+        <!--table-bordered-->
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                <th>Emetteur</th>
+                <th>Destinataire</th>
+                <th>Type</th>
+                <th>Qté</th>
+                <th>TVA</th>
+                <th>Prix TTC</th>
+                <th>Echéance</th>
+                <th>Payé</th>
+                <th>Télécharger</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for facture in factures_list %}
+                <tr>
+                <td>{{ facture.from_user }}</td>
+                <td>{{ facture.to_user }}</td>
+                <td>{{ facture.type }}</td>
+                <td>{{ facture.object_qt }}</td>
+                <td>{{ facture.tva }}</td>
+                <td>{{ facture.price_ttc }}€</td>
+                <td>{{ facture.last|date:"d/m/Y"  }}</td>
+                    {% if facture.is_paid %}
+                    <td>
+                         <a class="li-ic btn" style="color: black;cursor: default;padding: 0;">
+                            <i class="fa fa-check fa-lg white-text" style="color: black;cursor: default;padding: 0;"></i>
+                         </a>
+                     </td>
+                    {% else %}
+                    <td>
+                        <form action="{% url 'intranet:checkout' %}" role='form' method="POST">
+                            {% csrf_token %}
+                            <input type="text" name="fac_id" id="fac_id" value="{{facture.pk}}" hidden required>
+                            <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                data-key="{{key}}"
+                                data-amount="{{ facture.price_ttc|stripe }}"
+                                data-name="Ecole Française de Piano"
+                                data-description="{{facture.type}}"
+                                data-currency="eur">
+                            </script>
+                        </form>
+                     </td>
+                    {% endif %}
+                <td><a href="{% url 'intranet:gen_pdf' fac_id=facture.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+<h5> Vous n'avez pas encore de factures !</h5>
+{% endif %}

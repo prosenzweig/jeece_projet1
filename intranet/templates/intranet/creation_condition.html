@@ -1,0 +1,25 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+ <div class="container container_extras" >
+     <h3 class="text-center mt-2">Bienvenue sur l'intranet</h3>
+     <h5>Formulaire d'Adhésion:</h5>
+     {% include 'intranet/messages.html' with messages=messages %}
+     <p>Vous trouverez ci-dessous les conditions générale d'utilisation</p>
+     <p>Blablabla ici on mets les conditions d'utilisations</p>
+     <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Valider</button>
+    </form>
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

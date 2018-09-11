@@ -1,0 +1,107 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% load intranet_extras %}
+{% block content %}
+<div class="container container_extras" >
+            <h3 class="text-center mt-2">Séction Cours</h3>
+            <h5>Enregistrer les cours donnés: <i class="fa fa-music btn white-text" style="color: black;" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"></i></h5>
+            {% include 'intranet/messages.html' with messages=messages %}
+            <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+            <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:cours_prof' %}">
+                {% csrf_token %}
+                {% include 'intranet/bs4_form.html' with form=form %}
+                <button class="btn btn-sm btn-primary btn-signin" type="submit">Ajouter</button>
+            </form>
+            </div>
+            </div>
+            <h3 class="text-center mt-2">Liste des Cours effectués en {{ month }}</h3>
+            {% if cours_list %}
+                <div class="table-responsive p-2 pb-5">
+                    <!--table-bordered-->
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                            <th>Eleve</th>
+                            <th>Nombre de cours</th>
+                            <th>Totale (en min)</th>
+                            <th>Validation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for cour in cours_list %}
+                         <tr>
+                             <td>{{ cour.relation.student }}</td>
+                             <td>{{ cour.duree_cours|divide:60|floatformat:2 }}</td>
+                             <td>{{ cour.duree_cours}}</td>
+                             {% if cour.is_valid_t %}
+                             <td>
+                                 <a class="li-ic btn" style="color: black;cursor: default;">
+                                    <i class="fa fa-check fa-lg white-text" style="color: black;cursor: default;"></i>
+                                 </a>
+                             </td>
+                             {% else %}
+                             <td><a class="btn" href="{% url 'intranet:validation_prof' id=cour.pk %}">Valider</a></td>
+                             {% endif %}
+                         </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <h5>Vous n'avez donné aucun cours ce mois ci</h5>
+            {% endif %}
+            <h3 class="text-center mt-2">Anciens cours</h3>
+            <h5>Liste des Anciens cours : <i class="fa fa-play btn white-text" style="color: black;" data-toggle="collapse" data-target="#collapseAncienCours" aria-expanded="false" aria-controls="collapseAncienCours"></i></h5>
+            <div class="collapse" id="collapseAncienCours">
+                <div class="card card-body">
+                    {% if ancien_cours_list %}
+                        <div class="table-responsive p-2 pb-5">
+                            <!--table-bordered-->
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                    <th>Eleve</th>
+                                    <th>Date</th>
+                                    <th>Nombre de cours</th>
+                                    <th>Totale (en min)</th>
+                                    <th>Validation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for c in ancien_cours_list %}
+                                 <tr>
+                                     <td>{{ c.relation.student }}</td>
+                                     <td>{{ c.mois|mois }}</td>
+                                     <td>{{ c.duree_cours|divide:60|floatformat:2 }}</td>
+                                     <td>{{ c.duree_cours}}</td>
+                                     {% if c.is_valid_t %}
+                                     <td>
+                                         <a class="li-ic btn" style="color: black;cursor: default;">
+                                            <i class="fa fa-check fa-lg white-text" style="color: black;cursor: default;"></i>
+                                         </a>
+                                     </td>
+                                     {% else %}
+                                     <td><a class="btn" href="{% url 'intranet:validation_prof' id=c.pk %}">Valider</a></td>
+                                     {% endif %}
+                                 </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <h5>Vous n'avez jamais donné de cours</h5>
+                    {% endif %}
+                </div>
+            </div>
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

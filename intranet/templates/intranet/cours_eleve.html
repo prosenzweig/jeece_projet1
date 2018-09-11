@@ -1,0 +1,68 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% load intranet_extras %}
+{% block content %}
+ <div class="container container_extras">
+            <h3 class="text-center mt-2">Liste des Cours reçus</h3>
+            {% include 'intranet/messages.html' with messages=messages %}
+            {% if cours_list %}
+                <div class="table-responsive p-2 pb-5">
+                    <!--table-bordered-->
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                            <th>Professeur</th>
+                            <th>Nombre de cours</th>
+                            <th>Totale (en min)</th>
+                            <th>Mois</th>
+                            <th>Validation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for cour in cours_list %}
+                         <tr>
+                            <td>{{ cour.relation.teacher }}</td>
+                            <td>{{ cour.duree_cours|divide:60 }}</td>
+                            <td>{{ cour.duree_cours}}</td>
+                            <td>{{ cour.mois|mois }}</td>
+                            {% if cour.is_valid_s %}
+                             <td>
+                                 <a class="li-ic btn" style="color: black;cursor: default;">
+                                    <i class="fa fa-check fa-lg white-text" style="color: black;cursor: default;"></i>
+                                 </a>
+                             </td>
+                            {% elif cour.is_valid_s == False and cour.is_unvalid == False %}
+                            <td>
+                                <a class="li-ic btn" href="{% url 'intranet:validation_eleve' id=cour.pk result='valid' %}">
+                                    <i class="fa fa-check fa-lg white-text" style="color: green;"></i>
+                                </a>
+                                <a class="li-ic btn" href="{% url 'intranet:validation_eleve' id=cour.pk result='refus' %}">
+                                    <i class="fa fa-times fa-lg white-text" style="color: red;"></i>
+                                </a>
+                            </td>
+                            {% else %}
+                             <td>
+                                 <a class="li-ic btn" style="color: black;cursor: default;">
+                                    <i class="fa fa-times fa-lg white-text" style="color: black;cursor: default;"></i>
+                                 </a>
+                             </td>
+                            {% endif %}
+                         </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <h5>Vous n'avez encore reçu aucun cours</h5>
+            {% endif %}
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

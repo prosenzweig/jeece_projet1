@@ -1,0 +1,63 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Mes Membres{% endblock %}
+
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Envoyez une Invitation</h3>
+        <p>Envoyer une invitaion par email en cliquant sur le boutton juste en dessous:</p>
+        {% include 'intranet/messages.html' with messages=messages %}
+        <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:invitation' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-sm btn-primary btn-signin" type="submit">Inviter</button>
+        </form>
+        <h3 class="text-center mt-2"> Liste des Invitations </h3>
+        {% if invitations_list %}
+            <div class="table-responsive p-2 pb-5">
+                <!--table-bordered-->
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                        <th>Token</th>
+                        <th>Email</th>
+                        <th>Inscrit</th>
+                        <th>Professeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in invitations_list %}
+                        <tr>
+                        <td>{{ inv.uuid }}</td>
+                        <td>{{ inv.email }}</td>
+                        {% if inv.valid %}
+                        <td>Oui</td>
+                        {% else %}
+                        <td>Non</td>
+                        {% endif %}
+                        {% if inv.is_staff %}
+                        <td>Oui</td>
+                        {% else %}
+                        <td>Non</td>
+                        {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+        <p>Vous n'avez pas envoyé d'invitation</p>
+        {% endif %}
+    </div>
+</div>
+
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}
