@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'pinax.stripe',
     'widget_tweaks',
     'intranet',
 ]
@@ -80,27 +81,6 @@ DATABASES = {
     )
 }
 
-'''
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',   # Backends disponibles : 'postgresql', 'mysql', 'sqlite3' et 'oracle'.
-        'NAME': 'ecole01_db',                   # Nom de la base de données
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',              # Utile si votre base de données est sur une autre machine
-        'PORT': '3306',                   # ... et si elle utilise un autre port que celui par défaut
-    }
-}
-'''
-
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
 
@@ -142,7 +122,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-
 PROJECT_NAME = 'intranet'
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATIC_ROOT = os.path.join(BASE_DIR, PROJECT_NAME, 'staticfiles')
@@ -169,5 +148,10 @@ LOGIN_EXEMPT_URLS = (
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
 
+PINAX_STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+PINAX_STRIPE_PUBLIC_KEY = config('STRIPE_PUBLISHABLE_KEY')
+
 EMAIL_HOST = 'localhost'
 EMAIL_PORT = 1025
+
+SITE_ID = 1

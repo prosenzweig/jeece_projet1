@@ -4,6 +4,7 @@
 {% include 'intranet/nav_bar.html' %}
 {% endblock nav_bar %}
 
+{% load intranet_extras %}
 {% block content %}
  <div class="container container_extras" >
      <h3 class="text-center mt-2">Bienvenue sur l'intranet</h3>
@@ -14,6 +15,18 @@
      {% else %}
      <p>Les frais d'adhésion sont facturés 80,00€ pour un élève (ou 72,00€ par élèves) et doivent être renouvelées chaque année à partir de la date du premier paiement</p>
      {% endif %}
+     <p>Vos frais d'ahésion s'élève donc à {{price}}€</p>
+     <form action="{% url 'intranet:checkout_inscription' %}" role='form' method="POST">
+        {% csrf_token %}
+        <input type="text" name="fac_id" id="fac_id" value="{{price}}" hidden required>
+        <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+            data-key="{{key}}"
+            data-amount="{{ price|stripe }}"
+            data-name="Ecole Française de Piano"
+            data-description="Adhésion EFP"
+            data-currency="eur">
+        </script>
+    </form>
 
  </div>
 {% endblock content %}

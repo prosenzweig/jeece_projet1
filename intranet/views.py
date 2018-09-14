@@ -16,7 +16,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from django.contrib.auth.models import User
-from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture
+from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve
 from django.db.models import Q, Sum
 
 from django.contrib.auth import update_session_auth_hash
@@ -31,6 +31,7 @@ from reportlab.lib.utils import ImageReader
 import requests
 import numpy as np
 
+from pinax.stripe.actions import customers
 
 import tempfile
 import os
@@ -46,7 +47,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 
 from intranet.forms import LoginForm, RegistrationForm, RelationForm, InvitationForm, EditProfileForm, EditUserForm,\
-    CoursFrom, PrixForm, FactureIdForm, ArticleForm, EditStaffProfileForm, ConditionForm
+    CoursFrom, PrixForm, FactureIdForm, ArticleForm, EditStaffProfileForm, ConditionForm, MailForm, ToMailFormset,\
+    EleveFormset, PriceForm
 
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
@@ -304,11 +306,14 @@ def creation(request, uuid):
         if request.method == "POST":
             form = RegistrationForm(request.POST)
             if form.is_valid():
-                test = form.save(commit=False)
-                test.is_staff = inv.is_staff
-                test.save()
+                user = form.save(commit=False)
+                user.is_staff = inv.is_staff
+                user.save()
                 inv.valid = True
                 inv.save()
+
+                #Test Create new customer for each new accoutns
+                customers.create(user=user)
 
                 # test.backend = 'django.contrib.auth.backends.ModelBackend'
                 # login(request, test)
@@ -336,42 +341,87 @@ def creation_inscription(request):
     if request.method == 'POST':
         form_user = EditUserForm(request.POST, instance=request.user)
         form_profile = EditStaffProfileForm(request.POST, instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(request.POST, instance=request.user.userprofile)
-        if form_profile.is_valid() and form_user.is_valid():
-            form_user.save()
-            form_profile.save()
-            messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
-            address = form_profile.cleaned_data["address"]
-            city = form_profile.cleaned_data["city"]
-            zip_code = form_profile.cleaned_data["zip_code"]
-            country = form_profile.cleaned_data["country"]
-            # print(address, city, zip_code, country)
-            location = "%s %s %s %s" % (address, city, zip_code, country)
-            r = requests.get('http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
-            us = User.objects.get(pk=request.user.pk)
-            if r.status_code == requests.codes.ok:
-                data = json.loads(r.text)
-                # print(json.dumps(data,indent=4))
-                try:
-                    # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
-                    us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
-                    us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
-                    us.userprofile.save()
-                except:
-                    pass
+        formset = EleveFormset(request.POST)
+        if request.user.is_staff:
+            if form_profile.is_valid() and form_user.is_valid():
+                form_user.save()
+                form_profile.save()
+                messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
+                address = form_profile.cleaned_data["address"]
+                city = form_profile.cleaned_data["city"]
+                zip_code = form_profile.cleaned_data["zip_code"]
+                country = form_profile.cleaned_data["country"]
+                # print(address, city, zip_code, country)
+                location = "%s %s %s %s" % (address, city, zip_code, country)
+                r = requests.get('http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
+                us = User.objects.get(pk=request.user.pk)
+                if r.status_code == requests.codes.ok:
+                    data = json.loads(r.text)
+                    # print(json.dumps(data,indent=4))
+                    try:
+                        # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
+                        us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
+                        us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
+                        us.userprofile.save()
+                    except:
+                        pass
 
-            admin = User.objects.get(is_superuser=True)
-            Notification.objects.create(to_user=admin, from_user=request.user,
-                                        object="Creation du compte %s %s (%s)" % (
-                                        request.user.first_name, request.user.last_name, request.user),
-                                        text="Je viens de créer mon compte !")
-            return redirect('intranet:creation_condition')
+
+                admin = User.objects.get(is_superuser=True)
+                Notification.objects.create(to_user=admin, from_user=request.user,
+                                            object="Creation du compte %s %s (%s)" % (
+                                            request.user.first_name, request.user.last_name, request.user),
+                                            text="Je viens de créer mon compte professeur!")
+                return redirect('intranet:creation_condition')
+        else:
+            if form_profile.is_valid() and form_user.is_valid() and formset.is_valid():
+                form_user.save()
+                form_profile.save()
+                messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
+                address = form_profile.cleaned_data["address"]
+                city = form_profile.cleaned_data["city"]
+                zip_code = form_profile.cleaned_data["zip_code"]
+                country = form_profile.cleaned_data["country"]
+                # print(address, city, zip_code, country)
+                location = "%s %s %s %s" % (address, city, zip_code, country)
+                r = requests.get(
+                    'http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
+                us = User.objects.get(pk=request.user.pk)
+                if r.status_code == requests.codes.ok:
+                    data = json.loads(r.text)
+                    # print(json.dumps(data,indent=4))
+                    try:
+                        # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
+                        us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
+                        us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
+                        us.userprofile.save()
+                    except:
+                        pass
+                for f in formset:
+                    name = f.cleaned_data.get('name')
+                    if name:
+                        Eleve.objects.create(referent=request.user,nom_prenom=name)
+
+                admin = User.objects.get(is_superuser=True)
+                Notification.objects.create(to_user=admin, from_user=request.user,
+                                            object="Creation du compte %s %s (%s)" % (
+                                                request.user.first_name, request.user.last_name, request.user),
+                                            text="Je viens de créer mon compte!")
+                return redirect('intranet:creation_condition')
     else:
         user_form = EditUserForm(instance=request.user)
         profile_form = EditStaffProfileForm(instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(instance=request.user.userprofile)
+        formset = EleveFormset()
 
     return render(request, 'intranet/creation_inscription.html', locals())
 
 def creation_adhesion(request):
+    key = settings.STRIPE_PUBLISHABLE_KEY
+    if request.user.is_staff:
+        price = 19
+    else:
+        nb_eleve = Eleve.objects.filter(referent=request.user).count()
+        price = 72 * nb_eleve
     return render(request, 'intranet/creation_adhesion.html', locals())
 
 def creation_condition(request):
@@ -560,6 +610,66 @@ def checkout(request):
     return redirect('intranet:documents')
 
 @login_required
+def checkout_inscription(request):
+    if request.method == "POST":
+        form = PriceForm(request.POST)
+        print(form)
+        if form.is_valid():
+            print("VALIDDE!!!")
+            price = form.cleaned_data["fac_id"]
+            prix = Prix.objects.get(end=None)
+            admin = User.objects.get(is_superuser=True)
+            user = request.user
+            if request.user.is_staff:
+                fac = Facture.objects.create(
+                    to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
+                    object_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion professeur",
+                    to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
+                    to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
+                    to_user_siret=user.userprofile.siret, to_user_sap =user.userprofile.sap,
+                    from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                    from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
+                    from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
+                    from_user_sap =admin.userprofile.sap )
+            else:
+                nb = 1 if price % 80 == 0 else price/72.00
+                if nb == 1:
+                    fac = Facture.objects.create(
+                        to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
+                        object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Elève",
+                        to_user_firstname=user.first_name, to_user_lastname=user.last_name,
+                        to_user_address=user.userprofile.address,
+                        to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
+                        to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
+                        from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                        from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                        from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                        from_user_sap=admin.userprofile.sap)
+                else:
+                    fac = Facture.objects.create(
+                        to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
+                        object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Elèves",
+                        to_user_firstname=user.first_name, to_user_lastname=user.last_name,
+                        to_user_address=user.userprofile.address,
+                        to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
+                        to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
+                        from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                        from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                        from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                        from_user_sap=admin.userprofile.sap)
+
+            fac.is_paid = True
+            fac.save()
+            user.userprofile.is_adherent=True
+            user.userprofile.save()
+            messages.success(request, "Votre adhésion a bien été payée.")
+            return redirect('intranet:accueil')
+    else:
+        messages.warning(request,'Action non aurotisée.')
+
+    return redirect('intranet:creation_adhesion')
+
+@login_required
 def notifications(request):
     """Minimal function rendering a template"""
     if request.user.is_superuser:
@@ -667,6 +777,14 @@ def gestion_prix(request):
     prix_list = reversed(Prix.objects.all())
     form = PrixForm()
     return render(request, 'intranet/gestion_prix.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def gestion_mail(request):
+    mail_form = MailForm()
+    formset = ToMailFormset()
+    return render(request, 'intranet/gestion_mail.html', locals())
+
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -801,11 +919,35 @@ def article(request):
         if form.is_valid():
             contenu = form.cleaned_data["contenu"]
             titre = form.cleaned_data["titre"]
+            lien = form.cleaned_data["lien"]
             photo = form.cleaned_data["photo"]
-
-            Article.objects.create(titre=titre,contenu=contenu,photo=photo)
+            Article.objects.create(titre=titre,contenu=contenu,lien=lien,photo=photo)
             messages.success(request,"Votre Article a bien été créé.")
             return redirect('intranet:accueil')
 
     messages.warning(request, "Impossible de rédiger votre article.")
     return redirect('intranet:gestion_articles')
+
+
+
+def mail(request):
+    if request.method == 'POST':
+        form = MailForm(request.POST)
+        formset = ToMailFormset(request.POST)
+        print(request.POST)
+        print(formset)
+        if form.is_valid() and formset.is_valid():
+            objet = form.cleaned_data["objet"]
+            message = form.cleaned_data["message"]
+            address = []
+            for f in formset:
+                # extract name from each form and save
+                email = f.cleaned_data.get('name')
+                if email:
+                    address.append(email)
+            send_mail(object,message,'admin@ecole01.fr',address)
+            messages.success(request,"Votre email a bien été envoyée.")
+            return redirect('intranet:gestion_mail')
+
+    messages.warning(request, "Impossible d'envoyer votre email.")
+    return redirect('intranet:gestion_mail')

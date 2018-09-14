@@ -9,24 +9,6 @@
  <div class="container container_extras">
      <h3 class="text-center mt-2"> Mes Documents</h3>
      <a href="{% url 'intranet:gen_attest_pdf' %}">test</a>
-     <h5> Adhésion </h5>
-     {% if user.is_adherent %}
-     <p>Vous êtes bien adhérent d'Ecole01</p>
-     {% else %}
-     <p>Pour régler votre adhésion à Ecole01, cliquer si dessous:</p>
-     <!--<form action="{% url 'intranet:checkout' %}" role='form' method="POST">-->
-        <!--{% csrf_token %}-->
-        <!--<input type="text" name="fac_id" id="fac_id" value="{{facture.pk}}" hidden required>-->
-        <!--<script src="https://checkout.stripe.com/checkout.js" class="stripe-button"-->
-            <!--data-key="{{key}}"-->
-            <!--data-amount="{{ facture.price_ttc|stripe }}"-->
-            <!--data-name="Ecole Française de Piano"-->
-            <!--data-description="{{facture.type}}"-->
-            <!--data-currency="eur">-->
-        <!--</script>-->
-    <!--</form>-->
-    {% endif %}
-
     <!--Gestion des factures-->
     {% if user.is_superuser %}
         <h5> Liste des Factures Non payées</h5>

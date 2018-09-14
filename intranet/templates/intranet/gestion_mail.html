@@ -1,43 +1,44 @@
 {% extends 'intranet/base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}Mes Membres{% endblock %}
+
 {% block nav_bar %}
 {% include 'intranet/nav_bar.html' %}
 {% endblock nav_bar %}
 
 {% block content %}
- <div class="container container_extras" >
-     <h3 class="text-center mt-2"> Bienvenue sur l'intranet !</h3>
-     <h5>Veillez renseigner vos informations personnelles:</h5>
-     {% include 'intranet/messages.html' with messages=messages %}
-     <form method="post">
-         {% csrf_token %}
-         {% include 'intranet/bs4_form.html' with form=user_form %}
-         {% include 'intranet/bs4_form.html' with form=profile_form %}
-         {% if not user.is_staff %}
-         <h5>Inscription des élèves</h5>
-         <P>Lister les personnes qui suivront les cours à domiciles:</P>
-         {{ formset.management_form }}
-         {% for form in formset %}
-         <div class="row form-row spacer">
-            <div class="col-2">
-                <label>{{form.name.label}}</label>
-            </div>
-            <div class="col-4">
-                <div class="input-group my-2">
-                    {{form.name}}
-                    <div class="input-group-append">
-                        <button class="btn btn-success add-form-row">+</button>
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Envoyez un Email</h3>
+        <p>Envoyer un email en remplissant le formulaire ci-dessous</p>
+        {% include 'intranet/messages.html' with messages=messages %}
+        <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:mail' %}">
+            {% csrf_token %}
+            {% include 'intranet/bs4_form.html' with form=mail_form %}
+            {{ formset.management_form }}
+            {% for form in formset %}
+            <div class="row form-row spacer">
+                <div class="col-2">
+                    <label>{{form.name.label}}</label>
+                </div>
+                <div class="col-4">
+                    <div class="input-group my-2">
+                        {{form.name}}
+                        <div class="input-group-append">
+                            <button class="btn btn-success add-form-row">+</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-         {% endfor %}
-         {% endif %}
-        <button type="submit" class="btn btn-primary">Valider</button>
-    </form>
- </div>
+            {% endfor %}
+            <div class="row spacer">
+                <div class="col-4 offset-2 mt-2">
+                    <button type="submit" class="btn btn-block btn-primary">Envoyer</button>
+                </div>
+            </div>
+            </form>
+    </div>
+</div>
 {% endblock content %}
-
 
 {% block footer_javascript_page %}
 <script type="text/javascript">

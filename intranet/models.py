@@ -59,6 +59,7 @@ class UserProfile(models.Model):
     sap = models.CharField(max_length=11,default='SAP',blank=True)
     nb_facture = models.IntegerField(default=1)
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
+    is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
 
     def __str__(self):
         return "Profil de {0}".format(self.user.username)
@@ -113,10 +114,28 @@ class Facture(models.Model):
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
     is_paid = models.BooleanField(default=False)
 
+    nb_facture = models.IntegerField(default=1)
+    # TO USER
+    to_user_firstname = models.CharField(max_length=60,default=None, null=True,blank=True)
+    to_user_lastname = models.CharField(max_length=60,default=None, null=True,blank=True)
+    to_user_address = models.CharField(max_length=60,default=None, null=True,blank=True)
+    to_user_city = models.CharField(max_length=60,default=None, null=True,blank=True)
+    to_user_zipcode = models.CharField(max_length=60,default=None, null=True,blank=True)
+    to_user_siret = models.CharField(max_length=21, default='SIRET', null=True,blank=True)
+    to_user_sap = models.CharField(max_length=11, default='SAP', null=True,blank=True)
+    # FROM USER
+    from_user_firstname = models.CharField(max_length=60, default=None, null=True,blank=True)
+    from_user_lastname = models.CharField(max_length=60, default=None, null=True,blank=True)
+    from_user_address = models.CharField(max_length=60, default=None, null=True,blank=True)
+    from_user_city = models.CharField(max_length=60, default=None, null=True,blank=True)
+    from_user_zipcode = models.CharField(max_length=60, default=None, null=True,blank=True)
+    from_user_siret = models.CharField(max_length=21, default='SIRET', null=True,blank=True)
+    from_user_sap = models.CharField(max_length=11, default='SAP', null=True,blank=True)
+
 class Eleve(models.Model):
     referent = models.ForeignKey(User, on_delete=models.DO_NOTHING, default=None)
-    nom = models.CharField(max_length=60)
-    prenom = models.CharField(max_length=60)
+    nom_prenom = models.CharField(max_length=100, default=None)
+
 
 class Notification(models.Model):
     to_user = models.ForeignKey(User, related_name='User_who_received_the_notification', on_delete=models.CASCADE, default=None)
@@ -128,11 +147,14 @@ class Notification(models.Model):
 class Prix(models.Model):
     start = models.DateField(default=date.today()+timedelta(days=1), verbose_name='Début')
     end = models.DateField(default=None, verbose_name='Fin',null=True, blank=True)
-    tva = models.FloatField(max_length=5) # 20,00
-    adhesion =  models.FloatField(max_length=5)
-    cours =  models.FloatField(max_length=5)
-    commission =  models.FloatField(max_length=5)
-    frais_gestion = models.FloatField(max_length=5)
+    tva = models.FloatField(max_length=5, default=20.00) # 20,00
+    adhesion =  models.FloatField(max_length=5, default=66.67)
+    adhesion_reduc =  models.FloatField(max_length=5, default=60)
+    adhesion_prof =  models.FloatField(max_length=5, blank=True, default=15.83)
+    cours =  models.FloatField(max_length=5, default=41.00)
+    cours_premium =  models.FloatField(max_length=5, blank=True, default=51.00)
+    commission =  models.FloatField(max_length=5, default=0.83)
+    frais_gestion = models.FloatField(max_length=5, default=7.50)
 
 class Stats(models.Model):
     date = models.DateField(default=date.today())

@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import formset_factory, inlineformset_factory, modelformset_factory
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
 from .models import UserProfile, Relation, Prix, Article, Eleve
@@ -24,6 +25,9 @@ class RelationForm(forms.Form):
 
 class FactureIdForm(forms.Form):
     fac_id =forms.IntegerField(min_value=1,max_value=999999)
+
+class PriceForm(forms.Form):
+    fac_id =forms.DecimalField(min_value=1,max_value=999999)
 
 class CoursFrom(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -86,6 +90,7 @@ class EditProfileForm(forms.ModelForm):
             'city',
             'zip_code',
             'country',
+            'is_premium',
             'stats'
         )
         labels = {
@@ -94,6 +99,7 @@ class EditProfileForm(forms.ModelForm):
             'city': 'Ville',
             'zip_code': 'Code Postale',
             'country': 'Pays',
+            'is_premium': 'Assurance cours',
             'stats': 'Comment avez-vous connu l\'EFP ?'
         }
 
@@ -133,15 +139,6 @@ class PrixForm(forms.ModelForm):
             'frais_gestion'
         )
 
-class EleveForm(forms.ModelForm):
-    class Meta:
-        model = Eleve
-        fields = (
-            'referent',
-            'nom',
-            'prenom'
-        )
-
 
 class ArticleForm(forms.Form):
     titre = forms.CharField()
@@ -149,3 +146,30 @@ class ArticleForm(forms.Form):
     lien = forms.CharField(required=False)
     photo = forms.ImageField(required=False)
 
+
+class MailForm(forms.Form):
+    objet = forms.CharField(required=True)
+    message = forms.CharField(widget=forms.Textarea,required=True)
+
+
+class ToMailForm(forms.Form):
+    name = forms.EmailField(
+            label='Destinataire',
+            widget=forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'adressemail@destinaire.fr'
+            })
+        )
+
+ToMailFormset = formset_factory(ToMailForm, extra=1, max_num=100)
+
+class EleveForm(forms.Form):
+    name = forms.CharField(
+        label='Nom/Prénom',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Nom & Prénom de l\'élève'
+        })
+    )
+
+EleveFormset = formset_factory(EleveForm, extra=1, max_num=10)

@@ -19,11 +19,13 @@ from django.views.generic import RedirectView
 from intranet import views as intranet_views
 from django.conf.urls.static import static
 from django.conf import settings
+from django.conf.urls import url
 
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    #url(r"^payments/", include("pinax.stripe.urls")),
     path('intranet/', include('intranet.urls', namespace='intranet')),
     path('',  RedirectView.as_view(url='/intranet/connexion')),
 ]
