@@ -19,7 +19,11 @@
                     <img src="{{ art.photo.url }}" class="img-responsive rounded mr-3" height=300 width=400 align="left">
                     <div class="card-text" style="padding-left: 400px;">{{art.contenu|linebreaks }}</div>
                 {% endif %}
-                <div class="card-text">{{art.contenu|linebreaks }}</div>
+                <div class="card-text">{{art.contenu|linebreaks }}
+                {% if art.lien %}
+                    <a href="{{art.lien}}">{{art.lien}}</a>
+                {% endif %}
+                </div>
                 <!--<p class="card-text ml-2" style="padding-left: 400px;"><pre>{{art.contenu }}</pre></p>-->
             </div>
         </div>

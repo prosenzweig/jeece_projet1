@@ -7,6 +7,7 @@
 {% block content %}
 <div class="container">
      <h3 class="text-center mt-2"> Mes Statistiques </h3>
+     <h5 class="my-2"> Il y a actuellement {{prof}} professeurs, {{eleve}} élèves ainsi que {{compte}}comptes utilisateurs</h5>
      <h5> Différentes données statistiques: </h5>
      <div>
         <img src="{% url 'intranet:graphs_membres' %}" width="426" height="320" class="img-responsive rounded">
@@ -69,8 +70,7 @@
 
 
             marker['infowindow']  = new google.maps.InfoWindow({
-                 content: "<h5>{{user.user}}</h5><p>{{ user.user.last_name }} {{ user.user.first_name }}</p><p>{{ user.address }} {{ user.city }}</p>"
-
+                 content: "<h5>{{user.user}}</h5><p>{{ user.address }} {{ user.city }}</p><a href='/admin/intranet/userprofile/{{user.user.id}}/change/'>lien du profile</a>"
             });
             google.maps.event.addListener(marker, 'click', function() {
                 //window.location.href = this.url;

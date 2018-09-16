@@ -8,19 +8,41 @@
 {% block content %}
  <div class="container container_extras">
      <h3 class="text-center mt-2"> Mes Documents</h3>
-     <a href="{% url 'intranet:gen_attest_pdf' %}">test</a>
     <!--Gestion des factures-->
     {% if user.is_superuser %}
-        <h5> Liste des Factures Non payées</h5>
+        <h5 class="my-2"> Liste des Factures Non payées</h5>
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=factures_list_notpaid %}
-        <h5> Liste des Factures Payées</h5>
+        <h5 class="my-2"> Liste des Factures Payées</h5>
         {% include 'intranet/factures.html' with factures_list=factures_list_paid %}
     {% else %}
-        <h5> Liste des Factures </h5>
+        <h5 class="my-2"> Liste des Factures </h5>
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=factures_list %}
     {% endif %}
+     <h5 class="my-2">Attestations Fiscales</h5>
+     {% if attestation_list %}
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                <th>Professeur</th>
+                <th>Date</th>
+                <th>Prix</th>
+                <th>Télécharger</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for att in attestation_list %}
+            <tr>
+                 <td>{{att.from_user}}</td>
+                 <td>{{att.created}}</td>
+                 <td>{{att.price}}</td>
+                <td><a href="{% url 'intranet:gen_attest_pdf' fac_id=att.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
+            </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+     {% endif %}
  </div>
 {% endblock content %}
 

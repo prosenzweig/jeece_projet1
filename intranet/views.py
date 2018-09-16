@@ -16,7 +16,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from django.contrib.auth.models import User
-from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve
+from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,Lesson,Attestation
 from django.db.models import Q, Sum
 
 from django.contrib.auth import update_session_auth_hash
@@ -34,6 +34,7 @@ import numpy as np
 from pinax.stripe.actions import customers
 
 import tempfile
+import re
 import os
 import json
 os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
@@ -48,15 +49,23 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from intranet.forms import LoginForm, RegistrationForm, RelationForm, InvitationForm, EditProfileForm, EditUserForm,\
     CoursFrom, PrixForm, FactureIdForm, ArticleForm, EditStaffProfileForm, ConditionForm, MailForm, ToMailFormset,\
-    EleveFormset, PriceForm
+    EleveFormset, PriceForm, LessonFrom
 
-jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
+JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+MOIS = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
+
+def from_date_to_m_y(date):
+    d = date.split('-')
+    f = '%s_%s' % (d[1],d[0])
+    return re.sub(r'^0', '', f)
+
+def conv_date(date):
+    return datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
 def conv_mois(value):
     try:
         m =value.split('_')
-        return '%s %s' % (mois[int(m[0])-1], m[1])
+        return '%s %s' % (MOIS[int(m[0])-1], m[1])
     except ValueError:
         return None
 
@@ -129,18 +138,18 @@ def gen_pdf(request,fac_id):
 
     else:
         p.setFont('Helvetica-Bold', 12)
-        p.drawString(50, 580, "%s %s" % (facture.from_user.last_name, facture.from_user.first_name))
+        p.drawString(50, 580, "%s %s" % (facture.from_user_lastname, facture.from_user_firstname))
         p.setFont('Helvetica', 12)
-        p.drawString(50, 565, "%s"  % facture.from_user.userprofile.address)
-        p.drawString(50, 550, "%s %s" % (facture.from_user.userprofile.zip_code, facture.from_user.userprofile.city))
+        p.drawString(50, 565, "%s"  % facture.from_user_address)
+        p.drawString(50, 550, "%s %s" % (facture.from_user_zipcode, facture.from_user_city))
         p.drawString(50, 535, "France")
 
     # Destinataire
     p.setFont('Helvetica-Bold', 12)
-    p.drawString(350, 580, "%s %s" % (facture.to_user.last_name, facture.to_user.first_name))
+    p.drawString(350, 580, "%s %s" % (facture.to_user_lastname, facture.to_user_firstname))
     p.setFont('Helvetica', 12)
-    p.drawString(350, 565, "%s" % facture.to_user.userprofile.address)
-    p.drawString(350, 550, "%s %s" % (facture.to_user.userprofile.zip_code, facture.to_user.userprofile.city))
+    p.drawString(350, 565, "%s" % facture.to_user_address)
+    p.drawString(350, 550, "%s %s" % (facture.to_user_zipcode, facture.to_user_city))
     p.drawString(350, 535, "France")
 
     p.drawString(50, 400, "%s" % facture.type)
@@ -193,18 +202,18 @@ def gen_pdf(request,fac_id):
     response.write(pdf)
     return response
 
-def gen_attest_pdf(request):
+def gen_attest_pdf(request,fac_id):
     # fac_id
     # Create the HttpResponse object with the appropriate PDF headers.
-    facture = get_object_or_404(Facture,pk=1)
+    att = get_object_or_404(Attestation,pk=fac_id)
     if not request.user.is_superuser:
-        if facture.to_user != request.user:
-            messages.warning(request,"Impossible d'accéder à la facture !")
+        if att.to_user != request.user:
+            messages.warning(request,"Impossible d'accéder au document !")
             return redirect('intranet:documents')
 
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'filename=attestation_%s.pdf' % facture.pk
+    response['Content-Disposition'] = 'filename=attestation_%s.pdf' % att.pk
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
 
@@ -213,40 +222,40 @@ def gen_attest_pdf(request):
 
     # Emetteur
     p.setFont('Helvetica', 12)
-    p.drawString(75, 780, "%s %s" % (facture.from_user.last_name, facture.from_user.first_name))
-    p.drawString(75, 765, "%s" % facture.from_user.userprofile.address)
-    p.drawString(75, 750, "%s %s" % (facture.from_user.userprofile.zip_code, facture.from_user.userprofile.city))
+    p.drawString(75, 780, "%s %s" % (att.from_user_lastname.upper(), att.from_user_firstname))
+    p.drawString(75, 765, "%s" % att.from_user_address)
+    p.drawString(75, 750, "%s %s" % (att.from_user_zipcode, att.from_user_city))
     p.drawString(75, 735, "France")
-    p.drawString(75, 720, "N° SIRET : %s" % facture.from_user.userprofile.siret)
-    p.drawString(75, 705, "N° SAP : %s" % facture.from_user.userprofile.sap)
+    p.drawString(75, 720, "N° SIRET : %s" % att.from_user_siret)
+    p.drawString(75, 705, "N° SAP : %s" % att.from_user_sap)
 
 
-    p.drawString(350, 682, "Déclaration N°EFP%s - %s" % (facture.pk,facture.created.strftime("%d/%m/%Y")))
+    p.drawString(350, 682, "Déclaration N°EFP%s - %s" % (att.pk,att.created.strftime("%d/%m/%Y")))
 
     # Destinataire
-    p.drawString(75, 660, "%s %s" % (facture.to_user.last_name, facture.to_user.first_name))
-    p.drawString(75, 645, "%s" % facture.to_user.userprofile.address)
-    p.drawString(75, 630, "%s %s" % (facture.to_user.userprofile.zip_code, facture.to_user.userprofile.city))
+    p.drawString(75, 660, "%s %s" % (att.to_user_lastname.upper(), att.to_user_firstname))
+    p.drawString(75, 645, "%s" % att.to_user_address)
+    p.drawString(75, 630, "%s %s" % (att.to_user_zipcode, att.to_user_city))
     p.drawString(75, 615, "France")
 
     p.setFont('Helvetica-Bold', 14)
-    p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE - %s" % facture.pk)
+    p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE - %s" % att.pk)
     p.setFont('Helvetica', 12)
-    p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que M et Mme %s," % (facture.from_user.first_name, facture.from_user.last_name ,facture.to_user.last_name))
-    p.drawString(75, 505, "domiciliés au %s, %s %s, ont bénéficié de services à la personne :" % (facture.to_user.userprofile.address, facture.to_user.userprofile.zip_code ,facture.to_user.userprofile.city))
+    p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que M et Mme %s," % (att.from_user_firstname, att.from_user_lastname.upper() ,att.to_user_lastname.upper()))
+    p.drawString(75, 505, "domiciliés au %s, %s %s, ont bénéficié de services à la personne :" % (att.to_user_address, att.to_user_zipcode ,att.to_user_city))
     p.drawString(75, 490, "cours de piano")
-    p.drawString(75, 460, "En %s, le montant des factures effectivement acquittées représente" % (datetime.now().year-1))
-    p.drawString(75, 445, "une somme totale de : %s€." % facture.price_ttc)
+    p.drawString(75, 460, "En %s, le montant des atts effectivement acquittées représente" % (datetime.now().year-1))
+    p.drawString(75, 445, "une somme totale de : %s€." % att.price)
 
     p.setFont('Helvetica-Bold', 12)
     p.drawString(75,400, "Intervenant :")
     p.setFont('Helvetica', 12)
-    p.drawString(75, 380, "Julie ALCARAZ - 3 heures pour l’année 2017")
-    p.drawString(75, 365, "Prix horaire de la prestation : 41€/heure")
+    p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.nb_cours,  (datetime.now().year-1)))
+    p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (att.price/att.nb_cours))
 
     p.drawString(75, 330, "Fait pour valoir ce que de droit,")
-    p.drawString(75, 300, "Le 15/04/2018")
-    p.drawString(75, 270, "Julie ALCARAZ")
+    p.drawString(75, 300, "Le %s" % att.created)
+    p.drawString(75, 270, "%s %s" % (att.from_user_firstname,att.from_user_lastname.upper()))
     p.setFont('Helvetica', 11)
     p.drawString(75, 230, "Afin de bénéficier de l'avantage fiscal au titre du Service à la Personne, veuillez")
     p.drawString(75, 215, "remplir la case de votre déclaration d'impôts correspondant au crédit et")
@@ -255,7 +264,7 @@ def gen_attest_pdf(request):
     p.drawString(75, 170, "situation sur l'année écoulée.")
 
     p.setFont('Helvetica-Oblique', 8)
-    p.drawCentredString(300, 45, 'Attestation fiscale établie au nom et pour le compte de %s %s par la société :' % (facture.from_user.first_name, facture.from_user.last_name.upper()))
+    p.drawCentredString(300, 45, 'Attestation fiscale établie au nom et pour le compte de %s %s par la société :' % (att.from_user_firstname, att.from_user_lastname.upper()))
     p.drawCentredString(300, 30, 'SASU EFP - Siret n°811 905 934 00014 - 811 905 934 R.C.S.Paris - 4 rue du Champ de l\'Alouette Paris 13ème - info@ecolefrancaisedepiano.fr')
 
 
@@ -446,84 +455,94 @@ def cours_prof(request):
 
     m_y = "%s_%s" % (datetime.now().month, datetime.now().year)
 
-    cours_list = Cour.objects.filter(relation__teacher=request.user, mois=m_y)
-    ancien_cours_list = Cour.objects.filter(relation__teacher=request.user).exclude(mois=m_y)
-    month = '%s %s' % (mois[datetime.now().month-1], datetime.now().year)
+    lesson_by_month = [{x.student: Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')} for i, x in enumerate(Relation.objects.filter(teacher=request.user)) if Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')]
+    # lesson_by_month = Lesson.objects.filter(relation__teacher=request.user,mois=m_y).order_by('relation')
+
+    # for dict in lesson_by_month:
+    #     for k,v in dict.items():
+    #         print(k, v)
+
+    lesson_last = Lesson.objects.filter(relation__teacher=request.user).exclude(mois=m_y).order_by('-date')
+
+    month = '%s %s' % (MOIS[datetime.now().month-1], datetime.now().year)
     delta = last_day_of_month(datetime.now())
 
     if delta.days < 7:
         messages.warning(request, 'Il vous reste %s jours, %s heures et %s minutes avant la fin du mois, n\'oubliez pas de valider vos cours !' % (delta.days, delta.seconds//3600, (delta.seconds//60)%60))
 
     if request.method == "POST":
-        form = CoursFrom(request.POST, prof=request.user)
+        form = LessonFrom(request.POST, prof=request.user)
         if form.is_valid():
             eleve = form.cleaned_data["eleve"]
-            time = form.cleaned_data["duree"]
-            action = form.cleaned_data["action"]
+            nb_h = form.cleaned_data["nb_h"]
+            nb_m = form.cleaned_data["nb_m"]
+            date = form.cleaned_data["date"]
+
+            mois = from_date_to_m_y(str(date))
+            print(str(date).split('-')[1])
+            if str(date).split('-')[1] != str(datetime.now().month) and str(date).split('-')[1] != '0' + str(datetime.now().month):
+                messages.warning(request,'Vous devez saisir les cours du mois de %s' % month)
+                return redirect('intranet:cours_prof')
 
             user_eleve = User.objects.get(username=eleve)
             relation = Relation.objects.get(teacher=request.user, student=user_eleve)
-            cours = Cour.objects.filter(mois=m_y,relation=relation)
-
-            if not cours:
-                Cour.objects.create(mois=m_y, relation=relation, duree_cours=time)
-                messages.success(request, 'Le cour pour l\'élève %s d\'une durée de %s minutes à bien été ajouté.' % (eleve,time))
-            else:
-                cour = cours.first()
-                if cour.is_valid_t:
-                    messages.warning(request, "Vous avez déjà validé ces cours !")
-                    return redirect('intranet:cours')
-                if action == 'Ajouter':
-                    cour.duree_cours += time
-                    cour.save()
-                    messages.success(request, 'Le temps de cour pour l\'élève %s a bien été mis à jour.' % eleve)
-                elif action == 'Modifier':
-                    cour.duree_cours = time
-                    cour.save()
-                    messages.success(request, 'Le temps de cour pour l\'élève %s a bien été mis à jour.' % eleve)
-                elif action == 'Supprimer':
-                    cour.duree_cours = 0 if cour.duree_cours < time else cour.duree_cours - time
-                    cour.save()
-                    messages.success(request, 'Le temps de cour pour l\'élève %s a bien été mis à jour.' % eleve)
-                else:
-                    messages.error(request, 'L\'action demandée n\'a pas pu être éxécutée')
+            Lesson.objects.create(relation=relation,nb_h=nb_h,nb_m=nb_m,date=date,mois=mois)
+            messages.success(request,"Le cours a bien été ajouté")
             return redirect('intranet:cours_prof')
         else:
+            messages.warning(request, "Imposssible d'ajouter le cours.")
             return redirect('intranet:cours_prof')
     else:
-        form = CoursFrom(prof=request.user)
+        form = LessonFrom(prof=request.user)
     return render(request, 'intranet/cours_prof.html', locals())
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def validation_prof(request, id):
-    cour = Cour.objects.filter(pk=id)
-    if not cour:
+    lesson = Lesson.objects.filter(pk=id)
+    if not lesson:
         messages.error(request, 'Action Impossible.')
-        return redirect('intranet:cours')
+        return redirect('intranet:cours_prof')
     else:
-        cour = cour.first()
+        cour = lesson.first()
 
     if cour.relation.teacher == request.user:
         cour.is_valid_t = True
         cour.save()
         messages.success(request, 'Cours validé !')
         Notification.objects.create(to_user=cour.relation.student,from_user=cour.relation.teacher,
-                                   object="Validation Cours %s" % conv_mois(cour.mois),
-                                   text="Vous pouvez désormais valider ou refuser vos cours dans la section 'Mes Cours'!")
+                                   object="Validation Cours %s" % conv_date(cour.date),
+                                   text="Vous pouvez valider ou refuser un cours dans la section 'Mes Cours'.")
     else:
         messages.error(request,'Action Impossible.')
     return redirect('intranet:cours_prof')
 
 @login_required
+@user_passes_test(lambda u: u.is_staff)
+def suppression_prof(request,id):
+    lesson = Lesson.objects.filter(pk=id)
+    if not lesson:
+        messages.error(request, 'Action Impossible.')
+        return redirect('intranet:cours_prof')
+    else:
+        cour = lesson.first()
+
+    if cour.relation.teacher == request.user:
+        cour.delete()
+        messages.success(request, 'Cours supprimé !')
+    else:
+        messages.error(request, 'Action Impossible.')
+    return redirect('intranet:cours_prof')
+
+@login_required
 def cours_eleve(request):
-    cours_list = Cour.objects.filter(relation__student=request.user, is_valid_t=True)
+    lessons_list = reversed(Lesson.objects.filter(relation__student=request.user, is_valid_t=True))
     return render(request, 'intranet/cours_eleve.html', locals())
 
 @login_required
 def validation_eleve(request, id, result):
-    print(id,result)
-    cour = Cour.objects.filter(pk=id)
+    # print(id,result)
+    cour = Lesson.objects.filter(pk=id)
     if not cour:
         messages.error(request, 'Action Impossible.')
         return redirect('intranet:cours_eleve')
@@ -534,46 +553,27 @@ def validation_eleve(request, id, result):
         if result == 'valid':
             cour.is_valid_s = True
             cour.save()
-            messages.success(request, 'Vous venez de valider vos heures de cours.')
-            messages.info(request, 'Factures en cours de création.')
+            messages.success(request, 'Le cours a bien été validé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
-                                       object="Cours %s correctement validés" % conv_mois(cour.mois),
-                                       text="J'ai bien confirmé mes cours pour ce mois-ci.")
-            try:
-                admin = User.objects.get(is_superuser=True)
-                prix = Prix.objects.get(end=None)
-                nb_cours = round(cour.duree_cours/60,2)
-                #Cours de Piano
-                Facture.objects.create(to_user=cour.relation.student, from_user=cour.relation.teacher, object="Cours de Piano - 60 min",
-                                       object_qt=nb_cours, tva=0, price_ht= nb_cours*prix.cours, price_ttc= nb_cours*prix.cours,
-                                       type="Cours de Piano")
-                Notification.objects.create(to_user=cour.relation.student, from_user=cour.relation.teacher,
-                                            object="Factures Cours de Piano %s" % conv_mois(cour.mois),
-                                            text="Votre facture est téléchargeable dans la section \"Mes documents\".")
-                # Frais de Gestion
-                Facture.objects.create(to_user=cour.relation.student, from_user=admin,
-                                       object="Frais de gestion - 60 min",
-                                       object_qt=nb_cours, tva=prix.tva, price_ht=nb_cours * prix.frais_gestion,
-                                       price_ttc=add_tva(nb_cours*prix.frais_gestion,prix.tva),
-                                       type="Frais de Gestion")
+                                       object="Cours Validé !",
+                                       text="J'ai bien validé le cours du %s" % conv_date(cour.date))
 
-                Notification.objects.create(to_user=cour.relation.student, from_user=admin,
-                                            object="Factures Frais de Gestion %s" % conv_mois(cour.mois),
-                                            text="Votre facture est téléchargeable dans la section \"Mes documents\".")
-
-            except:
-                messages.error(request, "Impossible de trouver les tarifs, un message a été evnoyé à l'administateur.")
 
         elif result == 'refus':
+            admin = User.objects.get(is_superuser=True)
             cour.is_unvalid = True
             cour.save()
-            messages.warning(request, 'Vous n\'avez pas validé vos heures de cours.')
+            messages.warning(request, 'Le cours a bien été réfuté. L\'administrateur en sera informé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
-                                       object="Problème Validation Cours %s" % conv_mois(cour.mois),
-                                       text="Il y a un problème dans les cours que vous m'avez demandé de valider.")
-            # Notification.objects.create(to_user__username="admin", from_user=cour.relation.student,
-            #                             object="Problème Validation Cours %s" % conv_mois(cour.mois),
-            #                             text="Il y a un problème de validation de cours entre .")
+                                        object="Problème Validation Cours",
+                                        text="Il y a un problème dans le cours du %s que vous m'avez demandé de valider." % conv_date(cour.date))
+
+            context = {'date': conv_date(cour.date), 't': cour.relation.teacher, 's': cour.relation.student,
+                       'tel_t': cour.relation.teacher.userprofile.phone_number, 'email_t': cour.relation.teacher.email,
+                       'tel_s': cour.relation.student.userprofile.phone_number, 'email_s': cour.relation.student.email}
+            msg_plain = render_to_string('email/email_refus.txt', context=context)
+            send_mail("Problème de validation entre %s et %s" % (cour.relation.teacher,cour.relation.student),
+                     msg_plain,'admin@ecole01.fr',[admin.email])
     else:
         messages.error(request,'Action Impossible.')
 
@@ -586,7 +586,9 @@ def documents(request):
     if request.user.is_superuser:
         factures_list_notpaid = Facture.objects.filter(is_paid=False)
         factures_list_paid = Facture.objects.filter(is_paid=True)
+        attestation_list = Attestation.objects.all()
     else:
+        attestation_list =Attestation.objects.filter(to_user=request.user)
         factures_list = Facture.objects.filter(to_user=request.user)
     user = User.objects.get(id=request.user.id)
     return render(request, 'intranet/documents.html', locals())
@@ -620,10 +622,14 @@ def checkout_inscription(request):
             prix = Prix.objects.get(end=None)
             admin = User.objects.get(is_superuser=True)
             user = request.user
+
+            fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
+
             if request.user.is_staff:
                 fac = Facture.objects.create(
                     to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
                     object_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion professeur",
+                    facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                     to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
                     to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
                     to_user_siret=user.userprofile.siret, to_user_sap =user.userprofile.sap,
@@ -637,6 +643,7 @@ def checkout_inscription(request):
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
                         object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Elève",
+                        facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
                         to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
@@ -649,6 +656,7 @@ def checkout_inscription(request):
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
                         object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Elèves",
+                        facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
                         to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
@@ -662,6 +670,8 @@ def checkout_inscription(request):
             fac.save()
             user.userprofile.is_adherent=True
             user.userprofile.save()
+            admin.userprofile.nb_facture += 1
+            admin.userprofile.save()
             messages.success(request, "Votre adhésion a bien été payée.")
             return redirect('intranet:accueil')
     else:
@@ -684,6 +694,10 @@ def statistiques(request):
     """Minimal function rendering a template"""
     geo_list = UserProfile.objects.exclude(lat="0.0").exclude(lat="None")
     print(geo_list)
+    prof = User.objects.filter(is_staff=True).count()
+    eleve = Eleve.objects.all().count()
+    compte = User.objects.exclude(is_staff=True).count()
+
     return render(request, 'intranet/statistiques.html', locals())
 
 @login_required

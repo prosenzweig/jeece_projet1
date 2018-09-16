@@ -1,8 +1,10 @@
 from django import forms
+from django.utils import timezone
 from django.forms import formset_factory, inlineformset_factory, modelformset_factory
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
 from .models import UserProfile, Relation, Prix, Article, Eleve
+import datetime
 
 
 class LoginForm(forms.Form):
@@ -131,14 +133,28 @@ class EditStaffProfileForm(forms.ModelForm):
 class PrixForm(forms.ModelForm):
     class Meta:
         model = Prix
+        labels = {
+            'tva': 'TVA',
+            'adhesion': 'Adhésion Simple',
+            'adhesion_reduc': 'Adhésion Tarif réduit',
+            'adhesion_prof': 'Adhésion Professeur',
+            'cours': 'Cours Classique',
+            'cours_premium': 'Cours Premium',
+            'cours_ecole': 'Cours Tarif Ecole',
+            'commission': 'Commission',
+            'frais_gestion': 'Frais de Gestion'
+        }
         fields = (
             'tva',
             'adhesion',
+            'adhesion_reduc',
+            'adhesion_prof',
             'cours',
+            'cours_premium',
+            'cours_ecole',
             'commission',
             'frais_gestion'
         )
-
 
 class ArticleForm(forms.Form):
     titre = forms.CharField()
@@ -173,3 +189,21 @@ class EleveForm(forms.Form):
     )
 
 EleveFormset = formset_factory(EleveForm, extra=1, max_num=10)
+
+class LessonFrom(forms.Form):
+    def __init__(self, *args, **kwargs):
+        prof = kwargs.pop('prof')
+        super(LessonFrom, self).__init__(*args, **kwargs)
+        self.fields['eleve'] = forms.ChoiceField(
+            widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
+            choices=[(x.student.username,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))],
+            required=True,help_text="(pseudo de l'éleve)", label="Elève")
+        self.fields['nb_h'] = forms.IntegerField(
+            widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
+            required=True,min_value=1,max_value=23,label='H',initial=1)
+        self.fields['nb_m'] = forms.IntegerField(
+            widget=forms.NumberInput(attrs={'class': 'mx-2','placeholder':'00'}),
+            required=True,min_value=0,max_value=59,label='min',initial=00)
+        self.fields['date'] = forms.DateField(
+            widget=forms.SelectDateWidget(years=range(datetime.date.today().year, datetime.date.today().year+1),attrs={'class': 'ml-2'}), required=True,label="Date du cours")
+        # self.fields['date'] = forms.DateField(initial=datetime.date.today, required=True)

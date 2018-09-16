@@ -25,41 +25,70 @@
             {% if prix_list %}
             <p>* prix influencés par la TVA</p>
             <p>** prix en euros</p>
-            <div class="table-responsive p-2 pb-5">
-                <!--table-bordered-->
-                <table class="table table-hover">
-                    <thead>
+            {% for p in prix_list %}
+                <div class="card mb-3">
+                    <div class="card-header text-center">
+                        {% if p.end %}
+                        <h4> Tarifs utilisés du {{p.start|date:"d M Y"}} au  {{ p.end|date:"d M Y" }} </h4>
+                        {% else %}
+                        <h4> Tarifs utilisés du {{p.start|date:"d M Y"}} jusqu'à aujourd'hui</h4>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5>TVA: {{ p.tva|floatformat:2 }}%</5>
+                        <h5>Prix des Cours TTC</h5>
+                        <table class="table table-hover">
                         <tr>
-                        <th>Début</th>
-                        <th>Fin</th>
-                        <th>TVA (%)</th>
-                        <th>Adhésion*</th>
-                        <th>Adh. TTC</th>
-                        <th>Cours</th>
-                        <th>Commission*</th>
-                        <th>Com. TTC</th>
-                        <th>Frais de Gestion*</th>
-                        <th>Frais Gest° TTC</th>
+                            <td>Cours Piano:</td>
+                            <td>{{ p.cours|floatformat:2 }}€ </td>
+                            <td>Cours Piano Prenimum:</td>
+                            <td>{{ p.cours_premium|floatformat:2 }}€</td>
+                            <td>Cours Piano Ecole:</td>
+                            <td>{{ p.cours|floatformat:2 }}€</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in prix_list %}
+                        </table>
+                        <h5>Frais d'Adhésion</h5>
+                        <table class="table table-hover">
                         <tr>
-                        <td>{{ p.start|date:"d M Y" }}</td>
-                        <td>{{ p.end|date:"d M Y" }}</td>
-                        <td>{{ p.tva|floatformat:2 }}</td>
-                        <td>{{ p.adhesion|floatformat:2 }}</td>
-                        <td>{{ p.adhesion|tva:p.tva|floatformat:2 }}</td>
-                        <td>{{ p.cours|floatformat:2 }}</td>
-                        <td>{{ p.commission|floatformat:2 }}</td>
-                        <td>{{ p.commission|tva:p.tva|floatformat:2 }}</td>
-                        <td>{{ p.frais_gestion|floatformat:2 }}</td>
-                        <td>{{ p.frais_gestion|tva:p.tva|floatformat:2 }}</td>
+                            <td>Adh. Simple HT:</td>
+                            <td>{{ p.adhesion|floatformat:2 }}€ </td>
+                            <td>Adh. Simple TTC:</td>
+                            <td> {{ p.adhesion|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                         <tr>
+                            <td>Adh. Multiple HT:</td>
+                            <td>{{ p.adhesion_reduc|floatformat:2 }}€ </td>
+                            <td>Adh. Multiple TTC:</td>
+                            <td> {{ p.adhesion_reduc|tva:p.tva|floatformat:2 }}€</td>
+                        </tr>
+                         <tr>
+                            <td>Adh. Professeur HT:</td>
+                            <td>{{ p.adhesion_prof|floatformat:2 }}€ </td>
+                            <td>Adh. Professeur  TTC:</td>
+                            <td> {{ p.adhesion_prof|tva:p.tva|floatformat:2 }}€</td>
+                        </tr>
+                        </table>
+                        <h5>Frais de Commission</h5>
+                        <table class="table table-hover">
+                        <tr>
+                            <td>Commission HT:</td>
+                            <td>{{ p.commission|floatformat:2 }}€ </td>
+                            <td> Commission TTC:</td>
+                            <td>{{ p.commission|tva:p.tva|floatformat:2 }}€</td>
+                        </tr>
+                        </table>
+                        <h5>Frais de Gestion</h5>
+                        <table class="table table-hover">
+                        <tr>
+                            <td>Frais Gestion HT:</td>
+                            <td>{{ p.frais_gestion|floatformat:2 }}€ </td>
+                            <td> Frais Gestion TTC:</td>
+                            <td>{{ p.frais_gestion|tva:p.tva|floatformat:2 }}€</td>
+                        </tr>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
         {% else %}
         <p>Vous n'avez pas fixé de prix</p>
         {% endif %}

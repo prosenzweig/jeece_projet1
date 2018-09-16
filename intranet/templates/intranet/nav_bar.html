@@ -13,7 +13,16 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ml-auto">
                     <a class="nav-item nav-link" href="{% url 'intranet:accueil' %}">Accueil</a>
-                    <a class="nav-item nav-link" href="{% url 'intranet:mon_compte' %}">Mon compte</a>
+                    <div class="dropdown">
+                          <a class="nav-item nav-link dropdown-toggle" data-toggle="dropdown">
+                            Modifications
+                          </a>
+                          <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{% url 'intranet:mon_compte' %}">Mon compte</a>
+                                <a class="dropdown-item" href="{% url 'intranet:cours_prof' %}">Mes cours</a>
+                                <a class="dropdown-item" href="{% url 'intranet:gestion_mail' %}">Envoyer un Mail</a>
+                          </div>
+                    </div>
                     <div class="dropdown">
                           <a class="nav-item nav-link dropdown-toggle" data-toggle="dropdown">
                             Gestion
@@ -25,7 +34,6 @@
                                 <a class="dropdown-item" href="{% url 'intranet:gestion_invitations' %}">Mes Invitations</a>
                                 <a class="dropdown-item" href="{% url 'intranet:gestion_relations' %}">Mes Relations</a>
                                 <a class="dropdown-item" href="{% url 'intranet:gestion_prix' %}">Mes Prix</a>
-                                <a class="dropdown-item" href="{% url 'intranet:gestion_mail' %}">Envoyer un Mail</a>
                           </div>
                     </div>
                     <a class="nav-item nav-link" href="{% url 'intranet:documents' %}">Mes documents</a>

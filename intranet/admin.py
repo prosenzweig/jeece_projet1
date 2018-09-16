@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation)
+from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson)
 
 
 class ArticleAdmin(admin.ModelAdmin):
-    list_display = ('titre', 'contenu', 'date', 'photo')
+    list_display = ('titre', 'contenu', 'lien', 'date', 'photo')
     date_hierarchy = 'date'
     ordering = ('date',)
     search_fields = ('titre', 'contenu')
@@ -30,9 +30,15 @@ class CourAdmin(admin.ModelAdmin):
     # En-tête de notre colonne
     apercu_nbrcours.short_description = 'Nombre de cours'
 
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ('relation', 'date', 'nb_h', 'nb_m', 'is_valid_t', 'is_valid_s', 'is_unvalid')
+    ordering = ('-date',)
+    search_fields = ('relation', 'date')
+
+
 
 class FactureAdmin(admin.ModelAdmin):
-    list_display = ('to_user','from_user','type', 'object', 'object_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
+    list_display = ('to_user','from_user', 'facture_name', 'nb_facture', 'type', 'object', 'object_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
 
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'email', 'is_staff', 'valid')
@@ -53,9 +59,10 @@ class AttestationnAdmin(admin.ModelAdmin):
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(Relation, RelationAdmin)
-admin.site.register(Cour, CourAdmin)
+# admin.site.register(Cour, CourAdmin)
 admin.site.register(Facture, FactureAdmin)
 admin.site.register(Invitation, InvitationAdmin)
 admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Prix, PrixAdmin)
 admin.site.register(Attestation, AttestationnAdmin)
+admin.site.register(Lesson, LessonAdmin)

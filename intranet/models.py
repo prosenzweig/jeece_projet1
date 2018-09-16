@@ -94,12 +94,53 @@ class Cour(models.Model):
     is_valid_s = models.BooleanField(default=False)
     is_unvalid = models.BooleanField(default=False)
 
+class Lesson(models.Model):
+    relation = models.ForeignKey(Relation, on_delete=models.CASCADE)
+    nb_h = models.SmallIntegerField(default=0, verbose_name="Heures")
+    nb_m = models.SmallIntegerField(default=0, verbose_name="Minutes")
+    date = models.DateField(default=timezone.now())
+    mois = models.CharField(max_length=7)
+    is_valid_t = models.BooleanField(default=False)
+    is_valid_s = models.BooleanField(default=False)
+    is_unvalid = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.is_unvalid:
+            return "%s, Date: %s, Durée: %sh%smin, Status: Rejeté par l'élève" % (
+                self.relation,self.date,self.nb_h,self.nb_m)
+        elif self.is_valid_s:
+            return "%s, Date: %s, Durée: %sh%smin, Status: Validé par l'élève" % (
+            self.relation, self.date, self.nb_h, self.nb_m)
+        elif self.is_valid_t:
+            return "%s, Date: %s, Durée: %sh%smin, Status: En attente de validation par l'élève" % (
+            self.relation, self.date, self.nb_h, self.nb_m)
+        else:
+            return "%s, Date: %s, Durée: %sh%smin, Status: En attente de validation par le professeur" % (
+            self.relation, self.date, self.nb_h, self.nb_m)
+
 class Attestation(models.Model):
     to_user = models.ForeignKey(User, related_name='User_student', on_delete=models.DO_NOTHING)
     from_user = models.ForeignKey(User, related_name='User_professor', on_delete=models.DO_NOTHING)
     price = models.SmallIntegerField()
+    nb_cours = models.SmallIntegerField(default=None, null=True, blank=True)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date d\'échéance')
+    # TO USER
+    to_user_firstname = models.CharField(max_length=60, default=None, null=True, blank=True)
+    to_user_lastname = models.CharField(max_length=60, default=None, null=True, blank=True)
+    to_user_address = models.CharField(max_length=60, default=None, null=True, blank=True)
+    to_user_city = models.CharField(max_length=60, default=None, null=True, blank=True)
+    to_user_zipcode = models.CharField(max_length=60, default=None, null=True, blank=True)
+    to_user_siret = models.CharField(max_length=21, default='SIRET', null=True, blank=True)
+    to_user_sap = models.CharField(max_length=11, default='SAP', null=True, blank=True)
+    # FROM USER
+    from_user_firstname = models.CharField(max_length=60, default=None, null=True, blank=True)
+    from_user_lastname = models.CharField(max_length=60, default=None, null=True, blank=True)
+    from_user_address = models.CharField(max_length=60, default=None, null=True, blank=True)
+    from_user_city = models.CharField(max_length=60, default=None, null=True, blank=True)
+    from_user_zipcode = models.CharField(max_length=60, default=None, null=True, blank=True)
+    from_user_siret = models.CharField(max_length=21, default='SIRET', null=True, blank=True)
+    from_user_sap = models.CharField(max_length=11, default='SAP', null=True, blank=True)
 
 class Facture(models.Model):
     to_user = models.ForeignKey(User, related_name='User_who_received_the_bill', on_delete=models.DO_NOTHING, default=None)
@@ -114,6 +155,7 @@ class Facture(models.Model):
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
     is_paid = models.BooleanField(default=False)
 
+    facture_name = models.CharField(max_length=60,default=None, null=True, blank=True) # NomEmmeteur_NomDest_ID
     nb_facture = models.IntegerField(default=1)
     # TO USER
     to_user_firstname = models.CharField(max_length=60,default=None, null=True,blank=True)
@@ -153,8 +195,13 @@ class Prix(models.Model):
     adhesion_prof =  models.FloatField(max_length=5, blank=True, default=15.83)
     cours =  models.FloatField(max_length=5, default=41.00)
     cours_premium =  models.FloatField(max_length=5, blank=True, default=51.00)
+    cours_ecole =  models.FloatField(max_length=5, blank=True, default=40.00)
     commission =  models.FloatField(max_length=5, default=0.83)
     frais_gestion = models.FloatField(max_length=5, default=7.50)
+    class Meta:
+        verbose_name_plural = "Prix"
+
+
 
 class Stats(models.Model):
     date = models.DateField(default=date.today())
