@@ -3,13 +3,18 @@ chardet==3.0.4
 cycler==0.10.0
 dj-database-url==0.5.0
 Django==2.0.6
+django-appconf==1.0.2
+django-filter==2.0.0
+django-ipware==2.1.0
 django-widget-tweaks==1.4.2
 get==1.0.3
 idna==2.7
+jsonfield==2.0.2
 kiwisolver==1.0.1
 matplotlib==2.2.3
 numpy==1.15.1
 Pillow==5.2.0
+pinax-stripe==4.4.0
 post==1.0.2
 public==1.0.3
 pyparsing==2.2.0
@@ -23,3 +28,4 @@ requests==2.19.1
 six==1.11.0
 stripe==2.6.0
 urllib3==1.23
+

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson)
+from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson,
+                     Condition,Adhesion,Eleve)
 
 
 class ArticleAdmin(admin.ModelAdmin):
@@ -13,6 +14,8 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'lat', 'lgn')
     search_fields = ('city', 'zip_code', 'iban')
 
+class ConditionAdmin(admin.ModelAdmin):
+    list_display = ('start','end','file')
 
 class RelationAdmin(admin.ModelAdmin):
     list_display = ('teacher', 'student')
@@ -35,7 +38,8 @@ class LessonAdmin(admin.ModelAdmin):
     ordering = ('-date',)
     search_fields = ('relation', 'date')
 
-
+class EleveAdmin(admin.ModelAdmin):
+    list_display=('referent','nom_prenom')
 
 class FactureAdmin(admin.ModelAdmin):
     list_display = ('to_user','from_user', 'facture_name', 'nb_facture', 'type', 'object', 'object_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
@@ -55,6 +59,9 @@ class AttestationnAdmin(admin.ModelAdmin):
     list_display = ('to_user', 'from_user', 'price', 'created', 'last')
     search_fields = ('to_user', 'from_user', 'created', 'last')
 
+class AdhesionAdmin(admin.ModelAdmin):
+    list_display = ('to_user','created','end')
+
 # Register your models here.
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
@@ -66,3 +73,6 @@ admin.site.register(Notification, NotificationAdmin)
 admin.site.register(Prix, PrixAdmin)
 admin.site.register(Attestation, AttestationnAdmin)
 admin.site.register(Lesson, LessonAdmin)
+admin.site.register(Condition, ConditionAdmin)
+admin.site.register(Adhesion, AdhesionAdmin)
+admin.site.register(Eleve, EleveAdmin)

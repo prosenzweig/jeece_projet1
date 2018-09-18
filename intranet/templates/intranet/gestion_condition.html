@@ -1,0 +1,29 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Mes Membres{% endblock %}
+
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+    <div class="tab-content">
+        <h3 class="text-center mt-2">Condition Général d'utilisation</h3>
+        <p>Modifier les Condition générale d'utilisation ci-dessous</p>
+        {% include 'intranet/messages.html' with messages=messages %}
+        <form class="form-signin" method="POST"  enctype="multipart/form-data" role="form" action="{% url 'intranet:gestion_condition' %}">
+            {% csrf_token %}
+            {% include 'intranet/bs4_form.html' with form=form %}
+            <div class="row spacer">
+                <div class="col-4 offset-2 mt-2">
+                    <button type="submit" class="btn btn-block btn-primary">Valider</button>
+                </div>
+            </div>
+            </form>
+    </div>
+</div>
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

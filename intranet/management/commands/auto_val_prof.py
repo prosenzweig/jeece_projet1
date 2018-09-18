@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Lesson
+from django.contrib.auth.models import User
+from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Lesson,Stats,Eleve
 from datetime import datetime
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -33,6 +34,14 @@ def auto_val_prof():
         send_mail("Liste de vos cours de Piano %s" % conv_mois(m_y),
                   msg_plain, 'admin@ecole01.fr', [relation.student.email])
 
+def stats():
+    prof = User.objects.filter(is_staff=True).count()
+    eleve = Eleve.objects.all().count()
+    user = User.objects.filter(is_staff=False).count()
+    Stats.objects.create(nb_prof=prof,nb_user=user,nb_eleve=eleve)
+
+
 class Command(BaseCommand):
     def handle(self, **options):
         auto_val_prof()
+        stats()

@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.forms import formset_factory, inlineformset_factory, modelformset_factory
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
-from .models import UserProfile, Relation, Prix, Article, Eleve
+from .models import UserProfile, Relation, Prix, Article, Eleve,Condition
 import datetime
 
 
@@ -16,6 +16,7 @@ class LoginForm(forms.Form):
 class InvitationForm(forms.Form):
     email = forms.EmailField(required=True, label='', max_length=50, widget=forms.TextInput(attrs={'placeholder': 'Email', 'class': 'form-control'}))
     is_staff = forms.BooleanField(required=False, label='Professeur:', help_text="(Cocher la case si l'invitation est destinée à un professeur)")
+    is_free = forms.BooleanField(required=False, label='Adhésion Gratuite:', help_text="(Cocher la case si vous voulez offrir l'adhésion à utilisateur)")
 
 
 class ConditionForm(forms.Form):
@@ -29,7 +30,7 @@ class FactureIdForm(forms.Form):
     fac_id =forms.IntegerField(min_value=1,max_value=999999)
 
 class PriceForm(forms.Form):
-    fac_id =forms.DecimalField(min_value=1,max_value=999999)
+    fac_id =forms.CharField(max_length=8)
 
 class CoursFrom(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -82,6 +83,8 @@ class EditUserForm(forms.ModelForm):
             'first_name',
             'last_name'
         )
+
+
 
 class EditProfileForm(forms.ModelForm):
     class Meta:
@@ -167,6 +170,12 @@ class MailForm(forms.Form):
     objet = forms.CharField(required=True)
     message = forms.CharField(widget=forms.Textarea,required=True)
 
+class CondiForm(forms.ModelForm):
+    class Meta:
+        model = Condition
+        fields = ('file',)
+        labels = { 'file': 'Condition Générale d\'utilisation'}
+
 
 class ToMailForm(forms.Form):
     name = forms.EmailField(
@@ -181,7 +190,7 @@ ToMailFormset = formset_factory(ToMailForm, extra=1, max_num=100)
 
 class EleveForm(forms.Form):
     name = forms.CharField(
-        label='Nom/Prénom',
+        label='Nom/Prénom Date de naissance',
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Nom & Prénom de l\'élève'
@@ -207,3 +216,36 @@ class LessonFrom(forms.Form):
         self.fields['date'] = forms.DateField(
             widget=forms.SelectDateWidget(years=range(datetime.date.today().year, datetime.date.today().year+1),attrs={'class': 'ml-2'}), required=True,label="Date du cours")
         # self.fields['date'] = forms.DateField(initial=datetime.date.today, required=True)
+
+class FactureForm(forms.Form):
+     OBJECTS = (
+        ('cp','Cour de Piano'),
+        ('fg','Frais de Gestion'),
+        ('fc','Frais de Commission'),
+        ('fa','Frais d\'Adhésion'),
+        ('fp','Frais de Préavis')
+     )
+
+     from_user = forms.ChoiceField(
+            widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
+            choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True))],
+            required=True, label="Emmeteur")
+     to_user = forms.ChoiceField(
+        widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),
+        choices=[(x.username, x) for i, x in enumerate(User.objects.all())],
+        required=True, label="Destinataires")
+
+     object = forms.ChoiceField(choices=OBJECTS)
+
+     nb_item = forms.IntegerField(
+            widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
+            required=True,min_value=1,max_value=100,label='Nombre d\'item',initial=1)
+
+     tva = forms.IntegerField(
+         widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
+         required=True, min_value=1, max_value=100, label='TVA', initial=1)
+
+     prix_ht = forms.IntegerField(
+         widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
+         required=True, min_value=1, max_value=100, label='Prix HT', initial=1)
+

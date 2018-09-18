@@ -9,17 +9,10 @@
      <h3 class="text-center mt-2">Bienvenue sur l'intranet</h3>
      <h5>Formulaire d'Adhésion:</h5>
      {% include 'intranet/messages.html' with messages=messages %}
-     <p>Vous trouverez ci-dessous les conditions générale d'utilisation</p>
+
      <h6><b>CONDITIONS GENERALES D’ADHESION</b></h6>
-     <p>Toute collaboration avec la société ECOLE FRANCAISE DE PIANO (« EFP ») , SAS au capital social de 1 000 euros,
-         ayant son siège social sis au 4, rue du Champ de l’alouette 75013 PARIS RCS PARIS 811 905 934, entraîne l’application sans réserve par l’Adhérent de
-         l’intégralité des conditions générales suivantes :</p>
-
-     <p><b>Frais d’inscription</b></p>
-     <p>Lors de son adhésion à l’EFP, puis à chaque nouvelle année scolaire, l’Adhérent doit obligatoirement s’acquitter des frais d’inscription initiaux lui
-         permettant d’accéder aux services de l’EFP et notamment :</p>
-
-     <p>Blablabla ici on mets les conditions d'utilisations</p>
+     <p>Vous trouverez ci-dessous les conditions générale d'utilisation, merci d'en prendre note:</p>
+     <p><a href="{{ condition.file.url }}">condition générales de l'efp</a></p>
      <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

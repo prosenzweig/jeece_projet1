@@ -1,3 +1,5 @@
+{% load static %}
+{% load staticfiles %}
 {% load intranet_extras %}
 {% if factures_list %}
     <div class="table-responsive p-2 pb-5">
@@ -42,6 +44,8 @@
                                 data-amount="{{ facture.price_ttc|stripe }}"
                                 data-name="Ecole Française de Piano"
                                 data-description="{{facture.type}}"
+                                data-image="{% static 'intranet/img/efp_logo.png' %}"
+                                data-locale="fr"
                                 data-currency="eur">
                             </script>
                         </form>
@@ -54,5 +58,5 @@
         </table>
     </div>
 {% else %}
-<p> Vous n'avez pas encore de factures !</p>
+<p> Aucune factures trouvées !</p>
 {% endif %}

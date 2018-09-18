@@ -4,6 +4,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import render, redirect, get_object_or_404
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage
 from django.contrib import messages
 
 from django.urls import reverse
@@ -16,7 +17,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from django.contrib.auth.models import User
-from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,Lesson,Attestation
+from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,\
+    Lesson,Attestation,Condition,Adhesion
 from django.db.models import Q, Sum
 
 from django.contrib.auth import update_session_auth_hash
@@ -27,6 +29,7 @@ from django.templatetags.static import static
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
+from .filters import FactureFilter
 
 import requests
 import numpy as np
@@ -49,7 +52,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from intranet.forms import LoginForm, RegistrationForm, RelationForm, InvitationForm, EditProfileForm, EditUserForm,\
     CoursFrom, PrixForm, FactureIdForm, ArticleForm, EditStaffProfileForm, ConditionForm, MailForm, ToMailFormset,\
-    EleveFormset, PriceForm, LessonFrom
+    EleveFormset, PriceForm, LessonFrom, CondiForm, FactureForm
 
 JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 MOIS = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
@@ -92,7 +95,7 @@ def last_3_mois():
 
 def add_tva(value,arg):
     try:
-        return float(value) + float(value)*float(arg)/100
+        return round(float(value) + float(value)*float(arg)/100,2)
     except (ValueError, ZeroDivisionError):
         return None
 
@@ -119,7 +122,7 @@ def gen_pdf(request,fac_id):
     p.setLineWidth(.3)
     H, L = 830, 587
     p.setFont('Helvetica-Bold', 16)
-    p.drawString(350, 720, "Factures #%s" % facture.pk)
+    p.drawString(350, 720, "Factures N°%s" % facture.pk)
     p.setFont('Helvetica', 12)
     p.drawString(350, 705, "Date de Facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
@@ -130,8 +133,8 @@ def gen_pdf(request,fac_id):
         p.drawString(50, 580, "Ecole Française de Piano")
         p.setFont('Helvetica', 12)
         p.drawString(50, 565, "Emmanuel BIRNBAUM")
-        p.drawString(50, 550, "4 Rue du Champ de l'Alouette")
-        p.drawString(50, 535, "75013 Paris")
+        p.drawString(50, 550, "%s"  % facture.from_user_address)
+        p.drawString(50, 535, "%s %s" % (facture.from_user_zipcode, facture.from_user_city))
         p.drawString(50, 520, "01 85 09 93 87")
         p.drawString(50, 505, "info@ecolefrancaisedepiano.fr")
         p.drawString(50, 490, "https://www.ecolefrancaisedepiano.fr")
@@ -318,16 +321,16 @@ def creation(request, uuid):
                 user = form.save(commit=False)
                 user.is_staff = inv.is_staff
                 user.save()
+                if inv.is_free:
+                    user.userprofile.is_adherent = True
+                    user.userprofile.save()
+                    Adhesion.objects.create(to_user=user)
                 inv.valid = True
                 inv.save()
 
                 #Test Create new customer for each new accoutns
-                customers.create(user=user)
+                customers.create(user=user) # Strip stuff
 
-                # test.backend = 'django.contrib.auth.backends.ModelBackend'
-                # login(request, test)
-                #TODO change this
-                # messages.success(request, 'Bienvenue l\'intranet, modifiez vos informations dans "Mon Compte".')
                 return redirect('intranet:accueil') # nous le renvoyons vers la page accueil.html
             else:  # sinon une erreur sera affichée
                 messages.warning(request,'Impossible de vous inscrire.')
@@ -374,7 +377,6 @@ def creation_inscription(request):
                         us.userprofile.save()
                     except:
                         pass
-
 
                 admin = User.objects.get(is_superuser=True)
                 Notification.objects.create(to_user=admin, from_user=request.user,
@@ -425,12 +427,19 @@ def creation_inscription(request):
     return render(request, 'intranet/creation_inscription.html', locals())
 
 def creation_adhesion(request):
+    prix = Prix.objects.get(end=None)
     key = settings.STRIPE_PUBLISHABLE_KEY
+    tva = prix.tva
+    ad_prof = add_tva(prix.adhesion_prof,tva)
+    ad = add_tva(prix.adhesion,tva)
+    ad_reduc = add_tva(prix.adhesion_reduc,tva)
+
     if request.user.is_staff:
-        price = 19
+        price = ad_prof
     else:
         nb_eleve = Eleve.objects.filter(referent=request.user).count()
-        price = 72 * nb_eleve
+        price = ad  if nb_eleve == 1 else ad_reduc * nb_eleve
+        eleves = Eleve.objects.filter(referent=request.user)
     return render(request, 'intranet/creation_adhesion.html', locals())
 
 def creation_condition(request):
@@ -442,6 +451,7 @@ def creation_condition(request):
             messages.warning(request, 'Vous devez valider les conditions d\'utilisations.')
             return redirect('intranet:creation_condition')
     form = ConditionForm()
+    condition = Condition.objects.get(end=False)
     return render(request, 'intranet/creation_condition.html', locals())
 
 @login_required
@@ -584,12 +594,15 @@ def validation_eleve(request, id, result):
 def documents(request):
     key = settings.STRIPE_PUBLISHABLE_KEY
     if request.user.is_superuser:
-        factures_list_notpaid = Facture.objects.filter(is_paid=False)
-        factures_list_paid = Facture.objects.filter(is_paid=True)
+        # factures_list_notpaid = Facture.objects.filter(is_paid=False)
+        # factures_list_paid = Facture.objects.filter(is_paid=True)
+        factures_all = Facture.objects.all()
         attestation_list = Attestation.objects.all()
+        filter = FactureFilter(request.GET, queryset=factures_all)
     else:
         attestation_list =Attestation.objects.filter(to_user=request.user)
         factures_list = Facture.objects.filter(to_user=request.user)
+
     user = User.objects.get(id=request.user.id)
     return render(request, 'intranet/documents.html', locals())
 
@@ -613,12 +626,14 @@ def checkout(request):
 
 @login_required
 def checkout_inscription(request):
+    print("TEST")
     if request.method == "POST":
         form = PriceForm(request.POST)
-        print(form)
+        # print(form.errors)
+        # print("TEST2", form.cleaned_data["fac_id"])
         if form.is_valid():
-            print("VALIDDE!!!")
-            price = form.cleaned_data["fac_id"]
+            # print("VALIDDE!!!")
+            price = float(form.cleaned_data["fac_id"].replace(',','.'))
             prix = Prix.objects.get(end=None)
             admin = User.objects.get(is_superuser=True)
             user = request.user
@@ -638,7 +653,7 @@ def checkout_inscription(request):
                     from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
                     from_user_sap =admin.userprofile.sap )
             else:
-                nb = 1 if price % 80 == 0 else price/72.00
+                nb = 1 if price == prix.adhesion else price/prix.adhesion_reduc
                 if nb == 1:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
@@ -672,8 +687,14 @@ def checkout_inscription(request):
             user.userprofile.save()
             admin.userprofile.nb_facture += 1
             admin.userprofile.save()
+            Adhesion.objects.create(to_user=user)
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
             messages.success(request, "Votre adhésion a bien été payée.")
             return redirect('intranet:accueil')
+        else:
+            messages.warning(request, 'Action non aurotisée.')
+            return redirect('intranet:creation_adhesion')
     else:
         messages.warning(request,'Action non aurotisée.')
 
@@ -965,3 +986,82 @@ def mail(request):
 
     messages.warning(request, "Impossible d'envoyer votre email.")
     return redirect('intranet:gestion_mail')
+
+def gestion_condition(request):
+    if request.method == 'POST':
+        form = CondiForm(request.POST, request.FILES)
+        print(form)
+        if form.is_valid():
+            if Condition.objects.all().count() > 0:
+                last = Condition.objects.get(end=False)
+                last.end = True
+                last.save()
+                form.save()
+            else :
+                form.save()
+            messages.success(request,'Les Confitions générale d\'utilisation ont bien été modifié')
+            return redirect('intranet:gestion_condition')
+        else:
+            messages.error(request, 'Impossible de télécharger le fichier')
+            return redirect('intranet:gestion_condition')
+    else:
+        form = CondiForm()
+        return render(request, 'intranet/gestion_condition.html', locals())
+
+
+def handle_uploaded_file(f):
+    with open('some/file/name.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
+def gestion_factures(request):
+    if request.method == 'POST':
+        form = FactureForm(request.POST)
+        print(form)
+        if form.is_valid():
+            from_user = form.cleaned_data["from_user"]
+            to_user = form.cleaned_data["to_user"]
+            object = form.cleaned_data["object"]
+            nb_item = form.cleaned_data["nb_item"]
+            tva = form.cleaned_data["tva"]
+            prix_ht = form.cleaned_data["prix_ht"]
+
+            if from_user.username == 'admin':
+                fac_name = "EFP_%s_%s" % (to_user.last_name, from_user.userprofile.nb_facture)
+            else:
+                fac_name = "%s_%s_%s" % ( from_user.last_name, to_user.last_name, from_user.userprofile.nb_facture)
+
+            choix = {
+                'cp': 'Cour de Piano',
+                'fg': 'Frais de Gestion',
+                'fc': 'Frais de Commission',
+                'fa': 'Frais d\'Adhésion',
+                'fp': 'Frais de Préavis'
+            }
+
+            obj = choix[object]
+
+            fac = Facture.objects.create(
+                to_user=to_user, from_user=from_user, object=obj, is_paid=False,
+                object_qt=1, tva=tva, price_ht=1 * prix.adhesion_prof, price_ttc=add_tva(prix_ht,tva), type=obj,
+                facture_name=fac_name, nb_facture=from_user.userprofile.nb_facture,
+                to_user_firstname=to_user.first_name, to_user_lastname=to_user.last_name,
+                to_user_address=to_user.userprofile.address,
+                to_user_city=to_user.userprofile.city, to_user_zipcode=to_user.userprofile.zip_code,
+                to_user_siret=to_user.userprofile.siret, to_user_sap=to_user.userprofile.sap,
+                from_user_firstname=from_user.first_name, from_user_lastname=from_user.last_name,
+                from_user_address=from_user.userprofile.address, from_user_city=from_user.userprofile.city,
+                from_user_zipcode=from_user.userprofile.zip_code, from_user_siret=from_user.userprofile.siret,
+                from_user_sap=from_user.userprofile.sap)
+
+            from_user.userprofile.nb_facture += 1
+            from_user.userprofile.save()
+            messages.success(request, 'La nouvelle facture a bien été créée.')
+            return redirect('intranet:gestion_factures')
+        else:
+            messages.error(request, 'Impossible de télécharger le fichier')
+            return redirect('intranet:gestion_factures')
+    else:
+        form=FactureForm()
+    return render(request, 'intranet/gestion_factures.html', locals())

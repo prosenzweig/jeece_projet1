@@ -11,9 +11,17 @@
      <h5>Paiement des frais d'Adhésion:</h5>
      {% include 'intranet/messages.html' with messages=messages %}
      {% if user.is_staff %}
-     <p>Les frais d'adhésion sont facturés 20,00€ pour les professeurs et doivent être renouvelées chaque année à partir de la date du premier paiement</p>
+     <p>Les frais d'adhésion sont facturés {{ad_prof}}€ pour les professeurs et doivent être renouvelées chaque année à partir de la date du premier paiement</p>
      {% else %}
-     <p>Les frais d'adhésion sont facturés 80,00€ pour un élève (ou 72,00€ par élèves) et doivent être renouvelées chaque année à partir de la date du premier paiement</p>
+     <p>Les frais d'adhésion sont facturés {{ad}}€ pour un élève (ou {{ad_reduc}}€ par élèves) et doivent être renouvelées chaque année à partir de la date du premier paiement</p>
+     {% endif %}
+     {% if eleves %}
+        <p>Elève(s):</p>
+        <ol>
+        {% for e in eleves %}
+            <li>{{e}}</li>
+        {% endfor %}
+        </ol>
      {% endif %}
      <p>Vos frais d'ahésion s'élève donc à {{price}}€</p>
      <form action="{% url 'intranet:checkout_inscription' %}" role='form' method="POST">

@@ -74,6 +74,7 @@ class Invitation(models.Model):
     uuid_regex = RegexValidator(regex='^[0-9a-f-]+$')
     uuid = models.UUIDField(validators=[uuid_regex], max_length=36)
     is_staff = models.BooleanField(default=False)
+    is_free = models.BooleanField(default=False)
     email = models.EmailField()
     valid = models.BooleanField(default=False)
 
@@ -143,8 +144,8 @@ class Attestation(models.Model):
     from_user_sap = models.CharField(max_length=11, default='SAP', null=True, blank=True)
 
 class Facture(models.Model):
-    to_user = models.ForeignKey(User, related_name='User_who_received_the_bill', on_delete=models.DO_NOTHING, default=None)
-    from_user = models.ForeignKey(User, related_name='User_who_send_the_bill', on_delete=models.DO_NOTHING,default=None)
+    to_user = models.ForeignKey(User, related_name='User_who_received_the_bill', on_delete=models.DO_NOTHING, default=None,verbose_name='Destinataire')
+    from_user = models.ForeignKey(User, related_name='User_who_send_the_bill', on_delete=models.DO_NOTHING,default=None,verbose_name='Emetteur')
     tva = models.FloatField(default=None)
     price_ht = models.FloatField(default=None)
     price_ttc = models.FloatField(default=None)
@@ -153,7 +154,7 @@ class Facture(models.Model):
     type = models.CharField(max_length=60,default=None)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
-    is_paid = models.BooleanField(default=False)
+    is_paid = models.BooleanField(default=False,verbose_name='Payé')
 
     facture_name = models.CharField(max_length=60,default=None, null=True, blank=True) # NomEmmeteur_NomDest_ID
     nb_facture = models.IntegerField(default=1)
@@ -178,6 +179,8 @@ class Eleve(models.Model):
     referent = models.ForeignKey(User, on_delete=models.DO_NOTHING, default=None)
     nom_prenom = models.CharField(max_length=100, default=None)
 
+    def __str__(self):
+        return self.nom_prenom
 
 class Notification(models.Model):
     to_user = models.ForeignKey(User, related_name='User_who_received_the_notification', on_delete=models.CASCADE, default=None)
@@ -201,12 +204,21 @@ class Prix(models.Model):
     class Meta:
         verbose_name_plural = "Prix"
 
-
+class Condition(models.Model):
+    start = models.DateField(default=date.today() + timedelta(days=1), verbose_name='Début')
+    end = models.BooleanField(default=False, blank=True)
+    file = models.FileField(upload_to='documents/',blank=True,default=None,null=True)
 
 class Stats(models.Model):
     date = models.DateField(default=date.today())
-    nb_prof = models.IntegerField()
-    nb_eleve = models.IntegerField()
+    nb_prof = models.IntegerField(default=0,blank=True,null=True)
+    nb_user = models.IntegerField(default=0,blank=True,null=True)
+    nb_eleve = models.IntegerField(default=0,blank=True,null=True)
+
+class Adhesion(models.Model):
+    to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING)
+    created = models.DateField(default=date.today(), verbose_name='date d\'émission')
+    end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='Fin')
 
 def get_full_name(self):
     return "%s (%s %s)" % (self.username, self.first_name, self.last_name)
