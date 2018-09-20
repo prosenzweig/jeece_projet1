@@ -1,10 +1,9 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db.models.signals import post_save
 from datetime import datetime, timedelta, date
-
+from django.contrib.auth.models import User
 
 class Article(models.Model):
     titre = models.CharField(max_length=100)
