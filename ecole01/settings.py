@@ -147,11 +147,17 @@ LOGIN_EXEMPT_URLS = (
 
 STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
-
 PINAX_STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
 PINAX_STRIPE_PUBLIC_KEY = config('STRIPE_PUBLISHABLE_KEY')
 
-EMAIL_HOST = 'localhost'
-EMAIL_PORT = 1025
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+
+DEFAULT_FROM_EMAIL = 'Django Boards <noreply@djangoboards.com>'
+EMAIL_SUBJECT_PREFIX = '[Django Boards] '
 
 SITE_ID = 1
