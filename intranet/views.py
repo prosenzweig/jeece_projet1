@@ -19,6 +19,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,\
     Lesson,Attestation,Condition,Adhesion
+
 from django.db.models import Q, Sum
 
 from django.contrib.auth import update_session_auth_hash
@@ -30,7 +31,7 @@ from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from .filters import FactureFilter
-
+import stripe
 import requests
 import numpy as np
 
@@ -593,6 +594,32 @@ def validation_eleve(request, id, result):
 @login_required
 def documents(request):
     key = settings.STRIPE_PUBLISHABLE_KEY
+
+    if request.method == "POST":
+        try:
+            token = request.POST['stripeToken']
+            stripe_customer_id = request.user.customer.stripe_id
+            print(request.user, stripe_customer_id)
+            print("Token",token)
+
+            fac_list = Facture.objects.filter(to_user=request.user, is_paid=False).exclude(
+                from_user__userprofile__stripe_account_id="StripeAccId")
+
+            for fac in fac_list:
+                charge = stripe.Charge.create(
+                    amount=fac.price_ttc*100,
+                    currency="eur",
+                    source=token,
+                    stripe_account=fac.from_user.userprofile.stripe_account_id,
+                )
+                fac.is_paid=True
+                fac.save()
+
+            return redirect('intranet:documents')
+
+        except stripe.CardError as e:
+            messages.warning(request, "Votre carte a été refusé")
+
     if request.user.is_superuser:
         # factures_list_notpaid = Facture.objects.filter(is_paid=False)
         # factures_list_paid = Facture.objects.filter(is_paid=True)
@@ -602,6 +629,8 @@ def documents(request):
     else:
         attestation_list =Attestation.objects.filter(to_user=request.user)
         factures_list = Facture.objects.filter(to_user=request.user)
+        price = Facture.objects.filter(to_user=request.user,is_paid=False).exclude(from_user__userprofile__stripe_account_id="StripeAccId").aggregate(Sum('price_ttc'))['price_ttc__sum']
+        # print(price)
 
     user = User.objects.get(id=request.user.id)
     return render(request, 'intranet/documents.html', locals())
@@ -894,6 +923,7 @@ def invitation(request):
 @login_required
 def mon_compte(request):
     user = User.objects.get(id=request.user.id)
+    adh = Adhesion.objects.get(to_user=user)
     return render(request, 'intranet/mon_compte.html',locals())
 
 
@@ -1065,3 +1095,4 @@ def gestion_factures(request):
     else:
         form=FactureForm()
     return render(request, 'intranet/gestion_factures.html', locals())
+

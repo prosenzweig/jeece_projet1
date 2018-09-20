@@ -36,19 +36,22 @@
                      </td>
                     {% else %}
                     <td>
-                        <form action="{% url 'intranet:checkout' %}" role='form' method="POST">
-                            {% csrf_token %}
-                            <input type="text" name="fac_id" id="fac_id" value="{{facture.pk}}" hidden required>
-                            <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                data-key="{{key}}"
-                                data-amount="{{ facture.price_ttc|stripe }}"
-                                data-name="Ecole Française de Piano"
-                                data-description="{{facture.type}}"
-                                data-image="{% static 'intranet/img/efp_logo.png' %}"
-                                data-locale="fr"
-                                data-currency="eur">
-                            </script>
-                        </form>
+                        <a class="li-ic btn" style="color: black;cursor: default;padding: 0;">
+                            <i class="fa fa-times fa-lg white-text" style="color: black;cursor: default;padding: 0;"></i>
+                        </a>
+                        <!--<form action="{% url 'intranet:checkout' %}" role='form' method="POST">-->
+                            <!--{% csrf_token %}-->
+                            <!--<input type="text" name="fac_id" id="fac_id" value="{{facture.pk}}" hidden required>-->
+                            <!--<script src="https://checkout.stripe.com/checkout.js" class="stripe-button"-->
+                                <!--data-key="{{key}}"-->
+                                <!--data-amount="{{ facture.price_ttc|stripe }}"-->
+                                <!--data-name="Ecole Française de Piano"-->
+                                <!--data-description="{{facture.type}}"-->
+                                <!--data-image="{% static 'intranet/img/efp_logo.png' %}"-->
+                                <!--data-locale="fr"-->
+                                <!--data-currency="eur">-->
+                            <!--</script>-->
+                        <!--</form>-->
                      </td>
                     {% endif %}
                 <td><a href="{% url 'intranet:gen_pdf' fac_id=facture.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>

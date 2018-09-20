@@ -23,6 +23,7 @@ urlpatterns = [
     path('gen_pdf/<int:fac_id>/', views.gen_pdf, name='gen_pdf'),
     path('gen_attest_pdf/<int:fac_id>/', views.gen_attest_pdf, name='gen_attest_pdf'),
     path('checkout', views.checkout, name='checkout'),
+    # path('out', views.out, name='out'),
     path('checkout_inscription', views.checkout_inscription, name='checkout_inscription'),
     path('notifications', views.notifications, name='notifications'),
     path('statistiques', views.statistiques, name='statistiques'),

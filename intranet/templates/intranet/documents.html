@@ -45,9 +45,15 @@
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=filter.qs %}
     {% else %}
-        <h5 class="my-2">Liste des Factures </h5>
+        <h5 class="mt-2">Liste des Factures </h5>
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=factures_list %}
+        {% if price is none %}
+        <p class="mb-5">Vous n'avez pas de facture à payer.</p>
+        {% else %}
+        <p>Montant totale à payer: <strong>{{price}}€</strong></p>
+        {% include 'intranet/checkout.html' %}<br><br>
+        {% endif %}
     {% endif %}
      <h5 class="my-2">Attestations Fiscales</h5>
      {% if attestation_list %}
@@ -71,6 +77,8 @@
             </tbody>
             {% endfor %}
         </table>
+     {% else %}
+     <p>Vous n'avez pas encore d'Attestation fiscale</p>
      {% endif %}
  </div>
 {% endblock content %}

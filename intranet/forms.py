@@ -119,6 +119,7 @@ class EditStaffProfileForm(forms.ModelForm):
             'country',
             'siret',
             'sap',
+            'stripe_account_id',
             'stats'
         )
         labels = {
@@ -129,6 +130,7 @@ class EditStaffProfileForm(forms.ModelForm):
             'country': 'Pays',
             'siret': 'SIRET',
             'sap': 'SAP',
+            'stripe_account_id:': 'Id du Compte Stripe',
             'stats': 'Comment avez-vous connu l\'EFP ?'
         }
 

@@ -8,10 +8,25 @@
  <div class="container container_extras">
         <!--<div class="card card-container ">-->
             <h3 class="text-center mt-2 mb-3">Profile de {{ user }} </h3>
-            <h5>Vos informations personnelles:</h5>
-            {% if not user.is_adherent %}
-            <p>Vous n'êtes pas encore adhérent d'Ecole01 ! Inscrivez-vous dans la section "Mes Documents"</p>
+            {% if not user.userprofile.is_adherent %}
+            <p>Vous n'êtes pas adhérent de l'EFP !</p>
+            {% else %}
+            <p>Vous êtes adhérent de l'EFP jusqu'au {{ adh }}</p>
             {% endif %}
+            {% if user.is_staff %}
+                {% if user.userprofile.sap == "SAP" %}
+                <p style="color: orange;">Penser à actualiser votre numéro <strong>SAP</strong>, indispensable à la facturation !</p>
+                {% endif %}
+                {% if user.userprofile.siret == "SIRET" %}
+                <p style="color: orange;">Penser à actualiser votre numéro <strong>SIRET</strong>, indispensable à la facturation !</p>
+                {% endif %}
+                {% if user.userprofile.stripe_account_id == "StripeAccId" %}
+                <p style="color: orange;">Penser mettre à jour votre <strong>Stripe Account ID</strong>, indispensable à la facturation !</p>
+                {% endif %}
+            {% endif %}
+
+
+            <h5>Vos informations personnelles:</h5>
             {% include 'intranet/messages.html' with messages=messages %}
             <p>Pseudo: {{ user }}</p>
             <p>Nom/Prénom: {{ user.last_name }} {{ user.first_name }}</p>
@@ -21,11 +36,10 @@
             <p>Ville: {{ user.userprofile.city }}</p>
             <p>Code postal: {{ user.userprofile.zip_code }}</p>
             <p>Pays: {{ user.userprofile.country }} </p>
-            <p>IBAN: {{ user.userprofile.iban }}</p>
             {% if user.userprofile.avatar %}
             <img src="{{ user.userprofile.avatar.url }}" width="240">
             {% endif %}
-            <a class="btn btn-info btn-sm" href="{{ STATIC_URL }}edit_compte" role="button">Modifier mon profile</a>
+            <a class="btn btn-info btn-sm" href="{% url 'intranet:edit_compte' %}" role="button">Modifier mon profile</a>
             <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_pass' %}" role="button">Modifier mon mot de passe</a>
         <!--</div>-->
  </div>

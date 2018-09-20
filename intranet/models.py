@@ -5,6 +5,7 @@ from django.core.validators import RegexValidator
 from django.db.models.signals import post_save
 from datetime import datetime, timedelta, date
 
+
 class Article(models.Model):
     titre = models.CharField(max_length=100)
     auteur = models.CharField(max_length=50, default="admin")
@@ -60,6 +61,7 @@ class UserProfile(models.Model):
     nb_facture = models.IntegerField(default=1)
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
     is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
+    stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
 
     def __str__(self):
         return "Profil de {0}".format(self.user.username)
@@ -219,6 +221,8 @@ class Adhesion(models.Model):
     to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='Fin')
+    def __str__(self):
+        return self.end.strftime("%d/%m/%Y")
 
 def get_full_name(self):
     return "%s (%s %s)" % (self.username, self.first_name, self.last_name)
