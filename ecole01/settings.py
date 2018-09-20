@@ -157,7 +157,7 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 
-DEFAULT_FROM_EMAIL = 'Django Boards <noreply@djangoboards.com>'
-EMAIL_SUBJECT_PREFIX = '[Django Boards] '
+DEFAULT_FROM_EMAIL = 'EFP <noreply@intranetecolefrancaisedepiano.fr>'
+EMAIL_SUBJECT_PREFIX = '[EFP] '
 
 SITE_ID = 1

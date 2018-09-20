@@ -100,7 +100,7 @@ class Lesson(models.Model):
     relation = models.ForeignKey(Relation, on_delete=models.CASCADE)
     nb_h = models.SmallIntegerField(default=0, verbose_name="Heures")
     nb_m = models.SmallIntegerField(default=0, verbose_name="Minutes")
-    date = models.DateField(default=timezone.now())
+    date = models.DateField(default=timezone.now)
     mois = models.CharField(max_length=7)
     is_valid_t = models.BooleanField(default=False)
     is_valid_s = models.BooleanField(default=False)
