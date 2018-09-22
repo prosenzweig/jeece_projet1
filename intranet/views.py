@@ -19,7 +19,7 @@ from django.template.loader import render_to_string
 
 from django.contrib.auth.models import User
 from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,\
-    Lesson,Attestation,Condition,Adhesion
+    Lesson,Attestation,Condition,Adhesion,Stats
 
 from django.db.models import Q, Sum
 
@@ -811,21 +811,21 @@ def graphs_nb_cours(request):
     ind = np.arange(3)
     width = 0.35
     plts = []
-    data = [[0 if not Cour.objects.filter(mois=t, relation__teacher=prof) else Cour.objects.filter(mois=t, relation__teacher=prof).aggregate(Sum('duree_cours'))['duree_cours__sum'] for t in times]for prof in list_prof]
+    data = [[0 if not Lesson.objects.filter(mois=t, relation__teacher=prof) else Lesson.objects.filter(mois=t, relation__teacher=prof).aggregate(Sum('nb_h'))['nb_h__sum'] for t in times]for prof in list_prof]
     # data = [[Cour.objects.filter(mois=t, relation__teacher=prof) for t in times]for prof in list_prof]
     m = max(max(zip(*data)))
     for it,d in enumerate(data,1):
         bottom_counter=0
         # tmp = plt.bar(ind + width*it, d, width, label=label_prof[it-1], bottom=bottom_counter)
-        tmp = plt.bar(ind, d, width, label=label_prof[it-1], bottom=bottom_counter)
+        tmp = ax.bar(ind, d, width, label=label_prof[it-1], bottom=bottom_counter)
         # bottom_counter+=it
         plts.append(tmp)
 
     plt.xticks(ind, [conv_mois(t) for t in times])
-    plt.yticks(np.arange(0, m+120, 60))
-    plt.ylabel('temps de cours (min)')
-    plt.title('Temps de cours par professeurs et par mois')
-    plt.legend(loc='best')
+    ax.set_yticks(np.arange(0, m+4, 2))
+    ax.set_ylabel('temps de cours (H)')
+    ax.set_title('Temps de cours par professeurs et par mois')
+    ax.legend(loc='best')
 
     canvas = FigureCanvasAgg(f)
     buf = BytesIO()
@@ -834,6 +834,32 @@ def graphs_nb_cours(request):
     response = HttpResponse(buf.getvalue(), content_type='image/png')
     return response
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def graphs_evol(request):
+    f = mtf.Figure()
+    stats = Stats.objects.all()
+    labels = [ x.date for x in stats]
+    nb_prof = [ x.nb_prof for x in stats]
+    nb_user = [ x.nb_user for x in stats]
+    nb_eleve = [ x.nb_eleve for x in stats]
+
+    fig, ax1 = plt.subplots()
+    l1, = ax1.plot(nb_prof, label="professeurs")
+    l2, = ax1.plot(nb_user, label="utilisateurs")
+    l3, = ax1.plot(nb_eleve, label="élèves")
+    plt.xticks(np.arange(len(stats)),labels)
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Nbr de personnes')
+    ax1.set_title('Evolution du nombre d\'utilisateurs')
+    ax1.legend([l1, l2,l3], ["professeurs","utilisateurs","élèves"])
+    # ax1.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    canvas = FigureCanvasAgg(f)
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close(f)
+    response = HttpResponse(buf.getvalue(), content_type='image/png')
+    return response
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)

@@ -29,6 +29,7 @@ urlpatterns = [
     path('statistiques', views.statistiques, name='statistiques'),
     url(r'^graphs/membres.png$', views.graphs_membres,  name='graphs_membres'),
     url(r'^graphs/nbr_cours.png$', views.graphs_nb_cours,  name='graphs_nb_cours'),
+    url(r'^graphs/evol.png$', views.graphs_evol,  name='graphs_evol'),
     path('gestion_membres', views.gestion_membres, name='gestion_membres'),
     path('gestion_invitations', views.gestion_invitations, name='gestion_invitations'),
     path('gestion_relations', views.gestion_relations, name='gestion_relations'),

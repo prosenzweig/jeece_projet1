@@ -61,6 +61,9 @@ class UserProfile(models.Model):
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
     is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
     stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
+    class Meta:
+        verbose_name_plural = "Profils utilisateurs"
+
 
     def __str__(self):
         return "Profil de {0}".format(self.user.username)
@@ -105,7 +108,8 @@ class Lesson(models.Model):
     is_valid_t = models.BooleanField(default=False)
     is_valid_s = models.BooleanField(default=False)
     is_unvalid = models.BooleanField(default=False)
-
+    class Meta:
+        verbose_name_plural = "Leçons"
     def __str__(self):
         if self.is_unvalid:
             return "%s, Date: %s, Durée: %sh%smin, Status: Rejeté par l'élève" % (
@@ -215,6 +219,8 @@ class Stats(models.Model):
     nb_prof = models.IntegerField(default=0,blank=True,null=True)
     nb_user = models.IntegerField(default=0,blank=True,null=True)
     nb_eleve = models.IntegerField(default=0,blank=True,null=True)
+    class Meta:
+        verbose_name_plural = "Statistiques"
 
 class Adhesion(models.Model):
     to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING)

@@ -5,6 +5,10 @@ from django.db.models import Q, Sum
 from datetime import datetime
 from decimal import Decimal
 
+
+### CRONTAB ###
+# 0 0 1 1 * cd /home/ecole01/intranet && python manage.py auto_attest > /home/ecole01/logs/cron.log
+
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
 

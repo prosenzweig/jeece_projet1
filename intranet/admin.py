@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson,
-                     Condition,Adhesion,Eleve)
+                     Condition,Adhesion,Eleve,Stats)
 
 
 class ArticleAdmin(admin.ModelAdmin):
@@ -12,7 +12,8 @@ class ArticleAdmin(admin.ModelAdmin):
 
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'lat', 'lgn')
-    search_fields = ('city', 'zip_code', 'iban')
+    search_fields = ('user', 'city', 'zip_code', 'iban')
+    ordering = ('user',)
 
 class ConditionAdmin(admin.ModelAdmin):
     list_display = ('start','end','file')
@@ -62,6 +63,9 @@ class AttestationnAdmin(admin.ModelAdmin):
 class AdhesionAdmin(admin.ModelAdmin):
     list_display = ('to_user','created','end')
 
+class StatsAdmin(admin.ModelAdmin):
+    list_display = ('date','nb_prof','nb_eleve', 'nb_user')
+
 # Register your models here.
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
@@ -76,3 +80,4 @@ admin.site.register(Lesson, LessonAdmin)
 admin.site.register(Condition, ConditionAdmin)
 admin.site.register(Adhesion, AdhesionAdmin)
 admin.site.register(Eleve, EleveAdmin)
+admin.site.register(Stats, StatsAdmin)

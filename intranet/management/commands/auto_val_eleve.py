@@ -8,6 +8,9 @@ from decimal import Decimal
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
 
+### CRONTAB ###
+# 50 23 5 * * cd /home/ecole01/intranet && python manage.py auto_val_eleve > /home/ecole01/logs/cron.log
+
 
 def give_past_month():
     m, y = datetime.now().month, datetime.now().year
