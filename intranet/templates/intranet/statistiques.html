@@ -60,6 +60,7 @@
             title: '{{ user.city }}',
             });
             {% else %}
+            var image = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
             var marker = new google.maps.Marker({
             position: point,
             icon: image,

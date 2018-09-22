@@ -102,7 +102,7 @@ class EditProfileForm(forms.ModelForm):
             'phone_number': 'Numéro de téléphone',
             'address': 'Adresse',
             'city': 'Ville',
-            'zip_code': 'Code Postale',
+            'zip_code': 'Code Postal',
             'country': 'Pays',
             'is_premium': 'Assurance cours',
             'stats': 'Comment avez-vous connu l\'EFP ?'
@@ -126,7 +126,7 @@ class EditStaffProfileForm(forms.ModelForm):
             'phone_number': 'Numéro de téléphone',
             'address': 'Adresse',
             'city': 'Ville',
-            'zip_code': 'Code Postale',
+            'zip_code': 'Code Postal',
             'country': 'Pays',
             'siret': 'SIRET',
             'sap': 'SAP',
@@ -221,7 +221,7 @@ class LessonFrom(forms.Form):
 
 class FactureForm(forms.Form):
      OBJECTS = (
-        ('cp','Cour de Piano'),
+        ('cp','Cours de Piano'),
         ('fg','Frais de Gestion'),
         ('fc','Frais de Commission'),
         ('fa','Frais d\'Adhésion'),

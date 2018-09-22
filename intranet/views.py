@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage
 from django.contrib import messages
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.urls import reverse
 from datetime import datetime,timedelta,date
@@ -42,7 +43,6 @@ import re
 import os
 import json
 os.environ['MPLCONFIGDIR'] = tempfile.mkdtemp()
-
 # do this before importing pylab or pyplot
 import matplotlib
 matplotlib.use('Agg')
@@ -104,6 +104,7 @@ def add_tva(value,arg):
 def gen_pdf(request,fac_id):
     # Create the HttpResponse object with the appropriate PDF headers.
     facture = get_object_or_404(Facture,pk=fac_id)
+    admin = User.objects.get(is_superuser=True)
     if not request.user.is_superuser:
         if facture.to_user != request.user:
             messages.warning(request,"Impossible d'accéder à la facture !")
@@ -123,13 +124,13 @@ def gen_pdf(request,fac_id):
     p.setLineWidth(.3)
     H, L = 830, 587
     p.setFont('Helvetica-Bold', 16)
-    p.drawString(350, 720, "Factures N°%s" % facture.pk)
+    p.drawString(350, 720, "Facture N°A%s" % facture.nb_facture)
     p.setFont('Helvetica', 12)
     p.drawString(350, 705, "Date de Facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
 
     # Emetteur
-    if facture.type in ['Frais de Gestion', 'Frais de Commission']:
+    if facture.type in ['Frais de Gestion', 'Frais de Commission', 'Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "Ecole Française de Piano")
         p.setFont('Helvetica', 12)
@@ -142,7 +143,10 @@ def gen_pdf(request,fac_id):
 
     else:
         p.setFont('Helvetica-Bold', 12)
-        p.drawString(50, 580, "%s %s" % (facture.from_user_lastname, facture.from_user_firstname))
+        if facture.from_user.is_superuser:
+            p.drawString(50, 580, "Ecole Française de Piano")
+        else:
+            p.drawString(50, 580, "%s %s" % (facture.from_user_lastname, facture.from_user_firstname))
         p.setFont('Helvetica', 12)
         p.drawString(50, 565, "%s"  % facture.from_user_address)
         p.drawString(50, 550, "%s %s" % (facture.from_user_zipcode, facture.from_user_city))
@@ -156,7 +160,10 @@ def gen_pdf(request,fac_id):
     p.drawString(350, 550, "%s %s" % (facture.to_user_zipcode, facture.to_user_city))
     p.drawString(350, 535, "France")
 
-    p.drawString(50, 400, "%s" % facture.type)
+    if facture.type in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
+        p.drawString(50, 400, "%s %s-%s" % (facture.type,facture.created.year,facture.created.year+1))
+    else:
+        p.drawString(50, 400, "%s" % facture.type)
     p.setFont('Helvetica-Bold', 12)
     p.setStrokeColorRGB(0.7, 0.7, 0.7)
     p.setFillColorRGB(0.7, 0.7, 0.7)
@@ -195,7 +202,8 @@ def gen_pdf(request,fac_id):
     p.setFont('Helvetica-Bold', 10)
     p.drawCentredString(300,60,'Ecole Française de Piano - SASU EFP')
     p.setFont('Helvetica-Oblique', 8)
-    p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
+    # p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
+    p.drawCentredString(300,45,'%s %s %s' % (admin.userprofile.address,admin.userprofile.zip_code,admin.userprofile.city))
     p.drawCentredString(300,30,'Numéro de SIRET: 811 905 934 00014 - Numéro de TVA: FR 90 811905934 - 811 905 934 R.C.S.Paris')
 
     p.showPage()
@@ -332,7 +340,7 @@ def creation(request, uuid):
                 #Test Create new customer for each new accoutns
                 customers.create(user=user) # Strip stuff
 
-                return redirect('intranet:accueil') # nous le renvoyons vers la page accueil.html
+                return redirect('intranet:creation_inscription') # nous le renvoyons vers la page accueil.html
             else:  # sinon une erreur sera affichée
                 messages.warning(request,'Impossible de vous inscrire.')
         else:
@@ -344,7 +352,7 @@ def creation(request, uuid):
 @login_required
 def accueil(request):
     if not request.user.userprofile.is_adherent:
-        return redirect('intranet:creation_adhesion')
+        return redirect('intranet:creation_inscription')
 
     """ Redirection apres connexion, ici seront afficher les articles du blog"""
     articles_list = reversed(Article.objects.all()) # Nous sélectionnons tous nos articles
@@ -382,7 +390,7 @@ def creation_inscription(request):
                 admin = User.objects.get(is_superuser=True)
                 Notification.objects.create(to_user=admin, from_user=request.user,
                                             object="Creation du compte %s %s (%s)" % (
-                                            request.user.first_name, request.user.last_name, request.user),
+                                            request.user.first_name, request.user.last_name, request.user.username),
                                             text="Je viens de créer mon compte professeur!")
                 return redirect('intranet:creation_condition')
         else:
@@ -417,12 +425,13 @@ def creation_inscription(request):
                 admin = User.objects.get(is_superuser=True)
                 Notification.objects.create(to_user=admin, from_user=request.user,
                                             object="Creation du compte %s %s (%s)" % (
-                                                request.user.first_name, request.user.last_name, request.user),
+                                                request.user.first_name, request.user.last_name, request.user.username),
                                             text="Je viens de créer mon compte!")
                 return redirect('intranet:creation_condition')
     else:
         user_form = EditUserForm(instance=request.user)
         profile_form = EditStaffProfileForm(instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(instance=request.user.userprofile)
+        eleves = Eleve.objects.filter(referent=request.user)
         formset = EleveFormset()
 
     return render(request, 'intranet/creation_inscription.html', locals())
@@ -522,7 +531,7 @@ def validation_prof(request, id):
         cour.save()
         messages.success(request, 'Cours validé !')
         Notification.objects.create(to_user=cour.relation.student,from_user=cour.relation.teacher,
-                                   object="Validation Cours %s" % conv_date(cour.date),
+                                   object="Validation Cours %s" % conv_date(str(cour.date)),
                                    text="Vous pouvez valider ou refuser un cours dans la section 'Mes Cours'.")
     else:
         messages.error(request,'Action Impossible.')
@@ -567,7 +576,7 @@ def validation_eleve(request, id, result):
             messages.success(request, 'Le cours a bien été validé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
                                        object="Cours Validé !",
-                                       text="J'ai bien validé le cours du %s" % conv_date(cour.date))
+                                       text="J'ai bien validé le cours du %s" % conv_date(str(cour.date)))
 
 
         elif result == 'refus':
@@ -579,12 +588,12 @@ def validation_eleve(request, id, result):
                                         object="Problème Validation Cours",
                                         text="Il y a un problème dans le cours du %s que vous m'avez demandé de valider." % conv_date(cour.date))
 
-            context = {'date': conv_date(cour.date), 't': cour.relation.teacher, 's': cour.relation.student,
+            context = {'date': conv_date(str(cour.date)), 't': cour.relation.teacher, 's': cour.relation.student,
                        'tel_t': cour.relation.teacher.userprofile.phone_number, 'email_t': cour.relation.teacher.email,
                        'tel_s': cour.relation.student.userprofile.phone_number, 'email_s': cour.relation.student.email}
             msg_plain = render_to_string('email/email_refus.txt', context=context)
             send_mail("Problème de validation entre %s et %s" % (cour.relation.teacher,cour.relation.student),
-                     msg_plain,'admin@ecole01.fr',[admin.email])
+                     msg_plain,settings.DEFAULT_FROM_EMAIL,[admin.email])
     else:
         messages.error(request,'Action Impossible.')
 
@@ -621,16 +630,35 @@ def documents(request):
             messages.warning(request, "Votre carte a été refusé")
 
     if request.user.is_superuser:
-        # factures_list_notpaid = Facture.objects.filter(is_paid=False)
-        # factures_list_paid = Facture.objects.filter(is_paid=True)
         factures_all = Facture.objects.all()
         attestation_list = Attestation.objects.all()
         filter = FactureFilter(request.GET, queryset=factures_all)
+        # filter_qs = filter.qs
+        #
+        # page = request.GET.get('page', 1)
+        # paginator = Paginator(filter_qs, 2)
+        # try:
+        #     filter_page = paginator.page(page)
+        # except PageNotAnInteger:
+        #     filter_page = paginator.page(1)
+        # except EmptyPage:
+        #     filter_page = paginator.page(paginator.num_pages)
+
     else:
         attestation_list =Attestation.objects.filter(to_user=request.user)
-        factures_list = Facture.objects.filter(to_user=request.user)
+        factures_list_paid = Facture.objects.filter(to_user=request.user,is_paid=True)
+        factures_list_not_paid = Facture.objects.filter(to_user=request.user,is_paid=False)
         price = Facture.objects.filter(to_user=request.user,is_paid=False).exclude(from_user__userprofile__stripe_account_id="StripeAccId").aggregate(Sum('price_ttc'))['price_ttc__sum']
-        # print(price)
+        price = round(price,2)
+
+        page = request.GET.get('page', 1)
+        paginator = Paginator(factures_list_paid, 10, 3)
+        try:
+            factures_list_paid_page = paginator.page(page)
+        except PageNotAnInteger:
+            factures_list_paid_page = paginator.page(1)
+        except EmptyPage:
+            factures_list_paid_page = paginator.page(paginator.num_pages)
 
     user = User.objects.get(id=request.user.id)
     return render(request, 'intranet/documents.html', locals())
@@ -655,11 +683,8 @@ def checkout(request):
 
 @login_required
 def checkout_inscription(request):
-    print("TEST")
     if request.method == "POST":
         form = PriceForm(request.POST)
-        # print(form.errors)
-        # print("TEST2", form.cleaned_data["fac_id"])
         if form.is_valid():
             # print("VALIDDE!!!")
             price = float(form.cleaned_data["fac_id"].replace(',','.'))
@@ -672,7 +697,7 @@ def checkout_inscription(request):
             if request.user.is_staff:
                 fac = Facture.objects.create(
                     to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
-                    object_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion professeur",
+                    object_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion Professeur",
                     facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                     to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
                     to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
@@ -682,11 +707,12 @@ def checkout_inscription(request):
                     from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
                     from_user_sap =admin.userprofile.sap )
             else:
-                nb = 1 if price == prix.adhesion else price/prix.adhesion_reduc
+                nb = 1 if price == add_tva(prix.adhesion,prix.tva) else price/add_tva(prix.adhesion_reduc,prix.tva)
+                print("nb eleves:",nb)
                 if nb == 1:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
-                        object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Elève",
+                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Elève",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -699,7 +725,7 @@ def checkout_inscription(request):
                 else:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
-                        object_qt=1, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Elèves",
+                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Elèves",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -730,12 +756,14 @@ def checkout_inscription(request):
     return redirect('intranet:creation_adhesion')
 
 @login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def notifications(request):
     """Minimal function rendering a template"""
     if request.user.is_superuser:
         notifications_list = reversed(Notification.objects.all())
     else:
         notifications_list = reversed(Notification.objects.filter(to_user=request.user))
+    user = request.user
     return render(request, 'intranet/notifications.html', locals())
 
 @login_required
@@ -912,7 +940,7 @@ def invitation(request):
         send_mail(
             'Inscrivez-vous sur l\'intranet d\'Ecole01!',
             msg_plain,
-            'some@sender.com',
+            settings.DEFAULT_FROM_EMAIL,
             [mail],
             html_message=msg_html,
         )
@@ -986,6 +1014,12 @@ def article(request):
             titre = form.cleaned_data["titre"]
             lien = form.cleaned_data["lien"]
             photo = form.cleaned_data["photo"]
+
+            if re.match(r'^https?:\/\/', lien):
+                pass
+            else:
+                lien = 'https://' + lien
+
             Article.objects.create(titre=titre,contenu=contenu,lien=lien,photo=photo)
             messages.success(request,"Votre Article a bien été créé.")
             return redirect('intranet:accueil')
@@ -1010,7 +1044,7 @@ def mail(request):
                 email = f.cleaned_data.get('name')
                 if email:
                     address.append(email)
-            send_mail(object,message,'admin@ecole01.fr',address)
+            send_mail(objet,message,settings.DEFAULT_FROM_EMAIL,address)
             messages.success(request,"Votre email a bien été envoyée.")
             return redirect('intranet:gestion_mail')
 

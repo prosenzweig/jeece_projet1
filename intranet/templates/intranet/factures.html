@@ -2,7 +2,7 @@
 {% load staticfiles %}
 {% load intranet_extras %}
 {% if factures_list %}
-    <div class="table-responsive p-2 pb-5">
+    <div class="table-responsive py-2">
         <!--table-bordered-->
         <table class="table table-hover">
             <thead>
@@ -54,7 +54,7 @@
                         <!--</form>-->
                      </td>
                     {% endif %}
-                <td><a href="{% url 'intranet:gen_pdf' fac_id=facture.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
+                <td><a target="_blank" href="{% url 'intranet:gen_pdf' fac_id=facture.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
                 </tr>
                 {% endfor %}
             </tbody>

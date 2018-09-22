@@ -11,8 +11,8 @@
      {% include 'intranet/messages.html' with messages=messages %}
 
      <h6><b>CONDITIONS GENERALES D’ADHESION</b></h6>
-     <p>Vous trouverez ci-dessous les conditions générale d'utilisation, merci d'en prendre note:</p>
-     <p><a href="{{ condition.file.url }}">condition générales de l'efp</a></p>
+     <p>Vous trouverez ci-dessous les conditions générales d'utilisation, merci d'en prendre note:</p>
+     <p><a href="{{ condition.file.url }}">conditions générales de l'efp</a></p>
      <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

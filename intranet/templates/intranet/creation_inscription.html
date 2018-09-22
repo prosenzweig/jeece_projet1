@@ -16,6 +16,17 @@
          {% if not user.is_staff %}
          <h5>Inscription des élèves</h5>
          <P>Lister les personnes qui suivront les cours à domiciles:</P>
+         {% if eleves %}
+         <p>Les élèves suivant sont déjà enregistrer</p>
+         <ol>
+         {% for eleve in eleves %}
+             <li>{{eleve}}</li>
+         {% endfor %}
+         </ol>
+         {% else %}
+         <p>Vous n'avez pas encore renseigner d'élèves</p>
+         {% endif %}
+
          {{ formset.management_form }}
          {% for form in formset %}
          <div class="row form-row spacer">
@@ -33,7 +44,9 @@
         </div>
          {% endfor %}
          {% endif %}
-        <button type="submit" class="btn btn-primary">Valider</button>
+         <br>
+         <br>
+        <button type="submit" class="btn btn-primary">Valider vos informations personnelles</button>
     </form>
  </div>
 {% endblock content %}

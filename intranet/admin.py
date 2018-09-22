@@ -52,7 +52,7 @@ class NotificationAdmin(admin.ModelAdmin):
     ordering = ('-date', )
 
 class PrixAdmin(admin.ModelAdmin):
-    list_display = ('start', 'end', 'tva', 'adhesion', 'cours', 'commission', 'frais_gestion')
+    list_display = ('start', 'end', 'tva', 'adhesion', 'adhesion_reduc', 'adhesion_prof', 'cours', 'cours_premium', 'cours_ecole', 'commission', 'frais_gestion')
     ordering = ('-start', )
 
 class AttestationnAdmin(admin.ModelAdmin):

@@ -18,7 +18,8 @@
                         <h5 class="card-title">{{notif.object}}</h5>
                         <p class="card-text">{{notif.text}}
                         {% if 'Modifications' in notif.object %}
-                        <a href="{% url 'admin:intranet_userprofile_change' notif.from_user.id %}">cliquer ici</a>
+                        <br>
+                        <a href="{% url 'admin:intranet_userprofile_change' notif.from_user.id %}">Lien du compte modifié</a>
                         {% endif %}
                         </p>
                     </div>
