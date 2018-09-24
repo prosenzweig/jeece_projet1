@@ -625,7 +625,7 @@ def documents(request):
 
             for fac in fac_list:
                 charge = stripe.Charge.create(
-                    amount=fac.price_ttc*100,
+                    amount=(int(fac.price_ttc)*100),
                     currency="eur",
                     source=token,
                     stripe_account=fac.from_user.userprofile.stripe_account_id,
@@ -1194,9 +1194,10 @@ def gestion_factures(request):
             nb_item = form.cleaned_data["nb_item"]
             tva = form.cleaned_data["tva"]
             prix_ht = form.cleaned_data["prix_ht"]
-
-            if from_user.username == 'admin':
-                fac_name = "EFP_%s_%s" % (to_user.last_name, from_user.userprofile.nb_facture)
+            print(from_user)
+            #TODO
+            if from_user == 'admin':
+                fac_name = "EFP_%s_%s" % (to_user, from_user.userprofile.nb_facture)
             else:
                 fac_name = "%s_%s_%s" % ( from_user.last_name, to_user.last_name, from_user.userprofile.nb_facture)
 
