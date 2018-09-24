@@ -636,7 +636,7 @@ def documents(request):
 
             return redirect('intranet:documents')
 
-        except stripe.CardError as e:
+        except:
             messages.warning(request, "Votre carte a été refusé")
 
     if request.user.is_superuser:
