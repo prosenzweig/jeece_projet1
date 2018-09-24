@@ -11,7 +11,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'lat', 'lgn')
+    list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'stripe_account_id', 'lat', 'lgn')
     search_fields = ('user', 'city', 'zip_code', 'iban')
     ordering = ('user',)
 
@@ -46,7 +46,7 @@ class FactureAdmin(admin.ModelAdmin):
     list_display = ('to_user','from_user', 'facture_name', 'nb_facture', 'type', 'object', 'object_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
 
 class InvitationAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'email', 'is_staff', 'valid')
+    list_display = ('uuid', 'email', 'is_staff', 'is_free', 'valid')
 
 class NotificationAdmin(admin.ModelAdmin):
     list_display = ('to_user', 'from_user', 'date', 'object', 'text')

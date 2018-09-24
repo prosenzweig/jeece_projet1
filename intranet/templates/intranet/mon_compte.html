@@ -24,8 +24,6 @@
                 <p style="color: orange;">Penser mettre à jour votre <strong>Stripe Account ID</strong>, indispensable à la facturation !</p>
                 {% endif %}
             {% endif %}
-
-
             <h5>Vos informations personnelles:</h5>
             {% include 'intranet/messages.html' with messages=messages %}
             <p>Pseudo: {{ user }}</p>
@@ -38,6 +36,18 @@
             <p>Pays: {{ user.userprofile.country }} </p>
             {% if user.userprofile.avatar %}
             <img src="{{ user.userprofile.avatar.url }}" width="240">
+            {% endif %}
+            {% if user.is_staff %}
+            <p>SIRET: {{ user.userprofile.siret }}</p>
+            <p>SAP: {{ user.userprofile.sap }}</p>
+            <p>ID Compte Stripe: {{ user.userprofile.stripe_account_id}} </p>
+            {% else %}
+                <p>Elève(s):</p>
+                <ol>
+                {% for e in eleves %}
+                    <li>{{e}}</li>
+                {% endfor %}
+                </ol>
             {% endif %}
             <a class="btn btn-info btn-sm" href="{% url 'intranet:edit_compte' %}" role="button">Modifier mon profile</a>
             <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_pass' %}" role="button">Modifier mon mot de passe</a>

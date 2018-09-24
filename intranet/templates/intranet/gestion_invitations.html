@@ -27,6 +27,7 @@
                         <th>Email</th>
                         <th>Inscrit</th>
                         <th>Professeur</th>
+                        <th>Adh Gratuit</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,6 +41,11 @@
                         <td>Non</td>
                         {% endif %}
                         {% if inv.is_staff %}
+                        <td>Oui</td>
+                        {% else %}
+                        <td>Non</td>
+                        {% endif %}
+                        {% if inv.is_free %}
                         <td>Oui</td>
                         {% else %}
                         <td>Non</td>

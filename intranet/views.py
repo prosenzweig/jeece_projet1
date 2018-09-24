@@ -326,6 +326,7 @@ def creation(request, uuid):
     # print(inv)
     if inv.valid:
         messages.error(request, 'Votre invitation n\'est plus valide!')
+        return redirect('intranet:creation')
     else:
         if request.method == "POST":
             form = RegistrationForm(request.POST)
@@ -334,15 +335,15 @@ def creation(request, uuid):
                 user.is_staff = inv.is_staff
                 user.save()
                 if inv.is_free:
-                    user.userprofile.is_adherent = True
-                    user.userprofile.save()
+                    # user.userprofile.is_adherent = True
+                    # user.userprofile.save()
                     Adhesion.objects.create(to_user=user)
                 inv.valid = True
                 inv.save()
 
                 #Test Create new customer for each new accoutns
                 customers.create(user=user) # Strip stuff
-
+                login(request, user)
                 return redirect('intranet:creation_inscription') # nous le renvoyons vers la page accueil.html
             else:  # sinon une erreur sera affichée
                 messages.warning(request,'Impossible de vous inscrire.')
@@ -398,6 +399,9 @@ def creation_inscription(request):
                 return redirect('intranet:creation_condition')
             else:
                 return redirect('intranet:creation_eleves')
+        else:
+            messages.error(request,"Le formulaire n'est pas valide")
+            return redirect('intranet:creation_inscription')
 
     else:
         user_form = EditUserForm(instance=request.user)
@@ -451,7 +455,13 @@ def creation_condition(request):
     if request.method == "POST":
         form = ConditionForm(request.POST)
         if form.is_valid():
-            return redirect('intranet:creation_adhesion')
+            adh = Adhesion.objects.filter(to_user=request.user)
+            if adh:
+                request.user.userprofile.is_adherent = True
+                request.user.userprofile.save()
+                return redirect('intranet:accueil')
+            else:
+                return redirect('intranet:creation_adhesion')
         else:
             messages.warning(request, 'Vous devez valider les conditions d\'utilisations.')
             return redirect('intranet:creation_condition')
@@ -612,8 +622,9 @@ def validation_eleve(request, id, result):
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def documents(request):
     key = settings.STRIPE_PUBLISHABLE_KEY
-
+    admin = User.objects.get(is_superuser=True)
     if request.method == "POST":
+        print("JE VEUX PAYER!")
         try:
             token = request.POST['stripeToken']
             stripe_customer_id = request.user.customer.stripe_id
@@ -624,20 +635,38 @@ def documents(request):
                 from_user__userprofile__stripe_account_id="StripeAccId")
 
             for fac in fac_list:
-                charge = stripe.Charge.create(
-                    amount=(int(fac.price_ttc)*100),
-                    currency="eur",
-                    source=token,
-                    customer=stripe_customer_id,
-                    destination={'account': fac.from_user.userprofile.stripe_account_id}
-                )
+                print(fac)
+                print(fac.from_user, fac.from_user.userprofile.stripe_account_id)
+                if fac.from_user == admin:
+                    charge = stripe.Charge.create(
+                        amount=(int(fac.price_ttc) * 100),
+                        currency="eur",
+                        source=token
+                    )
+                else:
+                    charge = stripe.Charge.create(
+                        amount=(int(fac.price_ttc)*100),
+                        currency="eur",
+                        source=token,
+                        # customer=stripe_customer_id,
+                        destination={'account': fac.from_user.userprofile.stripe_account_id}
+                    )
                 fac.is_paid=True
                 fac.save()
 
             return redirect('intranet:documents')
 
-        except:
+        except stripe.error.CardError as e:
             messages.warning(request, "Votre carte a été refusé")
+            # Since it's a decline, stripe.error.CardError will be caught
+            body = e.json_body
+            err = body.get('error', {})
+            print("Status is: %s" % e.http_status)
+            print("Type is: %s" % err.get('type'))
+            print("Code is: %s" % err.get('code'))
+            # param is '' in this case
+            print("Param is: %s" % err.get('param'))
+            print("Message is: %s" % err.get('message'))
 
     if request.user.is_superuser:
         factures_all = Facture.objects.all()
@@ -1020,6 +1049,7 @@ def invitation(request):
         if form.is_valid():
             mail = form.cleaned_data["email"]
             is_staff = form.cleaned_data["is_staff"]
+            is_free = form.cleaned_data["is_free"]
         else:
             messages.warning(request, 'Impossible d\'envoyer l\'invitation.')
             return redirect('intranet:gestion_invitations')
@@ -1036,7 +1066,7 @@ def invitation(request):
             [mail],
             html_message=msg_html,
         )
-        inv = Invitation.objects.create(uuid=my_uuid, email=mail, is_staff=is_staff)
+        inv = Invitation.objects.create(uuid=my_uuid, email=mail, is_staff=is_staff, is_free=is_free)
         messages.success(request, 'L\'invitation a bien été envoyée.')
     return redirect('intranet:gestion_invitations')
 
@@ -1045,6 +1075,7 @@ def invitation(request):
 def mon_compte(request):
     user = User.objects.get(id=request.user.id)
     adh = Adhesion.objects.filter(to_user=user)[0]
+    eleves = Eleve.objects.filter(referent=request.user)
     return render(request, 'intranet/mon_compte.html',locals())
 
 
