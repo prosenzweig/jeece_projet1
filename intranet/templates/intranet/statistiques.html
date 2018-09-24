@@ -5,17 +5,14 @@
 {% endblock nav_bar %}
 
 {% block content %}
-<div class="container">
+<div class="container container_extras">
      <h3 class="text-center mt-2"> Mes Statistiques </h3>
      <h5 class="my-2"> Il y a actuellement {{prof}} professeurs, {{eleve}} élèves ainsi que {{compte}} comptes utilisateurs</h5>
      <h5> Différentes données statistiques: </h5>
      <div>
-        <img src="{% url 'intranet:graphs_membres' %}" width="426" height="320" class="img-responsive rounded">
-        <img src="{% url 'intranet:graphs_nb_cours' %}" class="img-responsive rounded">
+         <img src="{% url 'intranet:graphs_membres' %}" class="img-responsive rounded">
+         <img src="{% url 'intranet:graphs_stats' %}" class="img-responsive rounded">
      </div>
-    <div>
-        <img src="{% url 'intranet:graphs_evol' %}" class="img-responsive rounded">
-    </div>
     <div class="main_maps text-center">
         <div class="maps_text" onload="showmap();">
             <h3>Adresses des Membres d'Ecole01</h3>

@@ -137,6 +137,7 @@
                                 </tbody>
                             </table>
                         </div>
+                    {% include 'intranet/paginator.html' with page_obj=lesson_last_page %}
                     {% else %}
                         <h5>Vous n'avez jamais donné de cours</h5>
                     {% endif %}

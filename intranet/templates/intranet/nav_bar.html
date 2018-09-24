@@ -40,7 +40,15 @@
                     </div>
                     <a class="nav-item nav-link" href="{% url 'intranet:documents' %}">Mes documents</a>
                     <a class="nav-item nav-link" href="{% url 'intranet:notifications' %}">Notifications</a>
-                    <a class="nav-item nav-link" href="{% url 'intranet:statistiques' %}">Statistiques</a>
+                    <div class="dropdown">
+                          <a class="nav-item nav-link dropdown-toggle" data-toggle="dropdown">
+                            Statistiques
+                          </a>
+                          <div class="dropdown-menu">
+                               <a class="nav-item nav-link" href="{% url 'intranet:statistiques' %}">Statistiques</a>
+                               <a class="nav-item nav-link" href="{% url 'intranet:statistiques2' %}">Graphiques</a>
+                          </div>
+                    </div>
                     <a class="fa fa-sign-out nav-item nav-link fa-lg mt-1" href="{% url 'intranet:deconnexion' %}" aria-hidden="true"></a>
                 </div>
             </div>

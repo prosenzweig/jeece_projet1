@@ -9,7 +9,7 @@ jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
 
 ### CRONTAB ###
-# 50 23 28-31 * * [ $(date -d +1day +%d) -eq 1 ] && cd /home/ecole01/intranet && python manage.py auto_val_prof > /home/ecole01/logs/cron.log
+# 50 23 28-31 * * [ $(date -d +1day +%d) -eq 1 ] && cd /home/ecole01/intranet && /home/ecole01/venv/bin/python manage.py auto_val_prof > /home/ecole01/logs/cron.log
 
 def conv_mois(value):
     try:
@@ -36,9 +36,9 @@ def auto_val_prof():
                   msg_plain, 'admin@ecole01.fr', [relation.student.email])
 
 def stats():
-    prof = User.objects.filter(is_staff=True).count()
-    eleve = Eleve.objects.all().count()
-    user = User.objects.filter(is_staff=False).count()
+    prof = User.objects.filter(is_staff=True, is_active=True).count()
+    eleve = Eleve.objects.filter(is_active=True).count()
+    user = User.objects.filter(is_staff=False, is_active=True).count()
     Stats.objects.create(nb_prof=prof,nb_user=user,nb_eleve=eleve)
 
 

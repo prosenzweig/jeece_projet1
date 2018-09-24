@@ -1,0 +1,20 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Home{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+<div class="container container_extras">
+     <h3 class="text-center mt-2"> Mes Statistiques 2 </h3>
+     <h5> Différentes données statistiques: </h5>
+    <div>
+        <img src="{% url 'intranet:graphs_evol' %}" class="img-responsive rounded">
+        <img src="{% url 'intranet:graphs_nb_cours' %}" class="img-responsive rounded">
+    </div>
+ </div>
+{% endblock content %}
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

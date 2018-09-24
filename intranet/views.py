@@ -101,6 +101,7 @@ def add_tva(value,arg):
         return None
 
 # Frais de Gestion PDF
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def gen_pdf(request,fac_id):
     # Create the HttpResponse object with the appropriate PDF headers.
     facture = get_object_or_404(Facture,pk=fac_id)
@@ -214,6 +215,7 @@ def gen_pdf(request,fac_id):
     response.write(pdf)
     return response
 
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def gen_attest_pdf(request,fac_id):
     # fac_id
     # Create the HttpResponse object with the appropriate PDF headers.
@@ -291,13 +293,14 @@ def gen_attest_pdf(request,fac_id):
     response.write(pdf)
     return response
 
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def deconnexion(request):
     logout(request)
     return redirect(reverse('intranet:connexion'))
 
 def connexion(request):
     error = False
-    print (request.user)
+    # print (request.user)
     if request.user.is_authenticated:
         return redirect('intranet:accueil')
 
@@ -320,7 +323,7 @@ def connexion(request):
 # Registered
 def creation(request, uuid):
     inv = get_object_or_404(Invitation, uuid=uuid)
-    print(inv)
+    # print(inv)
     if inv.valid:
         messages.error(request, 'Votre invitation n\'est plus valide!')
     else:
@@ -360,81 +363,73 @@ def accueil(request):
 
 def creation_inscription(request):
     if request.method == 'POST':
+        # print("POST")
         form_user = EditUserForm(request.POST, instance=request.user)
         form_profile = EditStaffProfileForm(request.POST, instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(request.POST, instance=request.user.userprofile)
-        formset = EleveFormset(request.POST)
-        if request.user.is_staff:
-            if form_profile.is_valid() and form_user.is_valid():
-                form_user.save()
-                form_profile.save()
-                messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
-                address = form_profile.cleaned_data["address"]
-                city = form_profile.cleaned_data["city"]
-                zip_code = form_profile.cleaned_data["zip_code"]
-                country = form_profile.cleaned_data["country"]
-                # print(address, city, zip_code, country)
-                location = "%s %s %s %s" % (address, city, zip_code, country)
-                r = requests.get('http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
-                us = User.objects.get(pk=request.user.pk)
-                if r.status_code == requests.codes.ok:
-                    data = json.loads(r.text)
-                    # print(json.dumps(data,indent=4))
-                    try:
-                        # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
-                        us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
-                        us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
-                        us.userprofile.save()
-                    except:
-                        pass
+        if form_profile.is_valid() and form_user.is_valid():
+            form_user.save()
+            form_profile.save()
+            messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
+            address = form_profile.cleaned_data["address"]
+            city = form_profile.cleaned_data["city"]
+            zip_code = form_profile.cleaned_data["zip_code"]
+            country = form_profile.cleaned_data["country"]
+            # print(address, city, zip_code, country)
+            location = "%s %s %s %s" % (address, city, zip_code, country)
+            r = requests.get('http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
+            us = User.objects.get(pk=request.user.pk)
+            if r.status_code == requests.codes.ok:
+                data = json.loads(r.text)
+                # print(json.dumps(data,indent=4))
+                try:
+                    # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
+                    us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
+                    us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
+                    us.userprofile.save()
+                except:
+                    pass
 
-                admin = User.objects.get(is_superuser=True)
-                Notification.objects.create(to_user=admin, from_user=request.user,
-                                            object="Creation du compte %s %s (%s)" % (
-                                            request.user.first_name, request.user.last_name, request.user.username),
-                                            text="Je viens de créer mon compte professeur!")
+            admin = User.objects.get(is_superuser=True)
+            Notification.objects.create(to_user=admin, from_user=request.user,
+                                        object="Creation du compte %s %s (%s)" % (
+                                        request.user.first_name, request.user.last_name, request.user.username),
+                                        text="Je viens de créer mon compte professeur!")
+            if request.user.is_staff:
                 return redirect('intranet:creation_condition')
-        else:
-            if form_profile.is_valid() and form_user.is_valid() and formset.is_valid():
-                form_user.save()
-                form_profile.save()
-                messages.success(request, 'Vos informations personnelles ont bien été enregistrées.')
-                address = form_profile.cleaned_data["address"]
-                city = form_profile.cleaned_data["city"]
-                zip_code = form_profile.cleaned_data["zip_code"]
-                country = form_profile.cleaned_data["country"]
-                # print(address, city, zip_code, country)
-                location = "%s %s %s %s" % (address, city, zip_code, country)
-                r = requests.get(
-                    'http://www.mapquestapi.com/geocoding/v1/address?key=7MspWFOeqU2eH72DNDg8LM6sTXKcaQmz&location=%s' % location)
-                us = User.objects.get(pk=request.user.pk)
-                if r.status_code == requests.codes.ok:
-                    data = json.loads(r.text)
-                    # print(json.dumps(data,indent=4))
-                    try:
-                        # print(data["results"][0]['locations'][0]['latLng']['lat'], data["results"][0]['locations'][0]['latLng']['lng'])
-                        us.userprofile.lat = data["results"][0]['locations'][0]['latLng']['lat']
-                        us.userprofile.lgn = data["results"][0]['locations'][0]['latLng']['lng']
-                        us.userprofile.save()
-                    except:
-                        pass
-                for f in formset:
-                    name = f.cleaned_data.get('name')
-                    if name:
-                        Eleve.objects.create(referent=request.user,nom_prenom=name)
+            else:
+                return redirect('intranet:creation_eleves')
 
-                admin = User.objects.get(is_superuser=True)
-                Notification.objects.create(to_user=admin, from_user=request.user,
-                                            object="Creation du compte %s %s (%s)" % (
-                                                request.user.first_name, request.user.last_name, request.user.username),
-                                            text="Je viens de créer mon compte!")
-                return redirect('intranet:creation_condition')
     else:
         user_form = EditUserForm(instance=request.user)
         profile_form = EditStaffProfileForm(instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(instance=request.user.userprofile)
-        eleves = Eleve.objects.filter(referent=request.user)
-        formset = EleveFormset()
 
     return render(request, 'intranet/creation_inscription.html', locals())
+
+def creation_eleves(request):
+    if request.method == 'POST':
+        formset = EleveFormset(request.POST)
+        if formset.is_valid():
+            for f in formset:
+                name = f.cleaned_data.get('name')
+                if name:
+                    Eleve.objects.create(referent=request.user, nom_prenom=name)
+
+            eleves_register = Eleve.objects.filter(referent=request.user)
+
+            if not eleves_register:
+                messages.warning(request,"Vous devez renseigner au moins un élève qui suivra les cours de paino.")
+                return redirect('intranet:creation_eleves')
+
+            admin = User.objects.get(is_superuser=True)
+            Notification.objects.create(to_user=admin, from_user=request.user,
+                                        object="Creation du compte %s %s (%s)" % (
+                                            request.user.first_name, request.user.last_name, request.user.username),
+                                        text="Je viens de créer mon compte!")
+            return redirect('intranet:creation_condition')
+    else:
+        eleves = Eleve.objects.filter(referent=request.user)
+        formset = EleveFormset()
+    return render(request, 'intranet/creation_eleves.html', locals())
 
 def creation_adhesion(request):
     prix = Prix.objects.get(end=None)
@@ -466,6 +461,7 @@ def creation_condition(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def cours_prof(request):
     """Minimal function rendering a template"""
     def last_day_of_month(any_day):
@@ -476,13 +472,21 @@ def cours_prof(request):
     m_y = "%s_%s" % (datetime.now().month, datetime.now().year)
 
     lesson_by_month = [{x.student: Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')} for i, x in enumerate(Relation.objects.filter(teacher=request.user)) if Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')]
-    # lesson_by_month = Lesson.objects.filter(relation__teacher=request.user,mois=m_y).order_by('relation')
 
     # for dict in lesson_by_month:
     #     for k,v in dict.items():
     #         print(k, v)
 
     lesson_last = Lesson.objects.filter(relation__teacher=request.user).exclude(mois=m_y).order_by('-date')
+
+    page = request.GET.get('page', 1)
+    paginator = Paginator(lesson_last, 10, 3)
+    try:
+        lesson_last_page = paginator.page(page)
+    except PageNotAnInteger:
+        lesson_last_page = paginator.page(1)
+    except EmptyPage:
+        lesson_last_page = paginator.page(paginator.num_pages)
 
     month = '%s %s' % (MOIS[datetime.now().month-1], datetime.now().year)
     delta = last_day_of_month(datetime.now())
@@ -499,7 +503,7 @@ def cours_prof(request):
             date = form.cleaned_data["date"]
 
             mois = from_date_to_m_y(str(date))
-            print(str(date).split('-')[1])
+            # print(str(date).split('-')[1])
             if str(date).split('-')[1] != str(datetime.now().month) and str(date).split('-')[1] != '0' + str(datetime.now().month):
                 messages.warning(request,'Vous devez saisir les cours du mois de %s' % month)
                 return redirect('intranet:cours_prof')
@@ -518,6 +522,7 @@ def cours_prof(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def validation_prof(request, id):
     lesson = Lesson.objects.filter(pk=id)
     if not lesson:
@@ -539,6 +544,7 @@ def validation_prof(request, id):
 
 @login_required
 @user_passes_test(lambda u: u.is_staff)
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def suppression_prof(request,id):
     lesson = Lesson.objects.filter(pk=id)
     if not lesson:
@@ -555,6 +561,8 @@ def suppression_prof(request,id):
     return redirect('intranet:cours_prof')
 
 @login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def cours_eleve(request):
     lessons_list = reversed(Lesson.objects.filter(relation__student=request.user, is_valid_t=True))
     return render(request, 'intranet/cours_eleve.html', locals())
@@ -601,6 +609,7 @@ def validation_eleve(request, id, result):
 
 
 @login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def documents(request):
     key = settings.STRIPE_PUBLISHABLE_KEY
 
@@ -608,8 +617,8 @@ def documents(request):
         try:
             token = request.POST['stripeToken']
             stripe_customer_id = request.user.customer.stripe_id
-            print(request.user, stripe_customer_id)
-            print("Token",token)
+            # print(request.user, stripe_customer_id)
+            # print("Token",token)
 
             fac_list = Facture.objects.filter(to_user=request.user, is_paid=False).exclude(
                 from_user__userprofile__stripe_account_id="StripeAccId")
@@ -649,7 +658,8 @@ def documents(request):
         factures_list_paid = Facture.objects.filter(to_user=request.user,is_paid=True)
         factures_list_not_paid = Facture.objects.filter(to_user=request.user,is_paid=False)
         price = Facture.objects.filter(to_user=request.user,is_paid=False).exclude(from_user__userprofile__stripe_account_id="StripeAccId").aggregate(Sum('price_ttc'))['price_ttc__sum']
-        price = round(price,2)
+        if price:
+            price = round(price,2)
 
         page = request.GET.get('page', 1)
         paginator = Paginator(factures_list_paid, 10, 3)
@@ -708,7 +718,7 @@ def checkout_inscription(request):
                     from_user_sap =admin.userprofile.sap )
             else:
                 nb = 1 if price == add_tva(prix.adhesion,prix.tva) else price/add_tva(prix.adhesion_reduc,prix.tva)
-                print("nb eleves:",nb)
+                # print("nb eleves:",nb)
                 if nb == 1:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
@@ -757,12 +767,30 @@ def checkout_inscription(request):
 
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def notifications(request):
     """Minimal function rendering a template"""
     if request.user.is_superuser:
-        notifications_list = reversed(Notification.objects.all())
+        notifications_list = list(reversed(Notification.objects.all()))
+        page = request.GET.get('page', 1)
+        paginator = Paginator(notifications_list, 10, 3)
+        try:
+            notifications_list_page = paginator.page(page)
+        except PageNotAnInteger:
+            notifications_list_page = paginator.page(1)
+        except EmptyPage:
+            notifications_list_page = paginator.page(paginator.num_pages)
     else:
-        notifications_list = reversed(Notification.objects.filter(to_user=request.user))
+        notifications_list = list(reversed(Notification.objects.filter(to_user=request.user)))
+        page = request.GET.get('page', 1)
+        paginator = Paginator(notifications_list, 10, 3)
+        try:
+            notifications_list_page = paginator.page(page)
+        except PageNotAnInteger:
+            notifications_list_page = paginator.page(1)
+        except EmptyPage:
+            notifications_list_page = paginator.page(paginator.num_pages)
+
     user = request.user
     return render(request, 'intranet/notifications.html', locals())
 
@@ -771,12 +799,17 @@ def notifications(request):
 def statistiques(request):
     """Minimal function rendering a template"""
     geo_list = UserProfile.objects.exclude(lat="0.0").exclude(lat="None")
-    print(geo_list)
-    prof = User.objects.filter(is_staff=True).count()
-    eleve = Eleve.objects.all().count()
-    compte = User.objects.exclude(is_staff=True).count()
+    # print(geo_list)
+    prof = User.objects.filter(is_staff=True, is_active=True).count()
+    eleve = Eleve.objects.filter(is_active=True).count()
+    compte = User.objects.exclude(is_staff=True, is_active=True).count()
 
     return render(request, 'intranet/statistiques.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def statistiques2(request):
+    return render(request, 'intranet/statistiques2.html', locals())
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
@@ -801,10 +834,42 @@ def graphs_membres(request):
 
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
+def graphs_stats(request):
+    f = mtf.Figure()
+
+    labels = ['Moteur de rechercheGoogle', 'Facebook', 'Autre source internet',  'Annuaire(pages jaunes...)',
+             'Nebout & Hamm', 'Falado', 'Connaissance(famille, amis...)']
+
+    a = UserProfile.objects.filter(stats='A').count()
+    b = UserProfile.objects.filter(stats='B').count()
+    c = UserProfile.objects.filter(stats='C').count()
+    d = UserProfile.objects.filter(stats='D').count()
+    e = UserProfile.objects.filter(stats='E').count()
+    f = UserProfile.objects.filter(stats='F').count()
+    g = UserProfile.objects.filter(stats='G').count()
+    sizes = [a,b,c,d,e,f,g]
+    explode = (0, 0, 0, 0, 0, 0, 0)
+    # print(sizes)
+    fig2, ax2 = plt.subplots()
+    ax2.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+            shadow=True, startangle=90)
+    ax2.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    # canvas = FigureCanvasAgg(f)
+    # ax2.legend([a,b,c,d,e,f,g], labels)
+    # ax2.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    # ax2.legend(loc='best')
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close(f)
+    response = HttpResponse(buf.getvalue(), content_type='image/png')
+    return response
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def graphs_nb_cours(request):
     f = mtf.Figure()
     fig, ax = plt.subplots()
-    list_prof = User.objects.filter(is_staff=True)
+    list_prof = User.objects.filter(is_staff=True, is_active=True)
     label_prof = [u.username for u in list_prof]
     times = last_3_mois()
     # print(times)
@@ -975,13 +1040,15 @@ def invitation(request):
     return redirect('intranet:gestion_invitations')
 
 @login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def mon_compte(request):
     user = User.objects.get(id=request.user.id)
-    adh = Adhesion.objects.get(to_user=user)
+    adh = Adhesion.objects.filter(to_user=user)[0]
     return render(request, 'intranet/mon_compte.html',locals())
 
 
 @login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
 def edit_compte(request):
     if request.method == 'POST':
         form_user = EditUserForm(request.POST, instance=request.user)
@@ -1040,11 +1107,12 @@ def article(request):
             titre = form.cleaned_data["titre"]
             lien = form.cleaned_data["lien"]
             photo = form.cleaned_data["photo"]
-
-            if re.match(r'^https?:\/\/', lien):
-                pass
-            else:
-                lien = 'https://' + lien
+            print(lien)
+            if lien:
+                if re.match(r'^https?:\/\/', lien):
+                    pass
+                else:
+                    lien = 'https://' + lien
 
             Article.objects.create(titre=titre,contenu=contenu,lien=lien,photo=photo)
             messages.success(request,"Votre Article a bien été créé.")
@@ -1059,17 +1127,27 @@ def mail(request):
     if request.method == 'POST':
         form = MailForm(request.POST)
         formset = ToMailFormset(request.POST)
-        print(request.POST)
-        print(formset)
+        # print(request.POST)
+        # print(formset)
         if form.is_valid() and formset.is_valid():
             objet = form.cleaned_data["objet"]
             message = form.cleaned_data["message"]
+            tlp = form.cleaned_data["tlp"]
+            tle = form.cleaned_data["tle"]
+            # print(tle,tlp)
             address = []
+            if tle:
+                address += [ x.email for x in User.objects.filter(is_staff=False, is_active=True)]
+            if tlp:
+                address += [ x.email for x in User.objects.filter(is_staff=True, is_active=True)]
+
             for f in formset:
                 # extract name from each form and save
                 email = f.cleaned_data.get('name')
                 if email:
                     address.append(email)
+
+            print(address)
             send_mail(objet,message,settings.DEFAULT_FROM_EMAIL,address)
             messages.success(request,"Votre email a bien été envoyée.")
             return redirect('intranet:gestion_mail')
@@ -1080,7 +1158,7 @@ def mail(request):
 def gestion_condition(request):
     if request.method == 'POST':
         form = CondiForm(request.POST, request.FILES)
-        print(form)
+        # print(form)
         if form.is_valid():
             if Condition.objects.all().count() > 0:
                 last = Condition.objects.get(end=False)

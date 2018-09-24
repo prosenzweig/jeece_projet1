@@ -23,8 +23,8 @@ class ConditionForm(forms.Form):
     condition = forms.BooleanField(label='J\'ai lu & J\'accepte les conditions d\'utilisation')
 
 class RelationForm(forms.Form):
-    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False), required=True, help_text=" (pseudo de l'éleve)", to_field_name="username")
-    professeur = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True), required=True, help_text=" (pseudo du professeur)", to_field_name="username")
+    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True), required=True, help_text=" (pseudo de l'éleve)", to_field_name="username")
+    professeur = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True, is_active=True), required=True, help_text=" (pseudo du professeur)", to_field_name="username")
 
 class FactureIdForm(forms.Form):
     fac_id =forms.IntegerField(min_value=1,max_value=999999)
@@ -171,6 +171,10 @@ class ArticleForm(forms.Form):
 class MailForm(forms.Form):
     objet = forms.CharField(required=True)
     message = forms.CharField(widget=forms.Textarea,required=True)
+    tlp = forms.BooleanField(required=False, label='Tous les professeurs:', help_text="(Cocher la case si le mail est destinée à tous les professeur)")
+    tle = forms.BooleanField(required=False, label='Tous les élèves:', help_text="(Cocher la case si le mail est destinée à tous les élèves)")
+
+
 
 class CondiForm(forms.ModelForm):
     class Meta:
@@ -199,7 +203,7 @@ class EleveForm(forms.Form):
         })
     )
 
-EleveFormset = formset_factory(EleveForm, extra=1, max_num=10)
+EleveFormset = formset_factory(EleveForm, extra=1, max_num=10,min_num=0)
 
 class LessonFrom(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -230,7 +234,7 @@ class FactureForm(forms.Form):
 
      from_user = forms.ChoiceField(
             widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
-            choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True))],
+            choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True, is_active=True))],
             required=True, label="Emmeteur")
      to_user = forms.ChoiceField(
         widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),

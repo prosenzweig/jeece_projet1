@@ -12,7 +12,7 @@
 
      <h6><b>CONDITIONS GENERALES D’ADHESION</b></h6>
      <p>Vous trouverez ci-dessous les conditions générales d'utilisation, merci d'en prendre note:</p>
-     <p><a href="{{ condition.file.url }}">conditions générales de l'efp</a></p>
+     <p><a target="_blank" href="{{ condition.file.url }}" >conditions générales de l'efp</a></p>
      <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

@@ -9,7 +9,7 @@ jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
 
 ### CRONTAB ###
-# 50 23 5 * * cd /home/ecole01/intranet && python manage.py auto_val_eleve > /home/ecole01/logs/cron.log
+# 50 23 5 * * cd /home/ecole01/intranet && /home/ecole01/venv/bin/python manage.py auto_val_eleve > /home/ecole01/logs/cron.log
 
 
 def give_past_month():
@@ -125,7 +125,7 @@ def auto_val_eleve():
 
 def factures_commissions():
     last_m_y = give_past_month()
-    prof_all = User.objects.filter(is_staff=True,is_superuser=False)
+    prof_all = User.objects.filter(is_active=True,is_staff=True,is_superuser=False)
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
 
