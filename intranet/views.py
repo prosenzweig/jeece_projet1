@@ -1188,14 +1188,16 @@ def gestion_factures(request):
         form = FactureForm(request.POST)
         print(form)
         if form.is_valid():
-            from_user = form.cleaned_data["from_user"]
-            to_user = form.cleaned_data["to_user"]
+            f_user = form.cleaned_data["from_user"]
+            t_user = form.cleaned_data["to_user"]
             object = form.cleaned_data["object"]
             nb_item = form.cleaned_data["nb_item"]
             tva = form.cleaned_data["tva"]
             prix_ht = form.cleaned_data["prix_ht"]
-            print(from_user)
+
             #TODO
+            to_user = User.objects.get(username=t_user)
+            from_user = User.objects.get(username=f_user)
             if from_user == 'admin':
                 fac_name = "EFP_%s_%s" % (to_user, from_user.userprofile.nb_facture)
             else:
@@ -1213,7 +1215,7 @@ def gestion_factures(request):
 
             fac = Facture.objects.create(
                 to_user=to_user, from_user=from_user, object=obj, is_paid=False,
-                object_qt=1, tva=tva, price_ht=1 * prix.adhesion_prof, price_ttc=add_tva(prix_ht,tva), type=obj,
+                object_qt=1, tva=tva, price_ht=1 * prix_ht, price_ttc=add_tva(prix_ht,tva), type=obj,
                 facture_name=fac_name, nb_facture=from_user.userprofile.nb_facture,
                 to_user_firstname=to_user.first_name, to_user_lastname=to_user.last_name,
                 to_user_address=to_user.userprofile.address,
