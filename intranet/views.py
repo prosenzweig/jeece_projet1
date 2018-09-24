@@ -628,7 +628,8 @@ def documents(request):
                     amount=(int(fac.price_ttc)*100),
                     currency="eur",
                     source=token,
-                    stripe_account=fac.from_user.userprofile.stripe_account_id,
+                    customer=stripe_customer_id,
+                    destination={'account': fac.from_user.userprofile.stripe_account_id}
                 )
                 fac.is_paid=True
                 fac.save()
