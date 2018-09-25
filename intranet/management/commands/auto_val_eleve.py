@@ -37,13 +37,18 @@ def add_tva(value,arg):
 
 def auto_val_eleve():
     last_m_y = give_past_month()
+    #TODO erase
+    m, y = datetime.now().month, datetime.now().year
+    last_m_y = '0%s_s' % (m,y)
     relation_all = Relation.objects.all()
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
 
     for relation in relation_all:
         # MAJ des validation Eleve
+        # print(relation)
         cours_du_mois_unvalid = Lesson.objects.filter(relation=relation,mois=last_m_y,is_valid_t=True,is_valid_s=False).exclude(is_unvalid=True)
+        # print("Cours non validé", cours_du_mois_unvalid)
         for cour in cours_du_mois_unvalid:
             print('id:', cour.id)
             cour.is_valid_s = True
@@ -161,5 +166,5 @@ def factures_commissions():
 
 class Command(BaseCommand):
     def handle(self, **options):
-        # auto_val_eleve()
+        auto_val_eleve()
         factures_commissions()

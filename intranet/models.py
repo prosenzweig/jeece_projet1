@@ -112,16 +112,16 @@ class Lesson(models.Model):
         verbose_name_plural = "Leçons"
     def __str__(self):
         if self.is_unvalid:
-            return "%s, Date: %s, Durée: %sh%smin, Statut: Rejeté par l\'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: Rejeté" % (
                 self.relation,self.date,self.nb_h,self.nb_m)
         elif self.is_valid_s:
-            return "%s, Date: %s, Durée: %sh%smin, Statut: Validé par l\'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: Validé" % (
             self.relation, self.date, self.nb_h, self.nb_m)
         elif self.is_valid_t:
-            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation par l\'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation" % (
             self.relation, self.date, self.nb_h, self.nb_m)
         else:
-            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation par le professeur" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation" % (
             self.relation, self.date, self.nb_h, self.nb_m)
 
 class Attestation(models.Model):
