@@ -109,7 +109,7 @@ def auto_val_eleve():
                 # Frais de Gestion (de l'admin vers les élèves)
                 Facture.objects.create(
                     to_user=student, from_user=admin, object="Frais de gestion - 60 min", is_paid=False,
-                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=nbr_tt*prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
