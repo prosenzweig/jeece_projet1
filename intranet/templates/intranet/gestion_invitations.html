@@ -31,7 +31,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for inv in invitations_list %}
+                        {% for inv in invit_page %}
                         <tr>
                         <td>{{ inv.uuid }}</td>
                         <td>{{ inv.email }}</td>
@@ -55,6 +55,7 @@
                     </tbody>
                 </table>
             </div>
+        {% include 'intranet/paginator.html' with page_obj=invit_page %}
         {% else %}
         <p>Vous n'avez pas envoyé d'invitation</p>
         {% endif %}

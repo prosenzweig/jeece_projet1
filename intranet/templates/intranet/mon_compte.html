@@ -21,7 +21,9 @@
                 <p style="color: orange;">Penser à actualiser votre numéro <strong>SIRET</strong>, indispensable à la facturation !</p>
                 {% endif %}
                 {% if user.userprofile.stripe_account_id == "StripeAccId" %}
-                <p style="color: orange;">Penser mettre à jour votre <strong>Stripe Account ID</strong>, indispensable à la facturation !</p>
+                <p style="color: orange;">Penser à lier votre <strong>compte Stripe</strong>, indispensable à la facturation !</p>
+                <!--<a href="https://dashboard.stripe.com/oauth/authorize?response_type=code&client_id=ca_DfZvYjYWFkumbdMUG2ECSICH1sWDZb0B&scope=read_write" class="stripe-connect"><span>Connect with Stripe</span></a>-->
+                <a href="https://dashboard.stripe.com/oauth/authorize?response_type=code&client_id=ca_DfZv1K82vK9eUSchoB72BpFqej6WIAw0&scope=read_write" class="stripe-connect mb-4"><span>Connect with Stripe</span></a>
                 {% endif %}
             {% endif %}
             <h5>Vos informations personnelles:</h5>
@@ -40,7 +42,7 @@
             {% if user.is_staff %}
             <p>SIRET: {{ user.userprofile.siret }}</p>
             <p>SAP: {{ user.userprofile.sap }}</p>
-            <p>ID Compte Stripe: {{ user.userprofile.stripe_account_id}} </p>
+            <!--<p>ID Compte Stripe: {{ user.userprofile.stripe_account_id}} </p>-->
             {% else %}
                 <p>Elève(s):</p>
                 <ol>

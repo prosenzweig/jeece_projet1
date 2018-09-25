@@ -621,7 +621,8 @@ def validation_eleve(request, id, result):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def documents(request):
-    key = settings.STRIPE_PUBLISHABLE_KEY
+    # TO DO PROF
+    # key = settings.STRIPE_PUBLISHABLE_KEY
     admin = User.objects.get(is_superuser=True)
     if request.method == "POST":
         print("JE VEUX PAYER!")
@@ -638,21 +639,46 @@ def documents(request):
                 print(fac)
                 print(fac.from_user, fac.from_user.userprofile.stripe_account_id)
                 if fac.from_user == admin:
-                    charge = stripe.Charge.create(
-                        amount=(int(fac.price_ttc) * 100),
-                        currency="eur",
-                        source=token
-                    )
+                    try:
+                        charge = stripe.Charge.create(
+                            amount=(int(fac.price_ttc) * 100),
+                            currency="eur",
+                            source=token
+                        )
+                        fac.is_paid = True
+                        fac.save()
+                        messages.success(request, "La facture a bien été payée.")
+                    except stripe.error.CardError as e:
+                        messages.warning(request, "Votre carte a été refusé")
+                        body = e.json_body
+                        err = body.get('error', {})
+                        print("Status is: %s" % e.http_status)
+                        print("Type is: %s" % err.get('type'))
+                        print("Code is: %s" % err.get('code'))
+                        print("Param is: %s" % err.get('param'))
+                        print("Message is: %s" % err.get('message'))
+
                 else:
-                    charge = stripe.Charge.create(
-                        amount=(int(fac.price_ttc)*100),
-                        currency="eur",
-                        source=token,
-                        # customer=stripe_customer_id,
-                        destination={'account': fac.from_user.userprofile.stripe_account_id}
-                    )
-                fac.is_paid=True
-                fac.save()
+                    try:
+                        charge = stripe.Charge.create(
+                            amount=(int(fac.price_ttc)*100),
+                            currency="eur",
+                            source=token,
+                            # customer=stripe_customer_id,
+                            destination={'account': fac.from_user.userprofile.stripe_account_id}
+                        )
+                        fac.is_paid = True
+                        fac.save()
+                        messages.success(request, "La facture a bien été payée.")
+                    except stripe.error.CardError as e:
+                        messages.warning(request, "Votre carte a été refusé")
+                        body = e.json_body
+                        err = body.get('error', {})
+                        print("Status is: %s" % e.http_status)
+                        print("Type is: %s" % err.get('type'))
+                        print("Code is: %s" % err.get('code'))
+                        print("Param is: %s" % err.get('param'))
+                        print("Message is: %s" % err.get('message'))
 
             return redirect('intranet:documents')
 
@@ -669,19 +695,17 @@ def documents(request):
             print("Message is: %s" % err.get('message'))
 
     if request.user.is_superuser:
-        factures_all = Facture.objects.all()
+        factures_all = Facture.objects.all().order_by('-created')
         attestation_list = Attestation.objects.all()
         filter = FactureFilter(request.GET, queryset=factures_all)
-        # filter_qs = filter.qs
-        #
-        # page = request.GET.get('page', 1)
-        # paginator = Paginator(filter_qs, 2)
-        # try:
-        #     filter_page = paginator.page(page)
-        # except PageNotAnInteger:
-        #     filter_page = paginator.page(1)
-        # except EmptyPage:
-        #     filter_page = paginator.page(paginator.num_pages)
+        page = request.GET.get('page', 1)
+        paginator = Paginator(filter.qs, 5)
+        try:
+            filter_page = paginator.page(page)
+        except PageNotAnInteger:
+            filter_page = paginator.page(1)
+        except EmptyPage:
+            filter_page = paginator.page(paginator.num_pages)
 
     else:
         attestation_list =Attestation.objects.filter(to_user=request.user)
@@ -981,6 +1005,14 @@ def gestion_relations(request):
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_invitations(request):
     invitations_list = Invitation.objects.all()
+    page = request.GET.get('page', 1)
+    paginator = Paginator(invitations_list, 10)
+    try:
+        invit_page = paginator.page(page)
+    except PageNotAnInteger:
+        invit_page = paginator.page(1)
+    except EmptyPage:
+        invit_page = paginator.page(paginator.num_pages)
     form = InvitationForm()
     return render(request, 'intranet/gestion_invitations.html', locals())
 
@@ -1008,7 +1040,7 @@ def relation(request):
             student = form.cleaned_data["eleve"]
             teacher = form.cleaned_data["professeur"]
             Relation.objects.get_or_create(student=student,teacher=teacher)
-            messages.success(request,'La relation a bien été crée.')
+            messages.success(request,'La relation a bien été créée.')
             return redirect('intranet:gestion_relations')
         else:
             messages.warning(request, 'Impossible de créer la relation.')
@@ -1056,7 +1088,7 @@ def invitation(request):
 
         current_site = get_current_site(request)
         my_uuid = str(uuid.uuid4())
-        context = { 'protocol': 'http', 'domain': current_site.domain, 'site_name': current_site.name, 'uuid': my_uuid}
+        context = { 'protocol': 'https', 'domain': current_site.domain, 'site_name': current_site.name, 'uuid': my_uuid}
         msg_plain = render_to_string('email/email_invitation.txt', context=context)
         msg_html = render_to_string('email/email_invitation.html', context=context)
         send_mail(
@@ -1078,6 +1110,26 @@ def mon_compte(request):
     eleves = Eleve.objects.filter(referent=request.user)
     return render(request, 'intranet/mon_compte.html',locals())
 
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+@user_passes_test(lambda u: u.is_staff)
+def stripe_connect(request):
+    code = request.GET.get('code', '')
+    print(code)
+    if code == '':
+        messages.error(request,"Impossible de lier votre compte stripe.")
+    else:
+        #TODO 4 Prod
+        r = requests.post("https://connect.stripe.com/oauth/token", data={'client_secret': settings.STRIPE_SECRET_KEY, 'code': code, 'grant_type': 'authorization_code'})
+        # r = requests.post("https://connect.stripe.com/oauth/token", data={'client_secret': settings.STRIPE_SECRET_KEY_JEECE, 'code': code, 'grant_type': 'authorization_code'})
+        # print(r.text)
+        res = json.loads(r.text)
+        secret = res['stripe_user_id']
+        print(secret)
+        request.user.userprofile.stripe_account_id = secret
+        request.user.userprofile.save()
+        messages.success(request, "Votre compte Stripe à bien été liéé.")
+    return redirect('intranet:mon_compte')
 
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
@@ -1111,7 +1163,7 @@ def edit_compte(request):
             admin = User.objects.get(is_superuser=True)
             Notification.objects.create(to_user=admin, from_user=request.user,
                                         object="Modifications des informations %s %s (%s)" % (request.user.first_name, request.user.last_name, request.user),
-                                        text="Je viens de modifier mes informations, pour voire mon nouveau profile:")
+                                        text="Je viens de modifier mes informations, pour voir mon nouveau profil:")
             return redirect('intranet:mon_compte')
     else:
         user_form = EditUserForm(instance=request.user)
@@ -1247,7 +1299,7 @@ def gestion_factures(request):
 
             fac = Facture.objects.create(
                 to_user=to_user, from_user=from_user, object=obj, is_paid=False,
-                object_qt=1, tva=tva, price_ht=1 * prix_ht, price_ttc=add_tva(prix_ht,tva), type=obj,
+                object_qt=nb_item, tva=tva, price_ht=nb_item * prix_ht, price_ttc=add_tva(nb_item*prix_ht,tva), type=obj,
                 facture_name=fac_name, nb_facture=from_user.userprofile.nb_facture,
                 to_user_firstname=to_user.first_name, to_user_lastname=to_user.last_name,
                 to_user_address=to_user.userprofile.address,

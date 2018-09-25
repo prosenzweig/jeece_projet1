@@ -119,7 +119,6 @@ class EditStaffProfileForm(forms.ModelForm):
             'country',
             'siret',
             'sap',
-            'stripe_account_id',
             'stats'
         )
         labels = {
@@ -130,7 +129,6 @@ class EditStaffProfileForm(forms.ModelForm):
             'country': 'Pays',
             'siret': 'SIRET',
             'sap': 'SAP',
-            'stripe_account_id:': 'Id du Compte Stripe',
             'stats': 'Comment avez-vous connu l\'EFP ?'
         }
 
@@ -245,13 +243,13 @@ class FactureForm(forms.Form):
 
      nb_item = forms.IntegerField(
             widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
-            required=True,min_value=1,max_value=100,label='Nombre d\'item',initial=1)
+            required=True,min_value=1,max_value=1000,label='Nombre d\'item',initial=1)
 
-     tva = forms.IntegerField(
+     tva = forms.FloatField(
          widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
-         required=True, min_value=1, max_value=100, label='TVA', initial=1)
+         required=True, min_value=0, max_value=1000, label='TVA', initial=20.00)
 
-     prix_ht = forms.IntegerField(
+     prix_ht = forms.FloatField(
          widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
-         required=True, min_value=1, max_value=100, label='Prix HT', initial=1)
+         required=True, min_value=0, max_value=1000, label='Prix HT', initial=1.00)
 
