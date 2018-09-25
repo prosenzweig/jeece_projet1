@@ -37,9 +37,6 @@ def add_tva(value,arg):
 
 def auto_val_eleve():
     last_m_y = give_past_month()
-    #TODO erase
-    m, y = datetime.now().month, datetime.now().year
-    last_m_y = '0%s_s' % (m,y)
     relation_all = Relation.objects.all()
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
