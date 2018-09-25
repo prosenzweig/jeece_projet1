@@ -43,7 +43,7 @@
         {% for user in geo_list %}
             var point = new google.maps.LatLng({{user.lat}},{{user.lgn}});
             {% if user.user.is_superuser %}
-            var image = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+            var image = 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png';
             var marker = new google.maps.Marker({
             position: point,
             map: map,
@@ -51,7 +51,7 @@
             title: '{{ user.city }}',
             });
             {% elif user.user.is_staff %}
-            var image = 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+            var image = 'https://maps.google.com/mapfiles/ms/icons/green-dot.png';
             var marker = new google.maps.Marker({
             position: point,
             map: map,
@@ -59,7 +59,7 @@
             title: '{{ user.city }}',
             });
             {% else %}
-            var image = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
+            var image = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
             var marker = new google.maps.Marker({
             position: point,
             icon: image,

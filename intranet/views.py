@@ -190,7 +190,7 @@ def gen_pdf(request,fac_id):
     p.setFont('Helvetica-Bold', 10)
     p.drawString(440, 315, "Total (HT)")
     p.drawString(440, 300, "TVA {0}%".format(facture.tva))
-    p.drawString(510, 315, "%s €" % facture.price_ht)
+    p.drawString(510, 315, "%s €" % round(facture.price_ht,2))
     p.drawString(510, 300, "%s €" % round(facture.price_ttc-facture.price_ht,2))
     p.line(440, 290, 551, 290)
     p.setFont('Helvetica-Bold', 12)
@@ -1302,7 +1302,7 @@ def gestion_factures(request):
 
             fac = Facture.objects.create(
                 to_user=to_user, from_user=from_user, object=obj, is_paid=False,
-                object_qt=nb_item, tva=tva, price_ht=nb_item * prix_ht, price_ttc=add_tva(nb_item*prix_ht,tva), type=obj,
+                object_qt=nb_item, h_qt=nb_item, tva=tva, price_ht=nb_item * prix_ht, price_ttc=add_tva(nb_item*prix_ht,tva), type=obj,
                 facture_name=fac_name, nb_facture=from_user.userprofile.nb_facture,
                 to_user_firstname=to_user.first_name, to_user_lastname=to_user.last_name,
                 to_user_address=to_user.userprofile.address,
