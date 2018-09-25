@@ -42,7 +42,7 @@
         </div>
      </form>
         <h5 class="my-2 mt-4">Liste des Factures</h5>
-        {% include 'intranet/messages.html' with messages=messages %}
+        {% include 'intranet/messages.html' with messages=messages %il}
         {% include 'intranet/factures.html' with factures_list=filter_page %}
         {% include 'intranet/paginator.html' with page_obj=filter_page %}
     {% else %}
