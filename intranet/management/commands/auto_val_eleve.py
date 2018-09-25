@@ -68,6 +68,7 @@ def auto_val_eleve():
             if teacher == admin:
                 price = prix.cours_ecole
                 fac_name = "EFP_%s_%s" % (student.last_name, teacher.userprofile.nb_facture)
+                print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
                     to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
                     object_qt=nb_cours, tva=prix.tva, price_ht=price * nbr_tt, price_ttc=add_tva(price*nbr_tt,prix.tva), type="Cours de Piano Ecole",
@@ -84,6 +85,7 @@ def auto_val_eleve():
             else:
                 price = prix.cours_premium if student.userprofile.is_premium else prix.cours
                 fac_name = "%s_%s_%s" % (teacher.last_name, student.last_name, teacher.userprofile.nb_facture)
+                print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
                     to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
                     object_qt=nb_cours, tva=0, price_ht=price*nbr_tt, price_ttc=price*nbr_tt, type="Cours de Piano",
@@ -107,7 +109,7 @@ def auto_val_eleve():
                 # Frais de Gestion (de l'admin vers les élèves)
                 Facture.objects.create(
                     to_user=student, from_user=admin, object="Frais de gestion - 60 min", is_paid=False,
-                    object_qt=nb_cours, tva=prix.tva, price_ht=prix.frais_gestion*nbr_tt, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
+                    object_qt=nb_cours, tva=prix.tva, price_ht=prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
