@@ -4,6 +4,7 @@ from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notific
 from datetime import datetime
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.conf import settings
 
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
@@ -30,14 +31,15 @@ def auto_val_prof():
             lesson_unvalid.save()
 
         lessons_of_the_month_by_relation = Lesson.objects.filter(relation=relation, mois=m_y).exclude(is_unvalid=True)
-        context = {'mois': conv_mois(m_y), 'lessons': lessons_of_the_month_by_relation}
-        msg_plain = render_to_string('email/email_valid_prof.txt', context=context)
-        send_mail("Liste de vos cours de Piano %s" % conv_mois(m_y),
-                  msg_plain, 'admin@ecole01.fr', [relation.student.email])
+        if lessons_of_the_month_by_relation:
+            context = {'mois': conv_mois(m_y), 'lessons': lessons_of_the_month_by_relation}
+            msg_plain = render_to_string('email/email_valid_prof.txt', context=context)
+            send_mail("Liste de vos cours de Piano %s" % conv_mois(m_y),
+                      msg_plain, settings, [relation.student.email])
 
 def stats():
     prof = User.objects.filter(is_staff=True, is_active=True).count()
-    eleve = Eleve.objects.filter(is_active=True).count()
+    eleve = Eleve.objects.filter().count()
     user = User.objects.filter(is_staff=False, is_active=True).count()
     Stats.objects.create(nb_prof=prof,nb_user=user,nb_eleve=eleve)
 

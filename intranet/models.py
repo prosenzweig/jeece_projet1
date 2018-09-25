@@ -88,7 +88,7 @@ class Relation(models.Model):
     student = models.ForeignKey(User, related_name='student_in_relation_model', on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{0} & {1}'.format(self.teacher, self.student)
+        return '{0} et {1}'.format(self.teacher, self.student)
 
 
 class Cour(models.Model):
@@ -112,16 +112,16 @@ class Lesson(models.Model):
         verbose_name_plural = "Leçons"
     def __str__(self):
         if self.is_unvalid:
-            return "%s, Date: %s, Durée: %sh%smin, Status: Rejeté par l'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: Rejeté par l\'élève" % (
                 self.relation,self.date,self.nb_h,self.nb_m)
         elif self.is_valid_s:
-            return "%s, Date: %s, Durée: %sh%smin, Status: Validé par l'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: Validé par l\'élève" % (
             self.relation, self.date, self.nb_h, self.nb_m)
         elif self.is_valid_t:
-            return "%s, Date: %s, Durée: %sh%smin, Status: En attente de validation par l'élève" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation par l\'élève" % (
             self.relation, self.date, self.nb_h, self.nb_m)
         else:
-            return "%s, Date: %s, Durée: %sh%smin, Status: En attente de validation par le professeur" % (
+            return "%s, Date: %s, Durée: %sh%smin, Statut: En attente de validation par le professeur" % (
             self.relation, self.date, self.nb_h, self.nb_m)
 
 class Attestation(models.Model):

@@ -1288,7 +1288,7 @@ def gestion_factures(request):
                 fac_name = "%s_%s_%s" % ( from_user.last_name, to_user.last_name, from_user.userprofile.nb_facture)
 
             choix = {
-                'cp': 'Cour de Piano',
+                'cp': 'Cours de Piano',
                 'fg': 'Frais de Gestion',
                 'fc': 'Frais de Commission',
                 'fa': 'Frais d\'Adhésion',

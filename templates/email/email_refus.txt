@@ -1,6 +1,6 @@
 Bonjour Emmanuel,
 
-Il y a un déssacord entre le professeur {{t}} et l'élève {{s}} au sujet du cours du {{date}} !
+Il y a un désaccord entre le professeur {{t}} et l'élève {{s}} au sujet du cours du {{date}} !
 Voici leurs coordonnées:
 Professeur : tél {{tel_t}} email: {{email_t}}
 Elèves : tél {{tel_s}} email: {{email_s}}
