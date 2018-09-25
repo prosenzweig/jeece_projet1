@@ -35,7 +35,7 @@ def auto_val_prof():
             context = {'mois': conv_mois(m_y), 'lessons': lessons_of_the_month_by_relation}
             msg_plain = render_to_string('email/email_valid_prof.txt', context=context)
             send_mail("Liste de vos cours de Piano %s" % conv_mois(m_y),
-                      msg_plain, settings, [relation.student.email])
+                      msg_plain, settings.DEFAULT_FROM_EMAIL, [relation.student.email])
 
 def stats():
     prof = User.objects.filter(is_staff=True, is_active=True).count()
