@@ -156,6 +156,7 @@ class Facture(models.Model):
     price_ttc = models.FloatField(default=None)
     object = models.CharField(max_length=60,default=None)
     object_qt = models.FloatField(default=None)
+    h_qt = models.FloatField(default=None,null=True, blank=True)
     type = models.CharField(max_length=60,default=None)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')

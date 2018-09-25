@@ -71,7 +71,7 @@ def auto_val_eleve():
                 print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
                     to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
-                    object_qt=nb_cours, tva=prix.tva, price_ht=price * nbr_tt, price_ttc=add_tva(price*nbr_tt,prix.tva), type="Cours de Piano Ecole",
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=price * nbr_tt, price_ttc=add_tva(price*nbr_tt,prix.tva), type="Cours de Piano Ecole",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
@@ -88,7 +88,7 @@ def auto_val_eleve():
                 print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
                     to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
-                    object_qt=nb_cours, tva=0, price_ht=price*nbr_tt, price_ttc=price*nbr_tt, type="Cours de Piano",
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=0, price_ht=price*nbr_tt, price_ttc=price*nbr_tt, type="Cours de Piano",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
@@ -109,7 +109,7 @@ def auto_val_eleve():
                 # Frais de Gestion (de l'admin vers les élèves)
                 Facture.objects.create(
                     to_user=student, from_user=admin, object="Frais de gestion - 60 min", is_paid=False,
-                    object_qt=nb_cours, tva=prix.tva, price_ht=prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
@@ -144,7 +144,7 @@ def factures_commissions():
         # Frais de Commission de l'admin vers les profs
         Facture.objects.create(
             to_user=prof, from_user=admin, object="Frais de Commission - 60min", is_paid=False,
-            object_qt=nb_cours, tva=prix.tva, price_ht=prix.commission * nbr_tt,
+            object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.commission * nbr_tt,
             price_ttc=add_tva(prix.commission * nbr_tt, prix.tva), type="Frais de Commission",
             facture_name=admin, nb_facture=admin.userprofile.nb_facture,
             to_user_firstname=prof.first_name, to_user_lastname=prof.last_name,

@@ -180,7 +180,10 @@ def gen_pdf(request,fac_id):
     p.drawString(55, 340, "%s" % facture.object)
     p.drawString(220, 340, "%s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(300, 340, "%s" % facture.object_qt)
-    p.drawString(350, 340, "%s€" % str(facture.price_ht/facture.object_qt))
+    if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
+        p.drawString(350, 340, "%s€" % str(facture.price_ht / facture.h_qt))
+    else:
+        p.drawString(350, 340, "%s€" % str(facture.price_ht/facture.object_qt))
     p.drawString(450, 340, "{0}%".format(facture.tva))
     p.drawString(510, 340, "%s€" % facture.price_ttc)
     p.line(50,330,551,330)
