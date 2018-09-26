@@ -3,7 +3,7 @@ from django.utils import timezone
 from django.forms import formset_factory, inlineformset_factory, modelformset_factory
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.models import User
-from .models import UserProfile, Relation, Prix, Article, Eleve,Condition
+from .models import UserProfile, Relation, Prix, Article, Eleve,Condition, InscriptionExamen, Examen
 import datetime
 
 
@@ -84,7 +84,26 @@ class EditUserForm(forms.ModelForm):
             'last_name'
         )
 
+class EditEleveForm(forms.ModelForm):
+    class Meta:
+        model = Eleve
+        fields = (
+            'nom_prenom',
+        )
+        labels = {
+            'nom_prenom': 'Nom/Prénom'
+        }
+EditEleveFormset = modelformset_factory(Eleve, fields=('nom_prenom',), extra=1, max_num=10,min_num=0)
 
+class AddEleveForm(forms.ModelForm):
+    class Meta:
+        model = Eleve
+        fields = (
+            'nom_prenom',
+        )
+        labels = {
+            'nom_prenom': 'Nom/Prénom'
+        }
 
 class EditProfileForm(forms.ModelForm):
     class Meta:
@@ -180,6 +199,24 @@ class CondiForm(forms.ModelForm):
         fields = ('file',)
         labels = { 'file': 'Condition Générale d\'utilisation'}
 
+class ExamenForm(forms.ModelForm):
+    class Meta:
+        model = Examen
+        fields = ('name', 'description', 'last', 'price')
+        labels = {
+            'name': 'Nom',
+            'description': 'Descritpion',
+            'last': 'Date de cloture d\'inscription',
+            'price': 'Prix HT'
+        }
+
+class InscriptionExamenForm(forms.ModelForm):
+    class Meta:
+        model = InscriptionExamen
+        fields = ('examen', 'eleve')
+        labels = {'examen': 'Examen',
+                  'eleve': 'Elève'
+                 }
 
 class ToMailForm(forms.Form):
     name = forms.EmailField(

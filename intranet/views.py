@@ -19,7 +19,7 @@ from django.template.loader import render_to_string
 
 from django.contrib.auth.models import User
 from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Eleve,\
-    Lesson,Attestation,Condition,Adhesion,Stats
+    Lesson,Attestation,Condition,Adhesion,Stats,InscriptionExamen,Examen
 
 from django.db.models import Q, Sum
 
@@ -53,7 +53,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from intranet.forms import LoginForm, RegistrationForm, RelationForm, InvitationForm, EditProfileForm, EditUserForm,\
     CoursFrom, PrixForm, FactureIdForm, ArticleForm, EditStaffProfileForm, ConditionForm, MailForm, ToMailFormset,\
-    EleveFormset, PriceForm, LessonFrom, CondiForm, FactureForm
+    EleveFormset, PriceForm, LessonFrom, CondiForm, FactureForm, EditEleveForm, AddEleveForm,EditEleveFormset,\
+    InscriptionExamenForm, ExamenForm
 
 JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
 MOIS = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
@@ -652,7 +653,7 @@ def documents(request):
                         fac.save()
                         messages.success(request, "La facture a bien été payée.")
                     except stripe.error.CardError as e:
-                        messages.warning(request, "Votre carte a été refusé")
+                        messages.error(request, "Votre carte a été refusé")
                         body = e.json_body
                         err = body.get('error', {})
                         print("Status is: %s" % e.http_status)
@@ -660,6 +661,30 @@ def documents(request):
                         print("Code is: %s" % err.get('code'))
                         print("Param is: %s" % err.get('param'))
                         print("Message is: %s" % err.get('message'))
+                    except stripe.error.RateLimitError as e:
+                        # Too many requests made to the API too quickly
+                        messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                        pass
+                    except stripe.error.InvalidRequestError as e:
+                        # Invalid parameters were supplied to Stripe's API
+                        messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                        pass
+                    except stripe.error.AuthenticationError as e:
+                        # Authentication with Stripe's API failed
+                        # (maybe you changed API keys recently)
+                        messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                        pass
+                    except stripe.error.APIConnectionError as e:
+                        # Network communication with Stripe failed
+                        pass
+                    except stripe.error.StripeError as e:
+                        # Display a very generic error to the user, and maybe send
+                        # yourself an email
+                        pass
+                    except Exception as e:
+                        # Something else happened, completely unrelated to Stripe
+                        messages.error(request, "Quelque chose d'anormal est survenu.")
+                        pass
 
                 else:
                     try:
@@ -682,6 +707,30 @@ def documents(request):
                         print("Code is: %s" % err.get('code'))
                         print("Param is: %s" % err.get('param'))
                         print("Message is: %s" % err.get('message'))
+                    except stripe.error.RateLimitError as e:
+                        # Too many requests made to the API too quickly
+                        messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                        pass
+                    except stripe.error.InvalidRequestError as e:
+                        # Invalid parameters were supplied to Stripe's API
+                        messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                        pass
+                    except stripe.error.AuthenticationError as e:
+                        # Authentication with Stripe's API failed
+                        # (maybe you changed API keys recently)
+                        messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                        pass
+                    except stripe.error.APIConnectionError as e:
+                        # Network communication with Stripe failed
+                        pass
+                    except stripe.error.StripeError as e:
+                        # Display a very generic error to the user, and maybe send
+                        # yourself an email
+                        pass
+                    except Exception as e:
+                        # Something else happened, completely unrelated to Stripe
+                        messages.error(request, "Quelque chose d'anormal est survenu.")
+                        pass
 
             return redirect('intranet:documents')
 
@@ -1186,6 +1235,85 @@ def edit_pass(request):
         form = PasswordChangeForm(user=request.user)
         return render(request, 'intranet/edit_pass.html',  locals())
 
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+def add_eleve(request):
+    prix = Prix.objects.get(end=None)
+    admin = User.objects.get(is_superuser=True)
+    if request.method == 'POST':
+        form = EditEleveForm(request.POST)
+        if form.is_valid():
+            np = form.cleaned_data["nom_prenom"]
+            Eleve.objects.create(referent=request.user, nom_prenom=np)
+            to_user = request.user
+            fac_name = "EFP_%s_%s" % (to_user, admin.userprofile.nb_facture)
+            fac = Facture.objects.create(
+                to_user=to_user, from_user=admin, object="Adhésion élève supp.", is_paid=False,
+                object_qt=1, h_qt=1, tva=prix.tva, price_ht=prix.adhesion_reduc,
+                price_ttc=add_tva(prix.adhesion_reduc, prix.tva), type="Adhésion élève supplémentaire",
+                facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
+                to_user_firstname=to_user.first_name, to_user_lastname=to_user.last_name,
+                to_user_address=to_user.userprofile.address,
+                to_user_city=to_user.userprofile.city, to_user_zipcode=to_user.userprofile.zip_code,
+                to_user_siret=to_user.userprofile.siret, to_user_sap=to_user.userprofile.sap,
+                from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                from_user_sap=admin.userprofile.sap)
+            admin.userprofile.nb_facture += 1
+            admin.userprofile.save()
+            messages.success(request, "Le nouvel élève a bien été ajouté.")
+            return redirect('intranet:mon_compte')
+        else:
+            messages.warning(request,"Impossible d'ajouter un élève.")
+            return redirect('intranet:mon_compte')
+
+    else:
+        form = EditEleveForm()
+    return render(request, 'intranet/add_eleve.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+def remove_eleve(request, id):
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        messages.error(request, "Impossible d'effectuer cette action.")
+        return redirect('intranet:mon_compte')
+
+    eleves = Eleve.objects.filter(referent=request.user)
+    if len(eleves) == 1:
+        messages.warning(request,"Vous devez avoir au minimum un élève.")
+        return redirect('intranet:mon_compte')
+    else:
+        e.delete()
+        messages.success(request, "Elève supprimé.")
+    return redirect('intranet:mon_compte')
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+def edit_eleve(request, id):
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        return redirect('intranet:mon_compte')
+
+    if request.method == 'POST':
+        form = EditEleveForm(request.POST)
+        if form.is_valid():
+            np = form.cleaned_data["nom_prenom"]
+            e.nom_prenom = np
+            e.save()
+            messages.success(request, "Changements validés.")
+            return redirect('intranet:mon_compte')
+        else:
+            messages.warning(request,"Impossible de valider les changements.")
+            return redirect('intranet:mon_compte')
+
+    else:
+        form = EditEleveForm(instance=e)
+    return render(request, 'intranet/edit_eleve.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def article(request):
     if request.method == 'POST':
         form = ArticleForm(request.POST or None, request.FILES)
@@ -1209,7 +1337,8 @@ def article(request):
     return redirect('intranet:gestion_articles')
 
 
-
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def mail(request):
     if request.method == 'POST':
         form = MailForm(request.POST)
@@ -1242,6 +1371,8 @@ def mail(request):
     messages.warning(request, "Impossible d'envoyer votre email.")
     return redirect('intranet:gestion_mail')
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def gestion_condition(request):
     if request.method == 'POST':
         form = CondiForm(request.POST, request.FILES)
@@ -1269,7 +1400,8 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
 
-
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def gestion_factures(request):
     if request.method == 'POST':
         form = FactureForm(request.POST)
@@ -1324,3 +1456,107 @@ def gestion_factures(request):
         form=FactureForm()
     return render(request, 'intranet/gestion_factures.html', locals())
 
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def gestion_examens(request):
+    if request.method == 'POST':
+        form = ExamenForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request,"L'examen a bien été créé.")
+            return redirect('intranet:gestion_examens')
+        else:
+            messages.warning(request, "Impossible de créer l'examen.")
+            return redirect('intranet:gestion_examens')
+    else:
+        examens = Examen.objects.all()
+        if examens:
+            exam = examens[0]
+            eleves_inscrit = InscriptionExamen.objects.filter(examen=exam)
+            nb = eleves_inscrit.count()
+        else:
+            form=ExamenForm()
+    return render(request, 'intranet/gestion_examens.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def remove_examens(request,id):
+    exam = get_object_or_404(Examen, pk=id)
+    if exam:
+        exam.delete()
+        messages.success(request,"Examen correctement supprimé.")
+    else:
+        messages.warning(request, "Impossible de supprimé l'examen.")
+    return redirect('intranet:gestion_examens')
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+def examens_eleve(request):
+    key = settings.STRIPE_PUBLISHABLE_KEY
+    ex_list = Examen.objects.all()
+    prix = Prix.objects.get(end=None)
+    if ex_list:
+        ex = ex_list[0]
+        diff = ex.last - date.today()
+        if diff.days > 0:
+            exam = ex
+            exam_ttc = add_tva(exam.price,prix.tva)
+            eleves = Eleve.objects.filter(referent=request.user)
+            eleves_inscrit = InscriptionExamen.objects.filter(examen=exam,eleve__in=eleves)
+            if eleves_inscrit:
+                test = [e.eleve.id for e in eleves_inscrit]
+                eleves_non_inscrit = Eleve.objects.filter(referent=request.user).exclude(id__in=test)
+            else:
+                eleves_non_inscrit = eleves
+            print("E",eleves)
+            print("EI",eleves_inscrit)
+            print("EN",eleves_non_inscrit)
+
+    return render(request, 'intranet/examens_eleve.html', locals())
+
+@login_required
+@user_passes_test(lambda u: u.userprofile.is_adherent)
+def checkout_exam(request):
+    admin = User.objects.get(is_superuser=True)
+    prix = Prix.objects.get(end=None)
+    if request.method == "POST":
+        form = PriceForm(request.POST)
+        if form.is_valid():
+            eleve_id = form.cleaned_data["fac_id"]
+            eleve = get_object_or_404(Eleve,pk=eleve_id)
+            ex_list = Examen.objects.all()
+            if ex_list:
+                exam = ex_list[0]
+            else:
+                messages.warning(request, 'Action non aurotisée.')
+                return redirect('intranet:examens_eleve')
+
+            user = request.user
+            fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
+
+            fac = Facture.objects.create(
+                to_user=user, from_user=admin, object="Inscription examen", is_paid=True,
+                object_qt=1, tva=prix.tva, price_ht=1 * exam.price, price_ttc=add_tva(exam.price,prix.tva), type="Inscription examen",
+                facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
+                to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
+                to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
+                to_user_siret=user.userprofile.siret, to_user_sap =user.userprofile.sap,
+                from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
+                from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
+                from_user_sap =admin.userprofile.sap )
+
+            fac.is_paid = True
+            fac.save()
+            admin.userprofile.nb_facture += 1
+            admin.userprofile.save()
+            InscriptionExamen.objects.create(eleve=eleve,examen=exam)
+            messages.success(request, "Votre élève a bien été inscrit à l'examen.")
+            return redirect('intranet:examens_eleve')
+        else:
+            messages.warning(request, 'Action non aurotisée.')
+            return redirect('intranet:examens_eleve')
+    else:
+        messages.warning(request,'Action non aurotisée.')
+    return redirect('intranet:examens_eleve')

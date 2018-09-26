@@ -1,0 +1,24 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Account{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% block content %}
+ <div class="container container_extras">
+            <h3 class="text-center mt-2 mb-3">Profile de {{ user }} </h3>
+            <h5>Ajouter un élève:</h5>
+            <p>Lorsque vous ajoutez un élève, les frais d'adhésion de l'élève sont de {{prix.adhesion_reduc}}€</p>
+            <form method="post">
+                {% csrf_token %}
+                {% include 'intranet/bs4_form.html' with form=form %}
+                <button type="submit" class="btn btn-primary">Valider</button>
+            </form>
+            <br>
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

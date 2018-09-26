@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson,
-                     Condition,Adhesion,Eleve,Stats)
+                     Condition,Adhesion,Eleve,Stats,Examen,InscriptionExamen)
 
 
 class ArticleAdmin(admin.ModelAdmin):
@@ -17,6 +17,12 @@ class UserProfileAdmin(admin.ModelAdmin):
 
 class ConditionAdmin(admin.ModelAdmin):
     list_display = ('start','end','file')
+
+class ExamenAdmin(admin.ModelAdmin):
+    list_display = ('name','description','last','price')
+
+class InscriptionExamenAdmin(admin.ModelAdmin):
+    list_display = ('examen','eleve')
 
 class RelationAdmin(admin.ModelAdmin):
     list_display = ('teacher', 'student')
@@ -81,3 +87,5 @@ admin.site.register(Condition, ConditionAdmin)
 admin.site.register(Adhesion, AdhesionAdmin)
 admin.site.register(Eleve, EleveAdmin)
 admin.site.register(Stats, StatsAdmin)
+admin.site.register(Examen, ExamenAdmin)
+admin.site.register(InscriptionExamen, InscriptionExamenAdmin)

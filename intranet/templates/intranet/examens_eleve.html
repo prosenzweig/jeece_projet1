@@ -1,0 +1,83 @@
+{% extends 'intranet/base.html' %}
+{% block title %}Account{% endblock %}
+{% block nav_bar %}
+{% include 'intranet/nav_bar.html' %}
+{% endblock nav_bar %}
+
+{% load intranet_extras %}
+{% load static %}
+{% block content %}
+ <div class="container container_extras">
+            <h3 class="text-center mt-2 mb-3">Mes Examens</h3>
+            {% include 'intranet/messages.html' with messages=messages %}
+            <h5>Liste des examens:</h5>
+            {% if exam %}
+                <strong>{{exam.name}}</strong>
+                <p>{{exam.description}}</br>Date limite d'inscription: {{exam.last}}</p>
+                {% if eleves_non_inscrit %}
+                    <h5>Liste des élèves non inscripts à l'examen</h5>
+                    <div class="table-responsive p-2 pb-5">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                    <th>Elève</th>
+                                    <th>Inscrire</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for e in eleves_non_inscrit %}
+                                    <tr>
+
+                                    <td>{{e.nom_prenom}}</td>
+                                    <td><a>
+                                            <form action="{% url 'intranet:checkout_exam' %}" role='form' method="POST">
+                                            {% csrf_token %}
+                                            <input type="text" name="fac_id" id="fac_id" value="{{e.pk}}" hidden required>
+                                             <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                                                data-key="{{key}}"
+                                                data-amount="{{ exam_ttc|stripe }}"
+                                                data-name="Ecole Française de Piano"
+                                                data-description="Inscription Examen"
+                                                data-image="{% static 'intranet/img/efp_logo.png' %}"
+                                                data-locale="fr"
+                                                data-currency="eur">
+                                            </script>
+                                            </form>
+                                        </a></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                {% endif %}
+                {% if eleves_inscrit%}
+                    <h5>Liste des élèves inscripts à l'examen</h5>
+                         <div class="table-responsive p-2 pb-5">
+                            <table class="table table-hover">
+                                <thead>
+
+                                    <th>Elève</th>
+                                    <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for el in eleves_inscrit %}
+                                    <tr>
+                                    <td>{{el.eleve.nom_prenom}}</td>
+                                    <td>Inscript à l'examen </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                {% endif %}
+            {% else %}
+            <p>Il n'y a pas d'examens disponible actuellement</p>
+            {% endif %}
+ </div>
+{% endblock content %}
+
+
+{% block footer %}
+{% include 'intranet/footer.html' %}
+{% endblock footer %}

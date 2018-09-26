@@ -234,3 +234,15 @@ def get_full_name(self):
     return "%s (%s %s)" % (self.username, self.first_name, self.last_name)
 
 User.add_to_class("__str__", get_full_name)
+
+class Examen(models.Model):
+    name = models.CharField(max_length=140)
+    description = models.CharField(max_length=340)
+    last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Cloture des inscriptions')
+    price = models.FloatField(max_length=5, default=40.00, verbose_name='Prix de l\'examen par élèves')
+
+class InscriptionExamen(models.Model):
+    examen = models.ForeignKey(Examen, related_name='Examen', on_delete=models.CASCADE)
+    eleve = models.ForeignKey(Eleve, related_name='Eleve', on_delete=models.DO_NOTHING)
+    class Meta:
+        verbose_name_plural = "Inscriptions Examens"
