@@ -259,9 +259,9 @@ def gen_attest_pdf(request,fac_id):
     p.setFont('Helvetica-Bold', 14)
     p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE - %s" % att.pk)
     p.setFont('Helvetica', 12)
-    p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que M et Mme %s," % (att.from_user_firstname, att.from_user_lastname.upper() ,att.to_user_lastname.upper()))
-    p.drawString(75, 505, "domiciliés au %s, %s %s, ont bénéficié de services à la personne :" % (att.to_user_address, att.to_user_zipcode ,att.to_user_city))
-    p.drawString(75, 490, "cours de piano")
+    p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que " % (att.from_user_firstname, att.from_user_lastname.upper() ))
+    p.drawString(75, 505, "M et Mme %s, domiciliés au %s, %s %s, " % (att.to_user_lastname.upper(),att.to_user_address, att.to_user_zipcode ,att.to_user_city))
+    p.drawString(75, 490, "ont bénéficié de services à la personne : cours de piano")
     p.drawString(75, 460, "En %s, le montant des atts effectivement acquittées représente" % (datetime.now().year-1))
     p.drawString(75, 445, "une somme totale de : %s€." % att.price)
 
@@ -269,7 +269,7 @@ def gen_attest_pdf(request,fac_id):
     p.drawString(75,400, "Intervenant :")
     p.setFont('Helvetica', 12)
     p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.nb_cours,  (datetime.now().year-1)))
-    p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (att.price/att.nb_cours))
+    p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (att.price/att.h_qt))
 
     p.drawString(75, 330, "Fait pour valoir ce que de droit,")
     p.drawString(75, 300, "Le %s" % att.created)
@@ -752,6 +752,9 @@ def documents(request):
         filter = FactureFilter(request.GET, queryset=factures_all)
         page = request.GET.get('page', 1)
         paginator = Paginator(filter.qs, 5)
+        current_path = request.get_full_path()
+        new_current_path = re.sub(r'&page=\d+', '', current_path)
+        print(new_current_path)
         try:
             filter_page = paginator.page(page)
         except PageNotAnInteger:

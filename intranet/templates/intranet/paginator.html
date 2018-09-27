@@ -1,6 +1,10 @@
 <ul class="pagination justify-content-center mb-4">
   {% if page_obj.has_previous %}
-    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% if 'from_user' in request.get_full_path %}
+        <li class="page-item"><a class="page-link" href="{{ path }}&page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+        {% endif %}
   {% else %}
     <li class="page-item disabled"><a class="page-link" href="#"><span>&laquo;</span></a></li>
   {% endif %}
@@ -8,11 +12,19 @@
     {% if page_obj.number == i %}
       <li class="active page-item"><a class="page-link" href="#">{{ i }} <span class="sr-only">(current)</span></a></li>
     {% else %}
-      <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% if 'from_user' in request.get_full_path %}
+        <li class="page-item"><a class="page-link" href="{{ path }}&page={{ i }}">{{ i }}</a></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+        {% endif %}
     {% endif %}
   {% endfor %}
   {% if page_obj.has_next %}
-    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% if 'from_user' in request.get_full_path %}
+        <li class="page-item"><a class="page-link" href="{{ path }}&page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% else %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+        {% endif %}
   {% else %}
     <li class="disabled page-item"><a class="page-link" href="#"><span>&raquo;</span></a></li>
   {% endif %}
