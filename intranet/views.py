@@ -648,7 +648,7 @@ def documents(request):
             tt_ad = sum([float(f.price_ttc) for f in fac_list])
             try:
                 charge = stripe.Charge.create(
-                    amount=(round(tt_ad,2) * 100),
+                    amount=int(round(tt_ad,2) * 100),
                     currency="eur",
                     source=token,
                     description=description,
@@ -697,7 +697,7 @@ def documents(request):
             tt_ad = sum([float(f.price_ttc) for f in fac_list])
             try:
                 charge = stripe.Charge.create(
-                    amount=(round(tt_ad,2) * 100),
+                    amount=int(round(tt_ad,2) * 100),
                     currency="eur",
                     description=description,
                     source=token
@@ -748,12 +748,12 @@ def documents(request):
             tt_prof = sum([float(f.price_ttc) for f in fac_list if f.from_user != admin])
             try:
                 charge = stripe.Charge.create(
-                    amount= round(tt_ad+tt_prof,2)*100,
+                    amount= int(round(tt_ad+tt_prof,2)*100),
                     currency="eur",
                     source=token,
                     description=description,
                     destination={
-                        "amount": round(tt_prof,2)*100,
+                        "amount":int(round(tt_prof,2)*100),
                         "account": fac_prof[0].from_user.userprofile.stripe_account_id,
                     }
                 )
@@ -803,7 +803,7 @@ def documents(request):
             description = ", ".join([f.facture_name for f in fac_dest])
             try:
                 charge = stripe.Charge.create(
-                    amount=(round(tt_dest_na,2) * 100),
+                    amount=int(round(tt_dest_na,2) * 100),
                     currency="eur",
                     source=token,
                     description=description,
