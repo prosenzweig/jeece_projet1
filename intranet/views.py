@@ -258,23 +258,23 @@ def gen_attest_pdf(request,fac_id):
 
     p.setFont('Helvetica-Bold', 14)
     p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE - %s" % att.pk)
-    p.setFont('Helvetica', 12)
+    p.setFont('Helvetica', 10)
     p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que " % (att.from_user_firstname, att.from_user_lastname.upper() ))
     p.drawString(75, 505, "M et Mme %s, domiciliés au %s, %s %s, " % (att.to_user_lastname.upper(),att.to_user_address, att.to_user_zipcode ,att.to_user_city))
     p.drawString(75, 490, "ont bénéficié de services à la personne : cours de piano")
     p.drawString(75, 460, "En %s, le montant des atts effectivement acquittées représente" % (datetime.now().year-1))
     p.drawString(75, 445, "une somme totale de : %s€." % att.price)
 
-    p.setFont('Helvetica-Bold', 12)
+    p.setFont('Helvetica-Bold', 10)
     p.drawString(75,400, "Intervenant :")
-    p.setFont('Helvetica', 12)
+    p.setFont('Helvetica', 10)
     p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.nb_cours,  (datetime.now().year-1)))
     p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (att.price/att.h_qt))
 
     p.drawString(75, 330, "Fait pour valoir ce que de droit,")
     p.drawString(75, 300, "Le %s" % att.created)
     p.drawString(75, 270, "%s %s" % (att.from_user_firstname,att.from_user_lastname.upper()))
-    p.setFont('Helvetica', 11)
+    p.setFont('Helvetica', 10)
     p.drawString(75, 230, "Afin de bénéficier de l'avantage fiscal au titre du Service à la Personne, veuillez")
     p.drawString(75, 215, "remplir la case de votre déclaration d'impôts correspondant au crédit et")
     p.drawString(75, 200, "réduction d'impôt pour l'emploi à domicile en page 4, partie 7, rubrique \"Sommes")
@@ -505,8 +505,9 @@ def cours_prof(request):
     month = '%s %s' % (MOIS[datetime.now().month-1], datetime.now().year)
     delta = last_day_of_month(datetime.now())
 
-    if delta.days < 7:
-        messages.warning(request, 'Il vous reste %s jours, %s heures et %s minutes avant la fin du mois, n\'oubliez pas de valider vos cours !' % (delta.days, delta.seconds//3600, (delta.seconds//60)%60))
+    if request.method == "GET":
+        if delta.days < 7:
+            messages.warning(request, 'Il vous reste %s jours, %s heures et %s minutes avant la fin du mois, n\'oubliez pas de valider vos cours !' % (delta.days, delta.seconds//3600, (delta.seconds//60)%60))
 
     if request.method == "POST":
         form = LessonFrom(request.POST, prof=request.user)
@@ -630,121 +631,225 @@ def documents(request):
     admin = User.objects.get(is_superuser=True)
     if request.method == "POST":
         print("JE VEUX PAYER!")
-        try:
-            token = request.POST['stripeToken']
-            stripe_customer_id = request.user.customer.stripe_id
-            # print(request.user, stripe_customer_id)
-            # print("Token",token)
+        token = request.POST['stripeToken']
+        stripe_customer_id = request.user.customer.stripe_id
+        # print(request.user, stripe_customer_id)
+        # print("Token",token)
 
-            fac_list = Facture.objects.filter(to_user=request.user, is_paid=False).exclude(
-                from_user__userprofile__stripe_account_id="StripeAccId")
+        fac_list = Facture.objects.filter(to_user=request.user, is_paid=False).exclude(
+            from_user__userprofile__stripe_account_id="StripeAccId")
 
-            for fac in fac_list:
-                print(fac)
-                print(fac.from_user, fac.from_user.userprofile.stripe_account_id)
-                if fac.from_user == admin:
-                    try:
-                        charge = stripe.Charge.create(
-                            amount=(int(fac.price_ttc) * 100),
-                            currency="eur",
-                            source=token
-                        )
-                        fac.is_paid = True
-                        fac.save()
-                        messages.success(request, "La facture a bien été payée.")
-                    except stripe.error.CardError as e:
-                        messages.error(request, "Votre carte a été refusé")
-                        body = e.json_body
-                        err = body.get('error', {})
-                        print("Status is: %s" % e.http_status)
-                        print("Type is: %s" % err.get('type'))
-                        print("Code is: %s" % err.get('code'))
-                        print("Param is: %s" % err.get('param'))
-                        print("Message is: %s" % err.get('message'))
-                    except stripe.error.RateLimitError as e:
-                        # Too many requests made to the API too quickly
-                        messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                        pass
-                    except stripe.error.InvalidRequestError as e:
-                        # Invalid parameters were supplied to Stripe's API
-                        messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                        pass
-                    except stripe.error.AuthenticationError as e:
-                        # Authentication with Stripe's API failed
-                        # (maybe you changed API keys recently)
-                        messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                        pass
-                    except stripe.error.APIConnectionError as e:
-                        # Network communication with Stripe failed
-                        pass
-                    except stripe.error.StripeError as e:
-                        # Display a very generic error to the user, and maybe send
-                        # yourself an email
-                        pass
-                    except Exception as e:
-                        # Something else happened, completely unrelated to Stripe
-                        messages.error(request, "Quelque chose d'anormal est survenu.")
-                        pass
 
-                else:
-                    try:
-                        charge = stripe.Charge.create(
-                            amount=(int(fac.price_ttc)*100),
-                            currency="eur",
-                            source=token,
-                            # customer=stripe_customer_id,
-                            destination={'account': fac.from_user.userprofile.stripe_account_id}
-                        )
-                        fac.is_paid = True
-                        fac.save()
-                        messages.success(request, "La facture a bien été payée.")
-                    except stripe.error.CardError as e:
-                        messages.warning(request, "Votre carte a été refusé")
-                        body = e.json_body
-                        err = body.get('error', {})
-                        print("Status is: %s" % e.http_status)
-                        print("Type is: %s" % err.get('type'))
-                        print("Code is: %s" % err.get('code'))
-                        print("Param is: %s" % err.get('param'))
-                        print("Message is: %s" % err.get('message'))
-                    except stripe.error.RateLimitError as e:
-                        # Too many requests made to the API too quickly
-                        messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                        pass
-                    except stripe.error.InvalidRequestError as e:
-                        # Invalid parameters were supplied to Stripe's API
-                        messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                        pass
-                    except stripe.error.AuthenticationError as e:
-                        # Authentication with Stripe's API failed
-                        # (maybe you changed API keys recently)
-                        messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                        pass
-                    except stripe.error.APIConnectionError as e:
-                        # Network communication with Stripe failed
-                        pass
-                    except stripe.error.StripeError as e:
-                        # Display a very generic error to the user, and maybe send
-                        # yourself an email
-                        pass
-                    except Exception as e:
-                        # Something else happened, completely unrelated to Stripe
-                        messages.error(request, "Quelque chose d'anormal est survenu.")
-                        pass
+        description = ", ".join([f.facture_name for f in fac_list])
+        dest = set([f.from_user for f in fac_list])
 
-            return redirect('intranet:documents')
+        if admin not in dest and len(dest) == 1:
+            print("Que pour un Prof")
+            tt_ad = sum([float(f.price_ttc) for f in fac_list])
+            try:
+                charge = stripe.Charge.create(
+                    amount=(round(tt_ad,2) * 100),
+                    currency="eur",
+                    source=token,
+                    description=description,
+                    destination={'account': fac_list[0].from_user.userprofile.stripe_account_id}
+                )
+                for fac in fac_list:
+                    fac.is_paid = True
+                    fac.save()
+                messages.success(request, "La facture a bien été payée.")
+                return redirect('intranet:documents')
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
+        elif admin in dest and len(dest) == 1:
+            print("Que pour l'admin")
+            tt_ad = sum([float(f.price_ttc) for f in fac_list])
+            try:
+                charge = stripe.Charge.create(
+                    amount=(round(tt_ad,2) * 100),
+                    currency="eur",
+                    description=description,
+                    source=token
+                )
+                for fac in fac_list:
+                    fac.is_paid = True
+                    fac.save()
+                messages.success(request, "La facture a bien été payée.")
+                return redirect('intranet:documents')
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
+        elif admin in dest and len(dest) == 2:
+            print("Cas Classique de Facturation")
+            fac_ad = [f for f in fac_list if f.from_user == admin]
+            fac_prof = [f for f in fac_list if f.from_user != admin]
+            tt_ad = sum([float(f.price_ttc) for f in fac_list if f.from_user == admin])
+            tt_prof = sum([float(f.price_ttc) for f in fac_list if f.from_user != admin])
+            try:
+                charge = stripe.Charge.create(
+                    amount= round(tt_ad+tt_prof,2)*100,
+                    currency="eur",
+                    source=token,
+                    description=description,
+                    destination={
+                        "amount": round(tt_prof,2)*100,
+                        "account": fac_prof[0].from_user.userprofile.stripe_account_id,
+                    }
+                )
+                for fac in fac_list:
+                    fac.is_paid = True
+                    fac.save()
+                messages.success(request, "Les factures ont bien été payées.")
+                return redirect('intranet:documents')
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
+        else:
+            dest_na = [d for d in dest if d != admin]
+            fac_dest = Facture.objects.filter(to_user=request.user, from_user=dest_na[0], is_paid=False).exclude(
+            from_user__userprofile__stripe_account_id="StripeAccId")
+            tt_dest_na = sum([float(f.price_ttc) for f in fac_dest])
+            description = ", ".join([f.facture_name for f in fac_dest])
+            try:
+                charge = stripe.Charge.create(
+                    amount=(round(tt_dest_na,2) * 100),
+                    currency="eur",
+                    source=token,
+                    description=description,
+                    destination={'account': fac_dest[0].from_user.userprofile.stripe_account_id}
+                )
+                for fac in fac_dest:
+                    fac.is_paid = True
+                    fac.save()
+                messages.success(request, "Une partie des factures ont bien été payées.")
+                messages.warning(request, "Impossible de payer l'ensemble des factures d'un coup.")
+                return redirect('intranet:documents')
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
 
-        except stripe.error.CardError as e:
-            messages.warning(request, "Votre carte a été refusé")
-            # Since it's a decline, stripe.error.CardError will be caught
-            body = e.json_body
-            err = body.get('error', {})
-            print("Status is: %s" % e.http_status)
-            print("Type is: %s" % err.get('type'))
-            print("Code is: %s" % err.get('code'))
-            # param is '' in this case
-            print("Param is: %s" % err.get('param'))
-            print("Message is: %s" % err.get('message'))
+        return redirect('intranet:documents')
 
     if request.user.is_superuser:
         factures_all = Facture.objects.all().order_by('-created')
@@ -1111,14 +1216,20 @@ def prix(request):
         if form.is_valid():
             tva = form.cleaned_data["tva"]
             adhesion = form.cleaned_data["adhesion"]
+            adhesion_reduc = form.cleaned_data["adhesion_reduc"]
+            adhesion_prof = form.cleaned_data["adhesion_prof"]
             cours = form.cleaned_data["cours"]
+            cours_premium = form.cleaned_data["cours_premium"]
+            cours_ecole = form.cleaned_data["cours_ecole"]
             commission = form.cleaned_data["commission"]
             frais_gestion = form.cleaned_data["frais_gestion"]
             if Prix.objects.all():
                 last_price = Prix.objects.get(end=None)
                 last_price.end = date.today()
                 last_price.save()
-            Prix.objects.get_or_create(tva=tva,adhesion=adhesion,cours=cours,commission=commission,frais_gestion=frais_gestion)
+            Prix.objects.get_or_create(tva=tva,adhesion=adhesion,cours=cours,commission=commission,frais_gestion=frais_gestion,
+                                       adhesion_reduc=adhesion_reduc, adhesion_prof=adhesion_prof,cours_premium=cours_premium,
+                                       cours_ecole=cours_ecole)
             messages.success(request,'Le changement de prix a bien été pris en compte. Il sera effectif à partir de minuit.')
             return redirect('intranet:gestion_prix')
         else:
@@ -1249,7 +1360,7 @@ def add_eleve(request):
             np = form.cleaned_data["nom_prenom"]
             Eleve.objects.create(referent=request.user, nom_prenom=np)
             to_user = request.user
-            fac_name = "EFP_%s_%s" % (to_user, admin.userprofile.nb_facture)
+            fac_name = "EFP_%s_%s" % (to_user.last_name, admin.userprofile.nb_facture)
             fac = Facture.objects.create(
                 to_user=to_user, from_user=admin, object="Adhésion élève supp.", is_paid=False,
                 object_qt=1, h_qt=1, tva=prix.tva, price_ht=prix.adhesion_reduc,
@@ -1540,7 +1651,7 @@ def checkout_exam(request):
 
             fac = Facture.objects.create(
                 to_user=user, from_user=admin, object="Inscription examen", is_paid=True,
-                object_qt=1, tva=prix.tva, price_ht=1 * exam.price, price_ttc=add_tva(exam.price,prix.tva), type="Inscription examen",
+                object_qt=1, h_qt=1, tva=prix.tva, price_ht=1 * exam.price, price_ttc=add_tva(exam.price,prix.tva), type="Inscription examen",
                 facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                 to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
                 to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,

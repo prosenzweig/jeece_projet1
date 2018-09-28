@@ -98,16 +98,16 @@ body, html {
         <div class="card card-container" style="max-width: 80%;padding: 40px 200px 40px 200px;">
             <h3 class="text-center mb-4"> Création d'un Nouveau Compte </h3>
             <br>
-            <p>Clef d'activation: {{inv.uuid}}<br>
-            {% if inv.is_staff %}
-            Compte professeur
-            {% else %}
-            Compte élèves
-            {% endif %}<br>
-            {% if inv.is_free %}
-            Frais d'adhésion gratuit
-            {% endif %}
-            </p>
+            <!--<p>Clef d'activation: {{inv.uuid}}<br>-->
+            <!--{% if inv.is_staff %}-->
+            <!--Compte professeur-->
+            <!--{% else %}-->
+            <!--Compte élèves-->
+            <!--{% endif %}<br>-->
+            <!--{% if inv.is_free %}-->
+            <!--Frais d'adhésion gratuit-->
+            <!--{% endif %}-->
+            <!--</p>-->
             {% include 'intranet/messages.html' with messages=messages %}
             <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:creation' uuid=uuid %}">
             {% csrf_token %}

@@ -58,6 +58,7 @@ class UserProfile(models.Model):
     siret = models.CharField(max_length=21,default='SIRET',blank=True)
     sap = models.CharField(max_length=11,default='SAP',blank=True)
     nb_facture = models.IntegerField(default=1)
+    nb_adh= models.IntegerField(default=1,blank=True,null=True)
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
     is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
     stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
@@ -131,6 +132,8 @@ class Attestation(models.Model):
     nb_cours = models.SmallIntegerField(default=None, null=True, blank=True)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date d\'échéance')
+    h_qt = models.FloatField(default=None,null=True, blank=True)
+    nb_adh = models.IntegerField(default=1)
     # TO USER
     to_user_firstname = models.CharField(max_length=60, default=None, null=True, blank=True)
     to_user_lastname = models.CharField(max_length=60, default=None, null=True, blank=True)
