@@ -197,7 +197,7 @@ class CondiForm(forms.ModelForm):
     class Meta:
         model = Condition
         fields = ('file',)
-        labels = { 'file': 'Condition Générale d\'utilisation'}
+        labels = { 'file': 'Conditions Générales d\'utilisations'}
 
 class ExamenForm(forms.ModelForm):
     class Meta:
