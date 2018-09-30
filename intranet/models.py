@@ -40,23 +40,23 @@ class UserProfile(models.Model):
     avatar = models.ImageField(null=True, blank=True, upload_to="avatars/")
     phone_regex = RegexValidator(regex=r'^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$',
                                  message="Le numéro de téléphone doit suivre le format XX.XX.XX.XX.XX")
-    phone_number = models.CharField(validators=[phone_regex], max_length=19, blank=True)  # validators should be a list
-    address = models.CharField(max_length=60, default='')
-    city = models.CharField(max_length=50, default='')
-    country = models.CharField(max_length=50, default='France')
+    phone_number = models.CharField(validators=[phone_regex], max_length=19, blank=True,verbose_name="Téléphone")  # validators should be a list
+    address = models.CharField(max_length=60, default='',verbose_name="Adresse")
+    city = models.CharField(max_length=50, default='',verbose_name="Ville")
+    country = models.CharField(max_length=50, default='France',verbose_name="Pays")
     # Use to geolocation
     lat = models.CharField(null=True,blank=True,default='None',max_length=50)
     lgn = models.CharField(null=True,blank=True,default='None',max_length=50)
     zip_code_regex = RegexValidator(regex=r'^(([0-8][0-9])|(9[0-5])|(2[ab]))[0-9]{3}$',
                                     message="Le Code Postal doit suivre le format DDDDD")
-    zip_code = models.CharField(validators=[zip_code_regex], max_length=6, blank=True)
+    zip_code = models.CharField(validators=[zip_code_regex], max_length=6, blank=True,verbose_name="Code Postal")
     # iban_regex = RegexValidator(regex='^([A-Za-z]{2}[ \-]?[0-9]{2})(?=(?:[ \-]?[A-Za-z0-9]){9,30}$)((?:[ \-]?[A-Za-z0-9]{3,5}){2,6})([ \-]?[A-Za-z0-9]{1,3})?$')
     # iban = models.CharField(validators=[iban_regex], max_length=27, blank=True)
     is_adherent = models.BooleanField(default=False)
 
     # Use to generate attestation
-    siret = models.CharField(max_length=21,default='SIRET',blank=True)
-    sap = models.CharField(max_length=11,default='SAP',blank=True)
+    siret = models.CharField(max_length=21,default='SIRET',blank=True,verbose_name="SIRET")
+    sap = models.CharField(max_length=11,default='SAP',blank=True,verbose_name="SAP")
     nb_facture = models.IntegerField(default=1)
     nb_adh= models.IntegerField(default=1,blank=True,null=True)
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
@@ -78,15 +78,15 @@ class UserProfile(models.Model):
 class Invitation(models.Model):
     uuid_regex = RegexValidator(regex='^[0-9a-f-]+$')
     uuid = models.UUIDField(validators=[uuid_regex], max_length=36)
-    is_staff = models.BooleanField(default=False)
-    is_free = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False,verbose_name="Professeur")
+    is_free = models.BooleanField(default=False,verbose_name="Adh. Gratuit")
     email = models.EmailField()
     valid = models.BooleanField(default=False)
 
 
 class Relation(models.Model):
-    teacher = models.ForeignKey(User, related_name='teacher_in_relation_model', on_delete=models.CASCADE)
-    student = models.ForeignKey(User, related_name='student_in_relation_model', on_delete=models.CASCADE)
+    teacher = models.ForeignKey(User, related_name='teacher_in_relation_model', on_delete=models.CASCADE,verbose_name="Professeur")
+    student = models.ForeignKey(User, related_name='student_in_relation_model', on_delete=models.CASCADE,verbose_name="Elève")
 
     def __str__(self):
         return '{0} et {1}'.format(self.teacher, self.student)
@@ -96,9 +96,9 @@ class Cour(models.Model):
     relation = models.ForeignKey(Relation, on_delete=models.CASCADE)
     duree_cours = models.SmallIntegerField(default=0, verbose_name="Durée des cours")
     mois = models.CharField(max_length=7)
-    is_valid_t = models.BooleanField(default=False)
-    is_valid_s = models.BooleanField(default=False)
-    is_unvalid = models.BooleanField(default=False)
+    is_valid_t = models.BooleanField(default=False,verbose_name="Validé par l'enseignant")
+    is_valid_s = models.BooleanField(default=False,verbose_name="Validé par l'élève")
+    is_unvalid = models.BooleanField(default=False,verbose_name="Désaccord")
 
 class Lesson(models.Model):
     relation = models.ForeignKey(Relation, on_delete=models.CASCADE)
@@ -106,9 +106,9 @@ class Lesson(models.Model):
     nb_m = models.SmallIntegerField(default=0, verbose_name="Minutes")
     date = models.DateField(default=timezone.now)
     mois = models.CharField(max_length=7)
-    is_valid_t = models.BooleanField(default=False)
-    is_valid_s = models.BooleanField(default=False)
-    is_unvalid = models.BooleanField(default=False)
+    is_valid_t = models.BooleanField(default=False,verbose_name="Validé par l'enseignant")
+    is_valid_s = models.BooleanField(default=False,verbose_name="Validé par l'élève")
+    is_unvalid = models.BooleanField(default=False,verbose_name="Désaccord")
     class Meta:
         verbose_name_plural = "Leçons"
     def __str__(self):
@@ -126,10 +126,10 @@ class Lesson(models.Model):
             self.relation, self.date, self.nb_h, self.nb_m)
 
 class Attestation(models.Model):
-    to_user = models.ForeignKey(User, related_name='User_student', on_delete=models.DO_NOTHING)
-    from_user = models.ForeignKey(User, related_name='User_professor', on_delete=models.DO_NOTHING)
-    price = models.SmallIntegerField()
-    nb_cours = models.SmallIntegerField(default=None, null=True, blank=True)
+    to_user = models.ForeignKey(User, related_name='User_student', on_delete=models.DO_NOTHING,verbose_name="Destinataire")
+    from_user = models.ForeignKey(User, related_name='User_professor', on_delete=models.DO_NOTHING,verbose_name="Emetteur")
+    price = models.SmallIntegerField(verbose_name="Prix")
+    nb_cours = models.SmallIntegerField(default=None, null=True, blank=True,verbose_name="Nombre de cours")
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date d\'échéance')
     h_qt = models.FloatField(default=None,null=True, blank=True)
@@ -165,7 +165,7 @@ class Facture(models.Model):
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
     is_paid = models.BooleanField(default=False,verbose_name='Payé')
 
-    facture_name = models.CharField(max_length=60,default=None, null=True, blank=True) # NomEmmeteur_NomDest_ID
+    facture_name = models.CharField(max_length=60,default=None, null=True, blank=True,verbose_name="Nom") # NomEmmeteur_NomDest_ID
     nb_facture = models.IntegerField(default=1)
     # TO USER
     to_user_firstname = models.CharField(max_length=60,default=None, null=True,blank=True)
@@ -192,8 +192,8 @@ class Eleve(models.Model):
         return self.nom_prenom
 
 class Notification(models.Model):
-    to_user = models.ForeignKey(User, related_name='User_who_received_the_notification', on_delete=models.CASCADE, default=None)
-    from_user = models.ForeignKey(User, related_name='User_who_send_the_notification', on_delete=models.CASCADE, default=None)
+    to_user = models.ForeignKey(User, related_name='User_who_received_the_notification', on_delete=models.CASCADE, default=None,verbose_name="Destinataire")
+    from_user = models.ForeignKey(User, related_name='User_who_send_the_notification', on_delete=models.CASCADE, default=None,verbose_name="Emetteur")
     date = models.DateTimeField(default=timezone.now)
     object = models.CharField(max_length=60)
     text = models.CharField(max_length=340)
@@ -201,7 +201,7 @@ class Notification(models.Model):
 class Prix(models.Model):
     start = models.DateField(default=date.today()+timedelta(days=1), verbose_name='Début')
     end = models.DateField(default=None, verbose_name='Fin',null=True, blank=True)
-    tva = models.FloatField(max_length=5, default=20.00) # 20,00
+    tva = models.FloatField(max_length=5, default=20.00,verbose_name="TVA") # 20,00
     adhesion =  models.FloatField(max_length=5, default=66.67)
     adhesion_reduc =  models.FloatField(max_length=5, default=60)
     adhesion_prof =  models.FloatField(max_length=5, blank=True, default=15.83)
@@ -215,8 +215,8 @@ class Prix(models.Model):
 
 class Condition(models.Model):
     start = models.DateField(default=date.today() + timedelta(days=1), verbose_name='Début')
-    end = models.BooleanField(default=False, blank=True)
-    file = models.FileField(upload_to='documents/',blank=True,default=None,null=True)
+    end = models.BooleanField(default=False, blank=True,verbose_name="Fin")
+    file = models.FileField(upload_to='documents/',blank=True,default=None,null=True,verbose_name="Fichier")
 
 class Stats(models.Model):
     date = models.DateField(default=date.today())
@@ -227,9 +227,9 @@ class Stats(models.Model):
         verbose_name_plural = "Statistiques"
 
 class Adhesion(models.Model):
-    to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING)
+    to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING,verbose_name="Adhérent")
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
-    end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='Fin')
+    end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date de fin')
     def __str__(self):
         return self.end.strftime("%d/%m/%Y")
 
@@ -239,13 +239,13 @@ def get_full_name(self):
 User.add_to_class("__str__", get_full_name)
 
 class Examen(models.Model):
-    name = models.CharField(max_length=140)
-    description = models.CharField(max_length=340)
+    name = models.CharField(max_length=140,verbose_name="Nom")
+    description = models.CharField(max_length=340,verbose_name="Description")
     last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Cloture des inscriptions')
     price = models.FloatField(max_length=5, default=40.00, verbose_name='Prix de l\'examen par élèves')
 
 class InscriptionExamen(models.Model):
-    examen = models.ForeignKey(Examen, related_name='Examen', on_delete=models.CASCADE)
-    eleve = models.ForeignKey(Eleve, related_name='Eleve', on_delete=models.DO_NOTHING)
+    examen = models.ForeignKey(Examen, related_name='Examen', on_delete=models.CASCADE,verbose_name="Examen")
+    eleve = models.ForeignKey(Eleve, related_name='Eleve', on_delete=models.DO_NOTHING,verbose_name="Elève")
     class Meta:
         verbose_name_plural = "Inscriptions Examens"
