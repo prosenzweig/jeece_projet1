@@ -507,7 +507,8 @@ def cours_prof(request):
 
     if request.method == "GET":
         if delta.days < 7:
-            messages.warning(request, 'Il vous reste %s jours, %s heures et %s minutes avant la fin du mois, n\'oubliez pas de valider vos cours !' % (delta.days, delta.seconds//3600, (delta.seconds//60)%60))
+            dd = 0 if delta.days < 1 else delta.days
+            messages.warning(request, 'Il vous reste %s jours, %s heures et %s minutes avant la fin du mois, n\'oubliez pas de valider vos cours !' % (dd, delta.seconds//3600, (delta.seconds//60)%60))
 
     if request.method == "POST":
         form = LessonFrom(request.POST, prof=request.user)
