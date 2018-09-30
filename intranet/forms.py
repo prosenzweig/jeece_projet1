@@ -273,7 +273,7 @@ class FactureForm(forms.Form):
             required=True, label="Emmeteur")
      to_user = forms.ChoiceField(
         widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),
-        choices=[(x.username, x) for i, x in enumerate(User.objects.all())],
+        choices=[(x.username, x) for i, x in enumerate(User.objects.filter(is_active=True))],
         required=True, label="Destinataires")
 
      object = forms.ChoiceField(choices=OBJECTS)

@@ -1016,7 +1016,7 @@ def statistiques(request):
     # print(geo_list)
     prof = User.objects.filter(is_staff=True, is_active=True).count()
     eleve = Eleve.objects.filter().count()
-    compte = User.objects.exclude(is_staff=True, is_active=True).count()
+    compte = User.objects.exclude(is_staff=True, is_active=False).count()
 
     return render(request, 'intranet/statistiques.html', locals())
 
@@ -1032,7 +1032,7 @@ def graphs_membres(request):
     labels = 'Admin', 'Professeurs', 'Eleves'
     a = User.objects.filter(is_superuser=True).count()
     p = User.objects.filter(is_staff=True).exclude(is_superuser=True).count()
-    s = User.objects.exclude(is_staff=True).count()
+    s = User.objects.exclude(is_staff=True, is_active=False).count()
     sizes = [a,p,s]
     explode = (0, 0, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
     fig1, ax1 = plt.subplots()
@@ -1151,7 +1151,7 @@ def gestion_articles(request):
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_membres(request):
     """Members template to display all the members"""
-    users_list = User.objects.all()
+    users_list = User.objects.filter(is_active=True)
     return render(request, 'intranet/gestion_membres.html', locals())
 
 @login_required
@@ -1164,7 +1164,7 @@ def gestion_relations(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_invitations(request):
-    invitations_list = Invitation.objects.all()
+    invitations_list = list(reversed(Invitation.objects.all()))
     page = request.GET.get('page', 1)
     paginator = Paginator(invitations_list, 10)
     try:
