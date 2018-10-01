@@ -453,7 +453,7 @@ def creation_adhesion(request):
         price = ad_prof
     else:
         nb_eleve = Eleve.objects.filter(referent=request.user).count()
-        price = ad  if nb_eleve == 1 else ad_reduc * nb_eleve
+        price = ad if nb_eleve == 1 else ad_reduc * nb_eleve
         eleves = Eleve.objects.filter(referent=request.user)
     return render(request, 'intranet/creation_adhesion.html', locals())
 

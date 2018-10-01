@@ -28,6 +28,6 @@ def mois(value):
 @register.filter
 def stripe(value):
     try:
-        return int(value)*100
+        return float(value)*100
     except (ValueError, ZeroDivisionError):
         return None
