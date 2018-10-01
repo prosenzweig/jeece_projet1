@@ -86,7 +86,7 @@ class Invitation(models.Model):
 
 class Relation(models.Model):
     teacher = models.ForeignKey(User, related_name='teacher_in_relation_model', on_delete=models.CASCADE,verbose_name="Professeur")
-    student = models.ForeignKey(User, related_name='student_in_relation_model', on_delete=models.CASCADE,verbose_name="Elève")
+    student = models.ForeignKey(User, related_name='student_in_relation_model', on_delete=models.CASCADE,verbose_name="Élève")
 
     def __str__(self):
         return '{0} et {1}'.format(self.teacher, self.student)
@@ -251,6 +251,6 @@ class Examen(models.Model):
 
 class InscriptionExamen(models.Model):
     examen = models.ForeignKey(Examen, related_name='Examen', on_delete=models.CASCADE,verbose_name="Examen")
-    eleve = models.ForeignKey(Eleve, related_name='Eleve', on_delete=models.DO_NOTHING,verbose_name="Elève")
+    eleve = models.ForeignKey(Eleve, related_name='Eleve', on_delete=models.DO_NOTHING,verbose_name="Élève")
     class Meta:
         verbose_name_plural = "Inscriptions Examens"

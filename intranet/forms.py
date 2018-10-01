@@ -23,7 +23,7 @@ class ConditionForm(forms.Form):
     condition = forms.BooleanField(label='J\'ai lu & j\'accepte les conditions générales d\'utilisation')
 
 class RelationForm(forms.Form):
-    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True), required=True, label='Elève', help_text=" (pseudo de l'élève)", to_field_name="username")
+    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True), required=True, label='Élève', help_text=" (pseudo de l'élève)", to_field_name="username")
     professeur = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True, is_active=True), required=True, help_text=" (pseudo du professeur)", to_field_name="username")
 
 class FactureIdForm(forms.Form):
@@ -36,7 +36,7 @@ class CoursFrom(forms.Form):
     def __init__(self, *args, **kwargs):
         prof = kwargs.pop('prof')
         super(CoursFrom, self).__init__(*args, **kwargs)
-        self.fields['eleve'] = forms.ChoiceField(widget=forms.Select(),choices=[(x.student,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))], required=True,help_text="(pseudo de l'éleve)", label="Elève")
+        self.fields['eleve'] = forms.ChoiceField(widget=forms.Select(),choices=[(x.student,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))], required=True,help_text="(pseudo de l'éleve)", label="Élève")
         self.fields['duree'] = forms.IntegerField(required=True,min_value=60,max_value=2100,help_text="(Temps de cours en minutes)")
         self.fields['action'] = forms.ChoiceField(widget=forms.Select(),choices=[('Ajouter','Ajouter'),('Modifier','Modifier'),('Supprimer','Supprimer')],help_text="(Ajouter du temps de cours ou modifier/réduiser celui-ci)")
 
@@ -215,7 +215,7 @@ class InscriptionExamenForm(forms.ModelForm):
         model = InscriptionExamen
         fields = ('examen', 'eleve')
         labels = {'examen': 'Examen',
-                  'eleve': 'Elève'
+                  'eleve': 'Élève'
                  }
 
 class ToMailForm(forms.Form):
@@ -247,7 +247,7 @@ class LessonFrom(forms.Form):
         self.fields['eleve'] = forms.ChoiceField(
             widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
             choices=[(x.student.username,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))],
-            required=True,help_text="(pseudo de l'élève)", label="Elève")
+            required=True,help_text="(pseudo de l'élève)", label="Élève")
         self.fields['nb_h'] = forms.IntegerField(
             widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
             required=True,min_value=1,max_value=23,label='H',initial=1)

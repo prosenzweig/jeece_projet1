@@ -134,7 +134,7 @@ def gen_pdf(request,fac_id):
     # Emetteur
     if facture.type in ['Frais de gestion', 'Frais de commission', 'Adhésion élève', 'Adhésion élèves', 'Adhésion professeur',
                         'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
-                        'Adhésion Professeur']:
+                        'Adhésion Professeur','Adhésion Éleve', 'Adhésion Élèves']:
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "Ecole Française de Piano")
         p.setFont('Helvetica', 12)
@@ -164,7 +164,7 @@ def gen_pdf(request,fac_id):
     p.drawString(350, 550, "%s %s" % (facture.to_user_zipcode, facture.to_user_city))
     p.drawString(350, 535, "France")
 
-    if facture.type in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
+    if facture.type in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur']:
         p.drawString(50, 400, "%s %s-%s" % (facture.type,facture.created.year,facture.created.year+1))
     else:
         p.drawString(50, 400, "%s" % facture.type)
@@ -183,7 +183,7 @@ def gen_pdf(request,fac_id):
     p.drawString(55, 340, "%s" % facture.object)
     p.drawString(220, 340, "%s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(300, 340, "%s" % facture.object_qt)
-    if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
+    if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur']:
         p.drawString(350, 340, "%s€" % str(round(facture.price_ht / facture.h_qt,2)))
     else:
         p.drawString(350, 340, "%s€" % str(facture.price_ht/facture.object_qt))
@@ -943,7 +943,7 @@ def checkout_inscription(request):
                 if nb == 1:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
-                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Elève",
+                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Élève",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -956,7 +956,7 @@ def checkout_inscription(request):
                 else:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
-                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Elèves",
+                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Élèves",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -1036,7 +1036,7 @@ def statistiques2(request):
 @user_passes_test(lambda u: u.is_superuser)
 def graphs_membres(request):
     f = mtf.Figure()
-    labels = 'Admin', 'Professeurs', 'Elèves'
+    labels = 'Admin', 'Professeurs', 'Élèves'
     a = User.objects.filter(is_superuser=True).count()
     p = User.objects.filter(is_staff=True).exclude(is_superuser=True).count()
     s = User.objects.exclude(is_staff=True, is_active=False).count()
@@ -1407,7 +1407,7 @@ def remove_eleve(request, id):
         return redirect('intranet:mon_compte')
     else:
         e.delete()
-        messages.success(request, "Elève supprimé.")
+        messages.success(request, "Élève supprimé.")
     return redirect('intranet:mon_compte')
 
 @login_required
