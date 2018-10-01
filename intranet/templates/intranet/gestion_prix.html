@@ -35,7 +35,7 @@
                         {% endif %}
                     </div>
                     <div class="card-body">
-                        <h5>TVA: {{ p.tva|floatformat:2 }}%</5>
+                        <h5>TVA: {{ p.tva|floatformat:2 }}%</h5>
                         <h5>Prix des Cours TTC</h5>
                         <table class="table table-hover">
                         <tr>
@@ -59,13 +59,13 @@
                             <td>Adh. multiple HT:</td>
                             <td>{{ p.adhesion_reduc|floatformat:2 }}€ </td>
                             <td>Adh. multiple TTC:</td>
-                            <td> {{ p.adhesion_reduc|tva:p.tva|floatformat:2 }}€</td>
+                            <td>{{ p.adhesion_reduc|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                          <tr>
                             <td>Adh. professeur HT:</td>
                             <td>{{ p.adhesion_prof|floatformat:2 }}€ </td>
                             <td>Adh. professeur  TTC:</td>
-                            <td> {{ p.adhesion_prof|tva:p.tva|floatformat:2 }}€</td>
+                            <td>{{ p.adhesion_prof|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                         </table>
                         <h5>Frais de commission</h5>
@@ -73,7 +73,7 @@
                         <tr>
                             <td>Commission HT:</td>
                             <td>{{ p.commission|floatformat:2 }}€ </td>
-                            <td> Commission TTC:</td>
+                            <td>Commission TTC:</td>
                             <td>{{ p.commission|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                         </table>
@@ -82,7 +82,7 @@
                         <tr>
                             <td>Frais gestion HT:</td>
                             <td>{{ p.frais_gestion|floatformat:2 }}€ </td>
-                            <td> Frais Gestion TTC:</td>
+                            <td>Frais Gestion TTC:</td>
                             <td>{{ p.frais_gestion|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                         </table>

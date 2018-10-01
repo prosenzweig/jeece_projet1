@@ -57,7 +57,6 @@ urlpatterns = [
     path('add_eleve', views.add_eleve, name='add_eleve'),
     path('edit_pass', views.edit_pass, name='edit_pass'),
     url(r'^creation/(?P<uuid>[0-9a-f-]+)/$', views.creation, name='creation'),
-    url(r'^creation/(?P<uuid>[0-9a-f-]+)/$', views.creation, name='creation'),
     path('connexion', views.connexion, name='connexion'),
     path('deconnexion', views.deconnexion, name='deconnexion'),
     url(r'^reset-password/$', password_reset,

@@ -40,7 +40,7 @@ class UserProfile(models.Model):
     avatar = models.ImageField(null=True, blank=True, upload_to="avatars/")
     phone_regex = RegexValidator(regex=r'^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$',
                                  message="Le numéro de téléphone doit suivre le format XX.XX.XX.XX.XX")
-    phone_number = models.CharField(validators=[phone_regex], max_length=19, blank=True,verbose_name="Téléphone")  # validators should be a list
+    phone_number = models.CharField(validators=[phone_regex], max_length=19,verbose_name="Téléphone")  # validators should be a list
     address = models.CharField(max_length=60, default='',verbose_name="Adresse")
     city = models.CharField(max_length=50, default='',verbose_name="Ville")
     country = models.CharField(max_length=50, default='France',verbose_name="Pays")
@@ -49,17 +49,17 @@ class UserProfile(models.Model):
     lgn = models.CharField(null=True,blank=True,default='None',max_length=50)
     zip_code_regex = RegexValidator(regex=r'^(([0-8][0-9])|(9[0-5])|(2[ab]))[0-9]{3}$',
                                     message="Le code postal doit suivre le format DDDDD")
-    zip_code = models.CharField(validators=[zip_code_regex], max_length=6, blank=True,verbose_name="Code Postal")
+    zip_code = models.CharField(validators=[zip_code_regex], max_length=6, verbose_name="Code Postal")
     # iban_regex = RegexValidator(regex='^([A-Za-z]{2}[ \-]?[0-9]{2})(?=(?:[ \-]?[A-Za-z0-9]){9,30}$)((?:[ \-]?[A-Za-z0-9]{3,5}){2,6})([ \-]?[A-Za-z0-9]{1,3})?$')
     # iban = models.CharField(validators=[iban_regex], max_length=27, blank=True)
     is_adherent = models.BooleanField(default=False)
 
     # Use to generate attestation
-    siret = models.CharField(max_length=21,default='SIRET',blank=True,verbose_name="SIRET")
-    sap = models.CharField(max_length=11,default='SAP',blank=True,verbose_name="SAP")
+    siret = models.CharField(max_length=21,default='SIRET',verbose_name="SIRET")
+    sap = models.CharField(max_length=11,default='SAP',verbose_name="SAP")
     nb_facture = models.IntegerField(default=1)
     nb_adh= models.IntegerField(default=1,blank=True,null=True)
-    stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True,blank=True)
+    stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True)
     is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
     stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
     class Meta:
@@ -248,6 +248,7 @@ class Examen(models.Model):
     description = models.CharField(max_length=340,verbose_name="Description")
     last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Clôture des inscriptions')
     price = models.FloatField(max_length=5, default=40.00, verbose_name='Prix de l\'examen par élèves')
+
 
 class InscriptionExamen(models.Model):
     examen = models.ForeignKey(Examen, related_name='Examen', on_delete=models.CASCADE,verbose_name="Examen")

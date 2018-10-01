@@ -18,7 +18,7 @@ def tva(value, arg):
 
 @register.filter
 def mois(value):
-    liste_mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
+    liste_mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
     try:
         m =value.split('_')
         return '%s %s' % (liste_mois[int(m[0])-1], m[1])

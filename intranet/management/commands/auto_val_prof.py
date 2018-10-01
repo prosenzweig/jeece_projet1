@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-mois = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
+mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
 
 ### CRONTAB ###
 # 50 23 28-31 * * [ $(date -d +1day +%d) -eq 1 ] && cd /home/ecole01/intranet && /home/ecole01/venv/bin/python manage.py auto_val_prof > /home/ecole01/logs/cron.log

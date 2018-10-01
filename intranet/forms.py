@@ -36,7 +36,7 @@ class CoursFrom(forms.Form):
     def __init__(self, *args, **kwargs):
         prof = kwargs.pop('prof')
         super(CoursFrom, self).__init__(*args, **kwargs)
-        self.fields['eleve'] = forms.ChoiceField(widget=forms.Select(),choices=[(x.student,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))], required=True,help_text="(pseudo de l'éleve)", label="Élève")
+        self.fields['eleve'] = forms.ChoiceField(widget=forms.Select(),choices=[(x.student,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))], required=True,help_text="(pseudo de l'élève)", label="Élève")
         self.fields['duree'] = forms.IntegerField(required=True,min_value=60,max_value=2100,help_text="(Temps de cours en minutes)")
         self.fields['action'] = forms.ChoiceField(widget=forms.Select(),choices=[('Ajouter','Ajouter'),('Modifier','Modifier'),('Supprimer','Supprimer')],help_text="(Ajouter du temps de cours ou modifier/réduiser celui-ci)")
 

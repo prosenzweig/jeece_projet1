@@ -57,7 +57,7 @@ from intranet.forms import LoginForm, RegistrationForm, RelationForm, Invitation
     InscriptionExamenForm, ExamenForm
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
-MOIS = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "ctobre","novembre","décembre"]
+MOIS = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
 
 def from_date_to_m_y(date):
     d = date.split('-')
@@ -126,7 +126,7 @@ def gen_pdf(request,fac_id):
     p.setLineWidth(.3)
     H, L = 830, 587
     p.setFont('Helvetica-Bold', 16)
-    p.drawString(350, 720, "Facture N°A%s" % facture.nb_facture)
+    p.drawString(350, 720, "Facture N°A%s" % facture.facture_name)
     p.setFont('Helvetica', 12)
     p.drawString(350, 705, "Date de facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
@@ -943,7 +943,7 @@ def checkout_inscription(request):
                 if nb == 1:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
-                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Élève",
+                        object_qt=nb, h_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Élève",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -956,7 +956,7 @@ def checkout_inscription(request):
                 else:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
-                        object_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Élèves",
+                        object_qt=nb, h_qt=nb,tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Élèves",
                         facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                         to_user_firstname=user.first_name, to_user_lastname=user.last_name,
                         to_user_address=user.userprofile.address,
@@ -1292,10 +1292,8 @@ def stripe_connect(request):
     if code == '':
         messages.error(request,"Impossible de lier votre compte stripe.")
     else:
-        #TODO 4 Prod
+        #CRITICAL POINT HERE
         r = requests.post("https://connect.stripe.com/oauth/token", data={'client_secret': settings.STRIPE_SECRET_KEY, 'code': code, 'grant_type': 'authorization_code'})
-        # r = requests.post("https://connect.stripe.com/oauth/token", data={'client_secret': settings.STRIPE_SECRET_KEY_JEECE, 'code': code, 'grant_type': 'authorization_code'})
-        # print(r.text)
         res = json.loads(r.text)
         secret = res['stripe_user_id']
         print(secret)
