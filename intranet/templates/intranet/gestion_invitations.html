@@ -8,15 +8,15 @@
 {% block content %}
 <div class="container container_extras">
     <div class="tab-content">
-        <h3 class="text-center mt-2">Envoyez une Invitation</h3>
-        <p>Envoyer une invitaion par email en cliquant sur le boutton juste en dessous:</p>
+        <h3 class="text-center mt-2">Envoyez une invitation</h3>
+        <p>Envoyez une invitaion par email en cliquant sur le bouton juste en dessous:</p>
         {% include 'intranet/messages.html' with messages=messages %}
         <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:invitation' %}">
             {% csrf_token %}
             {{ form.as_p }}
             <button class="btn btn-sm btn-primary btn-signin" type="submit">Inviter</button>
         </form>
-        <h3 class="text-center mt-2"> Liste des Invitations </h3>
+        <h3 class="text-center mt-2"> Liste des invitations </h3>
         {% if invitations_list %}
             <div class="table-responsive p-2 pb-5">
                 <!--table-bordered-->

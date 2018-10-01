@@ -9,16 +9,16 @@
      <h3 class="text-center mt-2"> Bienvenue sur l'intranet !</h3>
      <h5>Inscription des élèves</h5>
      {% include 'intranet/messages.html' with messages=messages %}
-     <p>Veuillez renseigner l'élève (ou les élèves) qui suivront les cours de piano:</p>
+     <p>Veuillez renseigner les élèves qui suivront les cours de piano.</p>
       {% if eleves %}
-         <p>Les élèves suivant sont déjà enregistrer:</p>
+         <p>Les élèves suivant sont déjà enregistrés:</p>
          <ol>
          {% for eleve in eleves %}
              <li>{{eleve}}</li>
          {% endfor %}
          </ol>
      {% else %}
-        <p>Vous n'avez pas encore renseigner d'élèves, il faut au moins resneigner un élèves qui suivra les cours de piano.</p>
+        <p>Vous n'avez pas encore renseigné d'élèves, il faut au moins renseigner un élève qui suivra les cours de piano.</p>
      {% endif %}
 
      <form method="post">

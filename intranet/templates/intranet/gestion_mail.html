@@ -8,8 +8,8 @@
 {% block content %}
 <div class="container container_extras">
     <div class="tab-content">
-        <h3 class="text-center mt-2">Envoyez un Email</h3>
-        <p>Envoyer un email en remplissant le formulaire ci-dessous</p>
+        <h3 class="text-center mt-2">Envoyez un email</h3>
+        <p>Envoyez un email en remplissant le formulaire ci-dessous</p>
         {% include 'intranet/messages.html' with messages=messages %}
         <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:mail' %}">
             {% csrf_token %}

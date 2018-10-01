@@ -70,8 +70,8 @@ def auto_val_eleve():
                 fac_name = "EFP_%s_%s" % (student.last_name, teacher.userprofile.nb_facture)
                 print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
-                    to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
-                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=price * nbr_tt, price_ttc=add_tva(price*nbr_tt,prix.tva), type="Cours de Piano Ecole",
+                    to_user=student, from_user=teacher, object="Cours de piano - 60min", is_paid=False,
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=price * nbr_tt, price_ttc=add_tva(price*nbr_tt,prix.tva), type="Cours de piano ecole",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
@@ -87,8 +87,8 @@ def auto_val_eleve():
                 fac_name = "%s_%s_%s" % (teacher.last_name, student.last_name, teacher.userprofile.nb_facture)
                 print(fac_name, price, nb_cours, nbr_tt)
                 Facture.objects.create(
-                    to_user=student, from_user=teacher, object="Cours de Piano - 60min", is_paid=False,
-                    object_qt=nb_cours, h_qt=nbr_tt, tva=0, price_ht=price*nbr_tt, price_ttc=price*nbr_tt, type="Cours de Piano",
+                    to_user=student, from_user=teacher, object="Cours de piano - 60min", is_paid=False,
+                    object_qt=nb_cours, h_qt=nbr_tt, tva=0, price_ht=price*nbr_tt, price_ttc=price*nbr_tt, type="Cours de piano",
                     facture_name=fac_name, nb_facture=teacher.userprofile.nb_facture,
                     to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                     to_user_address=student.userprofile.address,
@@ -103,7 +103,7 @@ def auto_val_eleve():
             teacher.userprofile.save()
 
             Notification.objects.create(to_user=student, from_user=teacher,
-                                            object="Factures Cours de Piano %s" % conv_mois(last_m_y),
+                                            object="Factures cours de piano %s" % conv_mois(last_m_y),
                                             text="Votre facture est téléchargeable dans la section \"Mes documents\".")
             if teacher != admin:
                 # Frais de Gestion (de l'admin vers les élèves)
@@ -143,9 +143,9 @@ def factures_commissions():
 
         # Frais de Commission de l'admin vers les profs
         Facture.objects.create(
-            to_user=prof, from_user=admin, object="Frais de Commission - 60min", is_paid=False,
+            to_user=prof, from_user=admin, object="Frais de commission - 60min", is_paid=False,
             object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.commission * nbr_tt,
-            price_ttc=add_tva(prix.commission * nbr_tt, prix.tva), type="Frais de Commission",
+            price_ttc=add_tva(prix.commission * nbr_tt, prix.tva), type="Frais de commission",
             facture_name=admin, nb_facture=admin.userprofile.nb_facture,
             to_user_firstname=prof.first_name, to_user_lastname=prof.last_name,
             to_user_address=prof.userprofile.address,
@@ -160,7 +160,7 @@ def factures_commissions():
         admin.userprofile.save()
 
         Notification.objects.create(to_user=prof, from_user=admin,
-                                    object="Factures Frais de Commission %s" % conv_mois(last_m_y),
+                                    object="Factures frais de commission %s" % conv_mois(last_m_y),
                                     text="Votre facture est téléchargeable dans la section \"Mes documents\".")
 
 class Command(BaseCommand):

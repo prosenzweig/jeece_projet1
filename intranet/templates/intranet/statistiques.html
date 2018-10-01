@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="container container_extras">
-     <h3 class="text-center mt-2"> Mes Statistiques </h3>
+     <h3 class="text-center mt-2"> Mes statistiques </h3>
      <h5 class="my-2"> Il y a actuellement {{prof}} professeurs, {{eleve}} élèves ainsi que {{compte}} comptes utilisateurs</h5>
      <h5> Différentes données statistiques: </h5>
      <div>
@@ -15,7 +15,7 @@
      </div>
     <div class="main_maps text-center">
         <div class="maps_text" onload="showmap();">
-            <h3>Adresses des Membres d'Ecole01</h3>
+            <h3>Adresses des membres d'Ecole01</h3>
             <div id="map_canvas" class="mapheight"></div>
         </div>
     </div>
@@ -70,7 +70,7 @@
 
 
             marker['infowindow']  = new google.maps.InfoWindow({
-                 content: "<h5>{{user.user}}</h5><p>{{ user.address }} {{ user.city }}</p><a href='/admin/intranet/userprofile/{{user.user.id}}/change/'>lien du profile</a>"
+                 content: "<h5>{{user.user}}</h5><p>{{ user.address }} {{ user.city }}</p><a href='/admin/intranet/userprofile/{{user.user.id}}/change/'>lien du profil</a>"
             });
             google.maps.event.addListener(marker, 'click', function() {
                 //window.location.href = this.url;

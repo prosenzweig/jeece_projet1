@@ -9,7 +9,7 @@
 {% block content %}
 <div class="container container_extras">
     <div class="tab-content">
-        <h3 class="text-center mt-2">Gérer mes Prix</h3>
+        <h3 class="text-center mt-2">Gérer mes prix</h3>
         <h5>Fixer un nouveau prix: <i class="fa fa-money btn white-text" style="color: black;" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"></i></h5>
         {% include 'intranet/messages.html' with messages=messages %}
         <div class="collapse" id="collapseExample">
@@ -21,7 +21,7 @@
         </form>
             </div>
         </div>
-        <h3 class="text-center mt-2"> Liste des Prix</h3>
+        <h3 class="text-center mt-2"> Liste des prix</h3>
             {% if prix_list %}
             <p>* prix influencés par la TVA</p>
             <p>** prix en euros</p>
@@ -39,36 +39,36 @@
                         <h5>Prix des Cours TTC</h5>
                         <table class="table table-hover">
                         <tr>
-                            <td>Cours Piano:</td>
+                            <td>Cours piano:</td>
                             <td>{{ p.cours|floatformat:2 }}€ </td>
-                            <td>Cours Piano Prenimum:</td>
+                            <td>Cours piano prenimum:</td>
                             <td>{{ p.cours_premium|floatformat:2 }}€</td>
-                            <td>Cours Piano Ecole:</td>
+                            <td>Cours piano ecole:</td>
                             <td>{{ p.cours|floatformat:2 }}€</td>
                         </tr>
                         </table>
-                        <h5>Frais d'Adhésion</h5>
+                        <h5>Frais d'adhésion</h5>
                         <table class="table table-hover">
                         <tr>
-                            <td>Adh. Simple HT:</td>
+                            <td>Adh. simple HT:</td>
                             <td>{{ p.adhesion|floatformat:2 }}€ </td>
-                            <td>Adh. Simple TTC:</td>
+                            <td>Adh. simple TTC:</td>
                             <td> {{ p.adhesion|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                          <tr>
-                            <td>Adh. Multiple HT:</td>
+                            <td>Adh. multiple HT:</td>
                             <td>{{ p.adhesion_reduc|floatformat:2 }}€ </td>
-                            <td>Adh. Multiple TTC:</td>
+                            <td>Adh. multiple TTC:</td>
                             <td> {{ p.adhesion_reduc|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                          <tr>
-                            <td>Adh. Professeur HT:</td>
+                            <td>Adh. professeur HT:</td>
                             <td>{{ p.adhesion_prof|floatformat:2 }}€ </td>
-                            <td>Adh. Professeur  TTC:</td>
+                            <td>Adh. professeur  TTC:</td>
                             <td> {{ p.adhesion_prof|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                         </table>
-                        <h5>Frais de Commission</h5>
+                        <h5>Frais de commission</h5>
                         <table class="table table-hover">
                         <tr>
                             <td>Commission HT:</td>
@@ -77,10 +77,10 @@
                             <td>{{ p.commission|tva:p.tva|floatformat:2 }}€</td>
                         </tr>
                         </table>
-                        <h5>Frais de Gestion</h5>
+                        <h5>Frais de gestion</h5>
                         <table class="table table-hover">
                         <tr>
-                            <td>Frais Gestion HT:</td>
+                            <td>Frais gestion HT:</td>
                             <td>{{ p.frais_gestion|floatformat:2 }}€ </td>
                             <td> Frais Gestion TTC:</td>
                             <td>{{ p.frais_gestion|tva:p.tva|floatformat:2 }}€</td>

@@ -1,4 +1,4 @@
-Bonjour,
+Chère Madame, Cher Monsieur
 
 Voici la liste des cours de piano pour le mois de {{ mois }} :
 {% for lesson in lessons %}
@@ -9,4 +9,4 @@ dans le cas contraire ils seront validés automatiquement le 5 du mois suivant.
 
 Passez une excellente journée,
 
-L'Intranet de l'EFP
+L'intranet de l'Ecole Française de Piano

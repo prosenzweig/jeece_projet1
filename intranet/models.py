@@ -27,7 +27,7 @@ class Article(models.Model):
 
 class UserProfile(models.Model):
     STATS_CHOICES = (
-        ('A', 'Moteur de rechercheGoogle'),
+        ('A', 'Moteur de recherche Google'),
         ('B', 'Facebook'),
         ('C', 'Autre source internet'),
         ('D', 'Annuaire(pages jaunes...)'),
@@ -48,7 +48,7 @@ class UserProfile(models.Model):
     lat = models.CharField(null=True,blank=True,default='None',max_length=50)
     lgn = models.CharField(null=True,blank=True,default='None',max_length=50)
     zip_code_regex = RegexValidator(regex=r'^(([0-8][0-9])|(9[0-5])|(2[ab]))[0-9]{3}$',
-                                    message="Le Code Postal doit suivre le format DDDDD")
+                                    message="Le code postal doit suivre le format DDDDD")
     zip_code = models.CharField(validators=[zip_code_regex], max_length=6, blank=True,verbose_name="Code Postal")
     # iban_regex = RegexValidator(regex='^([A-Za-z]{2}[ \-]?[0-9]{2})(?=(?:[ \-]?[A-Za-z0-9]){9,30}$)((?:[ \-]?[A-Za-z0-9]{3,5}){2,6})([ \-]?[A-Za-z0-9]{1,3})?$')
     # iban = models.CharField(validators=[iban_regex], max_length=27, blank=True)
@@ -187,7 +187,9 @@ class Facture(models.Model):
 class Eleve(models.Model):
     referent = models.ForeignKey(User, on_delete=models.DO_NOTHING, default=None)
     nom_prenom = models.CharField(max_length=100, default=None)
-
+    class Meta:
+        verbose_name = 'élève'
+        verbose_name_plural = "élèves"
     def __str__(self):
         return self.nom_prenom
 
@@ -230,6 +232,9 @@ class Adhesion(models.Model):
     to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING,verbose_name="Adhérent")
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date de fin')
+    class Meta:
+        verbose_name = 'adhésion'
+        verbose_name_plural = "adhésions"
     def __str__(self):
         return self.end.strftime("%d/%m/%Y")
 
@@ -241,7 +246,7 @@ User.add_to_class("__str__", get_full_name)
 class Examen(models.Model):
     name = models.CharField(max_length=140,verbose_name="Nom")
     description = models.CharField(max_length=340,verbose_name="Description")
-    last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Cloture des inscriptions')
+    last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Clôture des inscriptions')
     price = models.FloatField(max_length=5, default=40.00, verbose_name='Prix de l\'examen par élèves')
 
 class InscriptionExamen(models.Model):

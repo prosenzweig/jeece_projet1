@@ -7,7 +7,7 @@
 {% block content %}
  <div class="container container_extras" >
      <h3 class="text-center mt-2"> Bienvenue sur l'intranet {{ user.username }} </h3>
-     <h5>Voici la liste des derniers articles:</h5>
+     <h5>Voici la liste des derniers articles :</h5>
      {% include 'intranet/messages.html' with messages=messages %}
      {% if articles_list %}
         {% for art in articles_list %}

@@ -8,7 +8,7 @@
 {% load widget_tweaks %}
 {% block content %}
  <div class="container container_extras">
-     <h3 class="text-center mt-2 mb-4"> Mes Documents</h3>
+     <h3 class="text-center mt-2 mb-4"> Mes documents</h3>
     <!--Gestion des factures-->
     {% if user.is_superuser %}
      <form method="get">
@@ -41,25 +41,25 @@
           </button>
         </div>
      </form>
-        <h5 class="my-2 mt-4">Liste des Factures</h5>
+        <h5 class="my-2 mt-4">Liste des factures</h5>
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=filter_page %}
         {% include 'intranet/paginator.html' with page_obj=filter_page path=new_current_path %}
     {% else %}
-        <h5 class="mt-2">Vos Factures Impayées :</h5>
+        <h5 class="mt-2">Vos factures impayées :</h5>
         {% include 'intranet/messages.html' with messages=messages %}
         {% include 'intranet/factures.html' with factures_list=factures_list_not_paid %}
         {% if price is none %}
         <p class="mb-5">Vous n'avez pas de facture à payer.</p>
         {% else %}
-        <p>Montant totale à payer: <strong>{{price}}€</strong></p>
+        <p>Montant total à payer: <strong>{{price}}€</strong></p>
         {% include 'intranet/checkout.html' %}<br><br>
         {% endif %}
-        <h5 class="mt-2">Vos Anciennes Factures :</h5>
+        <h5 class="mt-5">Vos anciennes factures :</h5>
         {% include 'intranet/factures.html' with factures_list=factures_list_paid_page %}
         {% include 'intranet/paginator.html' with page_obj=factures_list_paid_page %}
     {% endif %}
-     <h5 class="my-2">Attestations Fiscales</h5>
+     <h5 class="my-2">Attestations fiscales</h5>
      {% if attestation_list %}
         <table class="table table-hover">
             <thead>

@@ -153,7 +153,7 @@ body, html {
             <p id="profile-name" class="profile-name-card">Connexion</p>
             {% include 'intranet/messages.html' with messages=messages %}
             {% if error %}
-            <span style="font-size: 12px;">Utilisateur inconnu ou mauvais de mot de passe.</span>
+            <span style="font-size: 12px;">Utilisateur inconnu ou mauvais de mot de passe</span>
             {% endif %}
             <form class="form-signin" method="POST"  role="form" action="/intranet/connexion">
                 {% csrf_token %}
@@ -162,7 +162,7 @@ body, html {
                 <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Valider</button>
             </form><!-- /form -->
             <a href="{% url 'intranet:reset_password' %}" class="forgot-password">
-                Mot de passe oublié?
+                Mot de passe oublié ?
             </a>
         </div><!-- /card-container -->
  </div><!-- /container -->

@@ -56,8 +56,8 @@ from intranet.forms import LoginForm, RegistrationForm, RelationForm, Invitation
     EleveFormset, PriceForm, LessonFrom, CondiForm, FactureForm, EditEleveForm, AddEleveForm,EditEleveFormset,\
     InscriptionExamenForm, ExamenForm
 
-JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-MOIS = ["Janvier", u"Février", "Mars", "Avril", "Mai", "Juin", "Juillet", u"Août", "Septembtre", "Octobre"]
+JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+MOIS = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "ctobre","novembre","décembre"]
 
 def from_date_to_m_y(date):
     d = date.split('-')
@@ -128,11 +128,13 @@ def gen_pdf(request,fac_id):
     p.setFont('Helvetica-Bold', 16)
     p.drawString(350, 720, "Facture N°A%s" % facture.nb_facture)
     p.setFont('Helvetica', 12)
-    p.drawString(350, 705, "Date de Facturation: %s" % facture.created.strftime("%d/%m/%Y"))
+    p.drawString(350, 705, "Date de facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
 
     # Emetteur
-    if facture.type in ['Frais de Gestion', 'Frais de Commission', 'Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur']:
+    if facture.type in ['Frais de gestion', 'Frais de commission', 'Adhésion élève', 'Adhésion élèves', 'Adhésion professeur',
+                        'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
+                        'Adhésion Professeur']:
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "Ecole Française de Piano")
         p.setFont('Helvetica', 12)
@@ -557,7 +559,7 @@ def validation_prof(request, id):
         messages.success(request, 'Cours validé !')
         Notification.objects.create(to_user=cour.relation.student,from_user=cour.relation.teacher,
                                    object="Validation Cours %s" % conv_date(str(cour.date)),
-                                   text="Vous pouvez valider ou refuser un cours dans la section 'Mes Cours'.")
+                                   text="Vous pouvez valider ou refuser un cours dans la section 'Mes cours'.")
     else:
         messages.error(request,'Action Impossible.')
     return redirect('intranet:cours_prof')
@@ -1034,7 +1036,7 @@ def statistiques2(request):
 @user_passes_test(lambda u: u.is_superuser)
 def graphs_membres(request):
     f = mtf.Figure()
-    labels = 'Admin', 'Professeurs', 'Eleves'
+    labels = 'Admin', 'Professeurs', 'Elèves'
     a = User.objects.filter(is_superuser=True).count()
     p = User.objects.filter(is_staff=True).exclude(is_superuser=True).count()
     s = User.objects.exclude(is_staff=True, is_active=False).count()
@@ -1056,7 +1058,7 @@ def graphs_membres(request):
 def graphs_stats(request):
     f = mtf.Figure()
 
-    labels = ['Moteur de rechercheGoogle', 'Facebook', 'Autre source internet',  'Annuaire(pages jaunes...)',
+    labels = ['Moteur de recherche Google', 'Facebook', 'Autre source internet',  'Annuaire(pages jaunes...)',
              'Nebout & Hamm', 'Falado', 'Connaissance(famille, amis...)']
 
     a = UserProfile.objects.filter(stats='A').count()
@@ -1263,7 +1265,7 @@ def invitation(request):
         msg_plain = render_to_string('email/email_invitation.txt', context=context)
         msg_html = render_to_string('email/email_invitation.html', context=context)
         send_mail(
-            'Inscrivez-vous sur l\'intranet d\'Ecole01!',
+            'Inscrivez-vous sur l\'intranet de l\'EFP !',
             msg_plain,
             settings.DEFAULT_FROM_EMAIL,
             [mail],
@@ -1484,10 +1486,10 @@ def mail(request):
 
             print(address)
             send_mail(objet,message,settings.DEFAULT_FROM_EMAIL,address)
-            messages.success(request,"Votre email a bien été envoyée.")
+            messages.success(request,"Votre email a bien été envoyée")
             return redirect('intranet:gestion_mail')
 
-    messages.warning(request, "Impossible d'envoyer votre email.")
+    messages.warning(request, "Impossible d'envoyer votre email")
     return redirect('intranet:gestion_mail')
 
 @login_required
@@ -1504,7 +1506,7 @@ def gestion_condition(request):
                 form.save()
             else :
                 form.save()
-            messages.success(request,'Les Confitions générale d\'utilisation ont bien été modifié')
+            messages.success(request,'Les Confitions générale d\'utilisation ont bien été modifiées')
             return redirect('intranet:gestion_condition')
         else:
             messages.error(request, 'Impossible de télécharger le fichier')
@@ -1542,11 +1544,11 @@ def gestion_factures(request):
                 fac_name = "%s_%s_%s" % ( from_user.last_name, to_user.last_name, from_user.userprofile.nb_facture)
 
             choix = {
-                'cp': 'Cours de Piano',
-                'fg': 'Frais de Gestion',
-                'fc': 'Frais de Commission',
-                'fa': 'Frais d\'Adhésion',
-                'fp': 'Frais de Préavis'
+                'cp': 'Cours de piano',
+                'fg': 'Frais de gestion',
+                'fc': 'Frais de commission',
+                'fa': 'Frais d\'adhésion',
+                'fp': 'Frais de préavis'
             }
 
             obj = choix[object]
