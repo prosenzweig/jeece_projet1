@@ -64,6 +64,15 @@ def from_date_to_m_y(date):
     f = '%s_%s' % (d[1],d[0])
     return re.sub(r'^0', '', f)
 
+def nb_new_notifs(user):
+    # print(user.last_login.date())
+    if user.is_superuser:
+        nots = Notification.objects.filter(date__gte=user.last_login).count()
+    else:
+        nots = Notification.objects.filter(to_user=user, date__gte=user.last_login).count()
+    # print(nots)
+    return nots
+
 def conv_date(date):
     return datetime.strptime(date, '%Y-%m-%d').strftime('%d/%m/%Y')
 
@@ -115,7 +124,7 @@ def gen_pdf(request,fac_id):
 
     response = HttpResponse(content_type='application/pdf')
     # response['Content-Disposition'] = 'attachment;filename=facture_%s.pdf' % facture.pk
-    response['Content-Disposition'] = 'filename=facture_%s.pdf' % facture.pk
+    response['Content-Disposition'] = 'filename=A_%s.pdf' % facture.facture_name
     buffer = BytesIO()
 
     p = canvas.Canvas(buffer)
@@ -126,7 +135,7 @@ def gen_pdf(request,fac_id):
     p.setLineWidth(.3)
     H, L = 830, 587
     p.setFont('Helvetica-Bold', 16)
-    p.drawString(350, 720, "Facture N°A%s" % facture.facture_name)
+    p.drawString(350, 720, "Facture N°A%s" % facture.nb_facture)
     p.setFont('Helvetica', 12)
     p.drawString(350, 705, "Date de facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
@@ -233,7 +242,7 @@ def gen_attest_pdf(request,fac_id):
 
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'filename=attestation_%s.pdf' % att.pk
+    response['Content-Disposition'] = 'filename=attestation_%s_%s_%s.pdf' % (att.from_user_lastname,att.to_user_lastname,att.nb_adh)
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
 
@@ -364,6 +373,8 @@ def accueil(request):
     if not request.user.userprofile.is_adherent:
         return redirect('intranet:creation_inscription')
 
+    nots = nb_new_notifs(request.user)
+
     """ Redirection apres connexion, ici seront afficher les articles du blog"""
     articles_list = reversed(Article.objects.all()) # Nous sélectionnons tous nos articles
     return render(request, 'intranet/accueil.html', locals())
@@ -486,7 +497,7 @@ def cours_prof(request):
         return last_day.replace(hour=0,minute=0,second=0) - datetime.now()
 
     m_y = "%s_%s" % (datetime.now().month, datetime.now().year)
-
+    nots = nb_new_notifs(request.user)
     lesson_by_month = [{x.student: Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')} for i, x in enumerate(Relation.objects.filter(teacher=request.user)) if Lesson.objects.filter(relation__teacher=request.user,relation__student=x.student,mois=m_y).order_by('-date')]
 
     # for dict in lesson_by_month:
@@ -546,6 +557,7 @@ def cours_prof(request):
 @user_passes_test(lambda u: u.is_staff)
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def validation_prof(request, id):
+    nots = nb_new_notifs(request.user)
     lesson = Lesson.objects.filter(pk=id)
     if not lesson:
         messages.error(request, 'Action Impossible.')
@@ -568,6 +580,7 @@ def validation_prof(request, id):
 @user_passes_test(lambda u: u.is_staff)
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def suppression_prof(request,id):
+    nots = nb_new_notifs(request.user)
     lesson = Lesson.objects.filter(pk=id)
     if not lesson:
         messages.error(request, 'Action Impossible.')
@@ -586,6 +599,7 @@ def suppression_prof(request,id):
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def cours_eleve(request):
+    nots = nb_new_notifs(request.user)
     lessons_list = reversed(Lesson.objects.filter(relation__student=request.user, is_valid_t=True))
     return render(request, 'intranet/cours_eleve.html', locals())
 
@@ -633,6 +647,7 @@ def validation_eleve(request, id, result):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def documents(request):
+    nots = nb_new_notifs(request.user)
     # TO DO PROF
     # key = settings.STRIPE_PUBLISHABLE_KEY
     admin = User.objects.get(is_superuser=True)
@@ -866,7 +881,7 @@ def documents(request):
         paginator = Paginator(filter.qs, 5)
         current_path = request.get_full_path()
         new_current_path = re.sub(r'&page=\d+', '', current_path)
-        print(new_current_path)
+        # print(new_current_path)
         try:
             filter_page = paginator.page(page)
         except PageNotAnInteger:
@@ -990,6 +1005,9 @@ def checkout_inscription(request):
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def notifications(request):
+    request.user.last_login = datetime.now()
+    request.user.save()
+    nots = nb_new_notifs(request.user)
     """Minimal function rendering a template"""
     if request.user.is_superuser:
         notifications_list = list(reversed(Notification.objects.all()))
@@ -1030,6 +1048,7 @@ def statistiques(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def statistiques2(request):
+    nots = nb_new_notifs(request.user)
     return render(request, 'intranet/statistiques2.html', locals())
 
 @login_required
@@ -1157,6 +1176,7 @@ def gestion_articles(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_membres(request):
+    nots = nb_new_notifs(request.user)
     """Members template to display all the members"""
     users_list = User.objects.filter(is_active=True)
     return render(request, 'intranet/gestion_membres.html', locals())
@@ -1164,6 +1184,7 @@ def gestion_membres(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_relations(request):
+    nots = nb_new_notifs(request.user)
     relations_list = Relation.objects.all()
     form2 = RelationForm()
     return render(request, 'intranet/gestion_relations.html', locals())
@@ -1171,6 +1192,7 @@ def gestion_relations(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_invitations(request):
+    nots = nb_new_notifs(request.user)
     invitations_list = list(reversed(Invitation.objects.all()))
     page = request.GET.get('page', 1)
     paginator = Paginator(invitations_list, 10)
@@ -1186,6 +1208,7 @@ def gestion_invitations(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_prix(request):
+    nots = nb_new_notifs(request.user)
     prix_list = reversed(Prix.objects.all())
     form = PrixForm()
     return render(request, 'intranet/gestion_prix.html', locals())
@@ -1193,6 +1216,7 @@ def gestion_prix(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_mail(request):
+    nots = nb_new_notifs(request.user)
     mail_form = MailForm()
     formset = ToMailFormset()
     return render(request, 'intranet/gestion_mail.html', locals())
@@ -1278,6 +1302,7 @@ def invitation(request):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def mon_compte(request):
+    nots = nb_new_notifs(request.user)
     user = User.objects.get(id=request.user.id)
     adh = Adhesion.objects.filter(to_user=user)[0]
     eleves = Eleve.objects.filter(referent=request.user)
@@ -1288,7 +1313,7 @@ def mon_compte(request):
 @user_passes_test(lambda u: u.is_staff)
 def stripe_connect(request):
     code = request.GET.get('code', '')
-    print(code)
+    # print(code)
     if code == '':
         messages.error(request,"Impossible de lier votre compte stripe.")
     else:
@@ -1305,6 +1330,7 @@ def stripe_connect(request):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def edit_compte(request):
+    nots = nb_new_notifs(request.user)
     if request.method == 'POST':
         form_user = EditUserForm(request.POST, instance=request.user)
         form_profile = EditStaffProfileForm(request.POST, instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(request.POST, instance=request.user.userprofile)
@@ -1342,6 +1368,7 @@ def edit_compte(request):
         return render(request, 'intranet/edit_compte.html', locals())
 
 def edit_pass(request):
+    nots = nb_new_notifs(request.user)
     if request.method == 'POST':
         form = PasswordChangeForm(data=request.POST, user=request.user)
         if form.is_valid():
@@ -1357,6 +1384,7 @@ def edit_pass(request):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def add_eleve(request):
+    nots = nb_new_notifs(request.user)
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
     if request.method == 'POST':
@@ -1411,6 +1439,7 @@ def remove_eleve(request, id):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def edit_eleve(request, id):
+    nots = nb_new_notifs(request.user)
     e = Eleve.objects.get(pk=id)
     if request.user != e.referent:
         return redirect('intranet:mon_compte')
@@ -1493,6 +1522,7 @@ def mail(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_condition(request):
+    nots = nb_new_notifs(request.user)
     if request.method == 'POST':
         form = CondiForm(request.POST, request.FILES)
         # print(form)
@@ -1522,6 +1552,7 @@ def handle_uploaded_file(f):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_factures(request):
+    nots = nb_new_notifs(request.user)
     if request.method == 'POST':
         form = FactureForm(request.POST)
         print(form)
@@ -1579,6 +1610,7 @@ def gestion_factures(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_examens(request):
+    nots = nb_new_notifs(request.user)
     if request.method == 'POST':
         form = ExamenForm(request.POST)
         if form.is_valid():
@@ -1612,6 +1644,7 @@ def remove_examens(request,id):
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def examens_eleve(request):
+    nots = nb_new_notifs(request.user)
     key = settings.STRIPE_PUBLISHABLE_KEY
     ex_list = Examen.objects.all()
     prix = Prix.objects.get(end=None)

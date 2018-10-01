@@ -40,7 +40,7 @@
                           </div>
                     </div>
                     <a class="nav-item nav-link" href="{% url 'intranet:documents' %}">Mes documents</a>
-                    <a class="nav-item nav-link" href="{% url 'intranet:notifications' %}">Notifications</a>
+                    <a class="nav-item nav-link badge1" data-badge="{{nots}}" href="{% url 'intranet:notifications' %}">Notifications</a>
                     <div class="dropdown">
                           <a class="nav-item nav-link dropdown-toggle" data-toggle="dropdown">
                             Statistiques
@@ -61,7 +61,7 @@
                     <a class="nav-item nav-link" href="{% url 'intranet:mon_compte' %}">Mon compte</a>
                     <a class="nav-item nav-link" href="{% url 'intranet:cours_prof' %}">Mes cours</a>
                     <a class="nav-item nav-link" href="{% url 'intranet:documents' %}">Mes documents</a>
-                    <a class="nav-item nav-link" href="{% url 'intranet:notifications' %}">Notifications</a>
+                    <a class="nav-item nav-link badge1" data-badge="{{nots}}" href="{% url 'intranet:notifications' %}">Notifications</a>
                     <a class="fa fa-sign-out nav-item nav-link fa-lg mt-1" href="{% url 'intranet:deconnexion' %}" aria-hidden="true"></a>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     <a class="nav-item nav-link" href="{% url 'intranet:cours_eleve' %}">Mes cours</a>
                     <a class="nav-item nav-link" href="{% url 'intranet:examens_eleve' %}">Mes examens</a>
                     <a class="nav-item nav-link" href="{% url 'intranet:documents' %}">Mes documents</a>
-                    <a class="nav-item nav-link" href="{% url 'intranet:notifications' %}">Notifications</a>
+                    <a class="nav-item nav-link badge1" data-badge="{{nots}}" href="{% url 'intranet:notifications' %}">Notifications</a>
                     <a class="fa fa-sign-out nav-item nav-link fa-lg mt-1" href="{% url 'intranet:deconnexion' %}" aria-hidden="true"></a>
                 </div>
             </div>
