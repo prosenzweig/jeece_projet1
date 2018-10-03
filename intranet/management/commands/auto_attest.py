@@ -57,7 +57,7 @@ def auto_attest():
             price = prix.cours_premium if student.userprofile.is_premium else prix.cours
 
             Attestation.objects.create(
-                to_user=student, from_user=teacher,price=price * nbr_tt, nb_cours=nb_cours, h_qt=nbr_tt, nb_adh=teacher.nb_adh,
+                to_user=student, from_user=teacher,price=price * nbr_tt, nb_cours=nb_cours, h_qt=nbr_tt, nb_adh=teacher.userprofile.nb_adh,
                 to_user_firstname=student.first_name, to_user_lastname=student.last_name,
                 to_user_address=student.userprofile.address,
                 to_user_city=student.userprofile.city, to_user_zipcode=student.userprofile.zip_code,
