@@ -1040,6 +1040,7 @@ def notifications(request):
 @user_passes_test(lambda u: u.is_superuser)
 def statistiques(request):
     """Minimal function rendering a template"""
+    nots = nb_new_notifs(request.user)
     geo_list = UserProfile.objects.exclude(lat="0.0").exclude(lat="None")
     # print(geo_list)
     prof = User.objects.filter(is_staff=True, is_active=True).count()
@@ -1275,7 +1276,6 @@ def prix(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def invitation(request):
-    mail = None
     if request.method == "POST":
         form = InvitationForm(request.POST)
         if form.is_valid():
