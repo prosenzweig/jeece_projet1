@@ -219,7 +219,7 @@ def gen_pdf(request,fac_id):
     p.drawCentredString(300,60,'Ecole Française de Piano - SASU EFP')
     p.setFont('Helvetica-Oblique', 8)
     # p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
-    p.drawCentredString(300,45,'%s %s %s' % (admin.userprofile.address,admin.userprofile.zip_code,admin.userprofile.city))
+    p.drawCentredString(300,45,'%s %s %s' % (facture.admin_address,facture.admin_zipcode,facture.admin_city))
     p.drawCentredString(300,30,'Numéro de SIRET: 811 905 934 00014 - Numéro de TVA: FR 90 811905934 - 811 905 934 R.C.S.Paris')
 
     p.showPage()
@@ -294,7 +294,7 @@ def gen_attest_pdf(request,fac_id):
 
     p.setFont('Helvetica-Oblique', 8)
     p.drawCentredString(300, 45, 'Attestation fiscale établie au nom et pour le compte de %s %s par la société :' % (att.from_user_firstname, att.from_user_lastname.upper()))
-    p.drawCentredString(300, 30, 'SASU EFP - Siret n°811 905 934 00014 - 811 905 934 R.C.S.Paris - 4 rue du Champ de l\'Alouette Paris 13ème - info@ecolefrancaisedepiano.fr')
+    p.drawCentredString(300, 30, 'SASU EFP - Siret n°811 905 934 00014 - 811 905 934 R.C.S.Paris - %s %s %s - info@ecolefrancaisedepiano.fr' % (att.admin_address,att.admin_city,att.admin_zipcode))
 
 
 
@@ -943,7 +943,7 @@ def checkout_inscription(request):
             if request.user.is_staff:
                 fac = Facture.objects.create(
                     to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
-                    object_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion Professeur",
+                    object_qt=1, h_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion Professeur",
                     facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
                     to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
                     to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
@@ -951,7 +951,8 @@ def checkout_inscription(request):
                     from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
                     from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
                     from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
-                    from_user_sap =admin.userprofile.sap )
+                    from_user_sap =admin.userprofile.sap,admin_address=admin.userprofile.address,
+                    admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
             else:
                 nb = 1 if price == add_tva(prix.adhesion,prix.tva) else price/add_tva(prix.adhesion_reduc,prix.tva)
                 # print("nb eleves:",nb)
@@ -967,7 +968,8 @@ def checkout_inscription(request):
                         from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
                         from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
                         from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-                        from_user_sap=admin.userprofile.sap)
+                        from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
+                        admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
                 else:
                     fac = Facture.objects.create(
                         to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
@@ -980,7 +982,8 @@ def checkout_inscription(request):
                         from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
                         from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
                         from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-                        from_user_sap=admin.userprofile.sap)
+                        from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
+                        admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
 
             fac.is_paid = True
             fac.save()
@@ -1406,7 +1409,8 @@ def add_eleve(request):
                 from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
                 from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
                 from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-                from_user_sap=admin.userprofile.sap)
+                from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
             admin.userprofile.nb_facture += 1
             admin.userprofile.save()
             messages.success(request, "Le nouvel élève a bien été ajouté.")
@@ -1581,7 +1585,7 @@ def gestion_factures(request):
             }
 
             obj = choix[object]
-
+            admin = User.objects.get(is_superuser=True)
             fac = Facture.objects.create(
                 to_user=to_user, from_user=from_user, object=obj, is_paid=False,
                 object_qt=nb_item, h_qt=nb_item, tva=tva, price_ht=nb_item * prix_ht, price_ttc=add_tva(nb_item*prix_ht,tva), type=obj,
@@ -1593,7 +1597,8 @@ def gestion_factures(request):
                 from_user_firstname=from_user.first_name, from_user_lastname=from_user.last_name,
                 from_user_address=from_user.userprofile.address, from_user_city=from_user.userprofile.city,
                 from_user_zipcode=from_user.userprofile.zip_code, from_user_siret=from_user.userprofile.siret,
-                from_user_sap=from_user.userprofile.sap)
+                from_user_sap=from_user.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
 
             from_user.userprofile.nb_facture += 1
             from_user.userprofile.save()
@@ -1697,7 +1702,8 @@ def checkout_exam(request):
                 from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
                 from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
                 from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
-                from_user_sap =admin.userprofile.sap )
+                from_user_sap =admin.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
 
             fac.is_paid = True
             fac.save()

@@ -150,6 +150,9 @@ class Attestation(models.Model):
     from_user_zipcode = models.CharField(max_length=60, default=None, null=True, blank=True)
     from_user_siret = models.CharField(max_length=21, default='SIRET', null=True, blank=True)
     from_user_sap = models.CharField(max_length=11, default='SAP', null=True, blank=True)
+    admin_address = models.CharField(max_length=60, default=None, null=True, blank=True)
+    admin_zipcode = models.CharField(max_length=60, default=None, null=True, blank=True)
+    admin_city = models.CharField(max_length=60, default=None, null=True, blank=True)
 
 class Facture(models.Model):
     to_user = models.ForeignKey(User, related_name='User_who_received_the_bill', on_delete=models.DO_NOTHING, default=None,verbose_name='Destinataire')
@@ -159,7 +162,7 @@ class Facture(models.Model):
     price_ttc = models.FloatField(default=None)
     object = models.CharField(max_length=60,default=None)
     object_qt = models.FloatField(default=None)
-    h_qt = models.FloatField(default=None,null=True, blank=True)
+    h_qt = models.FloatField(default=1,null=True, blank=True)
     type = models.CharField(max_length=60,default=None)
     created = models.DateField(default=date.today(), verbose_name='date d\'émission')
     last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
@@ -183,6 +186,9 @@ class Facture(models.Model):
     from_user_zipcode = models.CharField(max_length=60, default=None, null=True,blank=True)
     from_user_siret = models.CharField(max_length=21, default='SIRET', null=True,blank=True)
     from_user_sap = models.CharField(max_length=11, default='SAP', null=True,blank=True)
+    admin_address = models.CharField(max_length=60, default=None, null=True, blank=True)
+    admin_zipcode = models.CharField(max_length=60, default=None, null=True, blank=True)
+    admin_city = models.CharField(max_length=60, default=None, null=True, blank=True)
 
 class Eleve(models.Model):
     referent = models.ForeignKey(User, on_delete=models.DO_NOTHING, default=None)

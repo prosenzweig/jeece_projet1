@@ -65,7 +65,8 @@ def auto_attest():
                 from_user_firstname=teacher.first_name, from_user_lastname=teacher.last_name,
                 from_user_address=teacher.userprofile.address, from_user_city=teacher.userprofile.city,
                 from_user_zipcode=teacher.userprofile.zip_code, from_user_siret=teacher.userprofile.siret,
-                from_user_sap=teacher.userprofile.sap)
+                from_user_sap=teacher.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
 
 
 class Command(BaseCommand):
