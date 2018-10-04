@@ -57,7 +57,7 @@ from intranet.forms import LoginForm, RegistrationForm, RelationForm, Invitation
     InscriptionExamenForm, ExamenForm
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
-MOIS = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
+MOIS = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembre", "octobre","novembre","décembre"]
 
 def from_date_to_m_y(date):
     d = date.split('-')
@@ -117,7 +117,7 @@ def gen_pdf(request,fac_id):
     facture = get_object_or_404(Facture,pk=fac_id)
     admin = User.objects.get(is_superuser=True)
     if not request.user.is_superuser:
-        if facture.to_user != request.user:
+        if facture.to_user != request.user and facture.from_user != request.user:
             messages.warning(request,"Impossible d'accéder à la facture !")
             return redirect('intranet:documents')
 
@@ -145,7 +145,7 @@ def gen_pdf(request,fac_id):
                         'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
                         'Adhésion Professeur','Adhésion Éleve', 'Adhésion Élèves']:
         p.setFont('Helvetica-Bold', 12)
-        p.drawString(50, 580, "Ecole Française de Piano")
+        p.drawString(50, 580, "École Française de Piano")
         p.setFont('Helvetica', 12)
         p.drawString(50, 565, "Emmanuel BIRNBAUM")
         p.drawString(50, 550, "%s"  % facture.from_user_address)
@@ -157,7 +157,7 @@ def gen_pdf(request,fac_id):
     else:
         p.setFont('Helvetica-Bold', 12)
         if facture.from_user.is_superuser:
-            p.drawString(50, 580, "Ecole Française de Piano")
+            p.drawString(50, 580, "École Française de Piano")
         else:
             p.drawString(50, 580, "%s %s" % (facture.from_user_lastname, facture.from_user_firstname))
         p.setFont('Helvetica', 12)
@@ -236,7 +236,7 @@ def gen_attest_pdf(request,fac_id):
     # Create the HttpResponse object with the appropriate PDF headers.
     att = get_object_or_404(Attestation,pk=fac_id)
     if not request.user.is_superuser:
-        if att.to_user != request.user:
+        if att.to_user != request.user and att.from_user != request.user:
             messages.warning(request,"Impossible d'accéder au document !")
             return redirect('intranet:documents')
 
@@ -280,7 +280,7 @@ def gen_attest_pdf(request,fac_id):
     p.drawString(75,400, "Intervenant :")
     p.setFont('Helvetica', 10)
     p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.nb_cours,  (datetime.now().year-1)))
-    p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (att.price/att.h_qt))
+    p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (round(att.price/att.h_qt,2)))
 
     p.drawString(75, 330, "Fait pour valoir ce que de droit,")
     p.drawString(75, 300, "Le %s" % att.created)
@@ -1404,7 +1404,7 @@ def stripe_connect(request):
 def edit_compte(request):
     nots = nb_new_notifs(request.user)
     if request.method == 'POST':
-        form_user = EditUserForm(request.POST, instance=request.user)
+        form_user = EditUserForm(c, instance=request.user)
         form_profile = EditStaffProfileForm(request.POST, instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(request.POST, instance=request.user.userprofile)
         if form_profile.is_valid() and form_user.is_valid():
             form_user.save()
@@ -1442,15 +1442,18 @@ def edit_compte(request):
 def edit_pass(request):
     nots = nb_new_notifs(request.user)
     if request.method == 'POST':
-        form = PasswordChangeForm(data=request.POST, user=request.user)
+        # form = PasswordChangeForm(data=request.POST, user=request.user)
+        form = PasswordChangeForm(request.user,request.POST)
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, form.user)
+            messages.success(request, "Votre mot de passe  a bien été modifié.")
             return redirect('intranet:mon_compte')
         else:
-            return redirect('intranet:change_password')
+            messages.error(request, "Impossible de modifier votre mot de passe.")
+            return redirect('intranet:edit_pass')
     else:
-        form = PasswordChangeForm(user=request.user)
+        form = PasswordChangeForm(request.user)
         return render(request, 'intranet/edit_pass.html',  locals())
 
 @login_required

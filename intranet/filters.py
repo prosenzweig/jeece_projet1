@@ -12,7 +12,7 @@ class FactureFilter(django_filters.FilterSet):
         fields = ['to_user', 'from_user', 'type', 'last', 'is_paid']
 
         labels = {
-            'to_user': 'Emetteur',
+            'to_user': 'Émetteur',
             'from_user': 'Destinataire',
             'type': 'Type',
             'last': 'Echéance',

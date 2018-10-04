@@ -40,7 +40,7 @@ def auto_val_eleve():
     relation_all = Relation.objects.all()
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
-
+    print("Creation des Factures")
     for relation in relation_all:
         # MAJ des validation Eleve
         # print(relation)
@@ -59,6 +59,7 @@ def auto_val_eleve():
             nbr_h = sum(cour.nb_h for cour in cours_list)
             nbr_m = sum(cour.nb_m for cour in cours_list)
             nbr_tt = round((nbr_h*60+nbr_m)/60, 2)
+            print("")
             print("tth: %s, ttm: %s, TT %s" % (nbr_h,nbr_m,nbr_tt))
 
             student = relation.student
@@ -135,7 +136,8 @@ def factures_commissions():
     prof_all = User.objects.filter(is_active=True,is_staff=True,is_superuser=False)
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
-
+    print("")
+    print("Frais de Commission %s" % datetime.now())
     for prof in prof_all:
         lessons_by_prof = Lesson.objects.filter(relation__teacher=prof, mois=last_m_y, is_valid_t=True, is_valid_s=True, is_unvalid=False)
         nb_cours = len(lessons_by_prof)
@@ -144,28 +146,29 @@ def factures_commissions():
         nbr_tt = round((nbr_h * 60 + nbr_m) / 60, 2)
         print("%s\ttth: %s, ttm: %s, TT %s" % (prof,nbr_h, nbr_m, nbr_tt))
 
-        # Frais de Commission de l'admin vers les profs
-        Facture.objects.create(
-            to_user=prof, from_user=admin, object="Frais de commission - 60min", is_paid=False,
-            object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.commission * nbr_tt,
-            price_ttc=add_tva(prix.commission * nbr_tt, prix.tva), type="Frais de commission",
-            facture_name=admin, nb_facture=admin.userprofile.nb_facture,
-            to_user_firstname=prof.first_name, to_user_lastname=prof.last_name,
-            to_user_address=prof.userprofile.address,
-            to_user_city=prof.userprofile.city, to_user_zipcode=prof.userprofile.zip_code,
-            to_user_siret=prof.userprofile.siret, to_user_sap=prof.userprofile.sap,
-            from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
-            from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
-            from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-            from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
-            admin_zipcode=admin.userprofile.zip_code,admin_city=admin.userprofile.city)
+        if nbr_tt > 0:
+            # Frais de Commission de l'admin vers les profs
+            Facture.objects.create(
+                to_user=prof, from_user=admin, object="Frais de commission - 60min", is_paid=False,
+                object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.commission * nbr_tt,
+                price_ttc=add_tva(prix.commission * nbr_tt, prix.tva), type="Frais de commission",
+                facture_name=admin, nb_facture=admin.userprofile.nb_facture,
+                to_user_firstname=prof.first_name, to_user_lastname=prof.last_name,
+                to_user_address=prof.userprofile.address,
+                to_user_city=prof.userprofile.city, to_user_zipcode=prof.userprofile.zip_code,
+                to_user_siret=prof.userprofile.siret, to_user_sap=prof.userprofile.sap,
+                from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code,admin_city=admin.userprofile.city)
 
-        admin.userprofile.nb_facture += 1
-        admin.userprofile.save()
+            admin.userprofile.nb_facture += 1
+            admin.userprofile.save()
 
-        Notification.objects.create(to_user=prof, from_user=admin,
-                                    object="Factures frais de commission %s" % conv_mois(last_m_y),
-                                    text="Votre facture est téléchargeable dans la section \"Mes documents\".")
+            Notification.objects.create(to_user=prof, from_user=admin,
+                                        object="Factures frais de commission %s" % conv_mois(last_m_y),
+                                        text="Votre facture est téléchargeable dans la section \"Mes documents\".")
 
 class Command(BaseCommand):
     def handle(self, **options):

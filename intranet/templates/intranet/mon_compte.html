@@ -45,7 +45,11 @@
             <!--<p>ID Compte Stripe: {{ user.userprofile.stripe_account_id}} </p>-->
             {% endif %}
             <a class="btn btn-info btn-sm" href="{% url 'intranet:edit_compte' %}" role="button">Modifier mon profil</a>
-            <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_pass' %}" role="button">Modifier mon mot de passe</a>
+                {% if user.is_superuser %}
+                <a class="btn btn-warning btn-sm" href="{% url 'admin:auth_user_password_change' user.id %}" role="button">Modifier mon mot de passe</a>
+                {% else %}
+                <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_pass' %}" role="button">Modifier mon mot de passe</a>
+                {% endif %}
             {% if eleves %}
                 <p class="mt-3">Élève(s):</p>
                 <ol>

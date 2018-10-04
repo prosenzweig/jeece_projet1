@@ -8,6 +8,7 @@
  <div class="container container_extras">
         <!--<div class="card card-container ">-->
             <h3 class="text-center mt-2 mb-5">Changement de mot de passe de {{ user }} </h3>
+            {% include 'intranet/messages.html' with messages=messages %}
             <form method="post">
                 {% csrf_token %}
                 <!--{% include 'intranet/bs4_form.html' with form=form %}-->

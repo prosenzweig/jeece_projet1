@@ -8,9 +8,9 @@
 {% block content %}
 <div class="container container_extras" >
             <h3 class="text-center mt-2">Section cours</h3>
-            <p> Chaque mois les professeurs inscrivent le nombre d'heures de cours qu'ils ont dispensé, celles-ci doivent être validées
+            <p> Chaque mois les professeurs inscrivent le nombre d'heures de cours qu'ils ont dispensées, celles-ci doivent être validées
                 par les professeurs, par l'élève et permettent la génération automatique des factures. Les cours sont validés automatiquement
-                par l'intranet à la fin de chaque mois (pour les professeurs) et le 5 du mois suivant (pour les élèves)</p>
+                par l'intranet à la fin de chaque mois (pour les professeurs) et le 5 du mois suivant (pour les élèves).</p>
             <h5>Enregistrer les cours donnés: <i class="fa fa-music btn white-text" style="color: black;" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample"></i></h5>
             {% include 'intranet/messages.html' with messages=messages %}
             <div class="collapse" id="collapseExample">
@@ -87,7 +87,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                <h5>Vous n'avez donné aucun cours ce mois ci</h5>
+                <h5>Vous n'avez donné aucun cours ce mois-ci</h5>
             {% endif %}
             <h3 class="text-center mt-2">Anciens cours</h3>
             <h5>Liste des anciens cours : <i class="fa fa-play btn white-text" style="color: black;" data-toggle="collapse" data-target="#collapseAncienCours" aria-expanded="false" aria-controls="collapseAncienCours"></i></h5>

@@ -162,7 +162,7 @@ class PrixForm(forms.ModelForm):
             'adhesion_prof': 'Adhésion professeur',
             'cours': 'Cours classique',
             'cours_premium': 'Cours premium',
-            'cours_ecole': 'Cours tarif ecole',
+            'cours_ecole': 'Cours tarif école',
             'commission': 'Commission',
             'frais_gestion': 'Frais de gestion'
         }

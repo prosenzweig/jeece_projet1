@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Lesson,Attestation
 from django.contrib.auth.models import User
 from django.db.models import Q, Sum
-from datetime import datetime
+from datetime import datetime,date
 from decimal import Decimal
 
 
@@ -32,41 +32,47 @@ def add_tva(value,arg):
         return float(value) + float(value)*float(arg)/100
     except (ValueError, ZeroDivisionError):
         return None
+
 def auto_attest():
     prix = Prix.objects.get(end=None)
     admin = User.objects.get(is_superuser=True)
-    # last_year = datetime.now().year-1
-    last_year = datetime.now().year # ICI en TEST
-    lst = [ '%s_%s' % (x,last_year) for x in range(1,13)]
-    # print(lst)
-    relation_all = Relation.objects.all().exclude(teacher=admin)
+    last_year = datetime.now().year-1
+    # last_year = datetime.now().year # TODO ROSEN
 
-    for relation in relation_all:
-        # print(relation)
-        cours_list = Lesson.objects.filter(relation=relation, mois__in=lst, is_valid_t=True, is_valid_s=True, is_unvalid=False)
-        # print(cours_list)
-        if cours_list:
-            nb_cours = len(cours_list)
-            nbr_h = sum(cour.nb_h for cour in cours_list)
-            nbr_m = sum(cour.nb_m for cour in cours_list)
-            nbr_tt = round((nbr_h * 60 + nbr_m) / 60, 2)
-            print("tth: %s, ttm: %s, TT %s" % (nbr_h, nbr_m, nbr_tt))
+    print("")
+    print("Création des Attestattions :")
 
-            student = relation.student
-            teacher = relation.teacher
-            price = prix.cours_premium if student.userprofile.is_premium else prix.cours
+    referent = User.objects.exclude(is_staff=True,is_active=True)
+    # print("ref", referent)
+    profs = User.objects.filter(is_staff=True,is_active=True).exclude(is_superuser=True)
+    # print("profs", profs)
+    start = date(last_year, 1, 1)
+    end = date(last_year, 12, 31)
+    print("%s - %s" % (start,end))
 
-            Attestation.objects.create(
-                to_user=student, from_user=teacher,price=price * nbr_tt, nb_cours=nb_cours, h_qt=nbr_tt, nb_adh=teacher.userprofile.nb_adh,
-                to_user_firstname=student.first_name, to_user_lastname=student.last_name,
-                to_user_address=student.userprofile.address,
-                to_user_city=student.userprofile.city, to_user_zipcode=student.userprofile.zip_code,
-                to_user_siret=student.userprofile.siret, to_user_sap=student.userprofile.sap,
-                from_user_firstname=teacher.first_name, from_user_lastname=teacher.last_name,
-                from_user_address=teacher.userprofile.address, from_user_city=teacher.userprofile.city,
-                from_user_zipcode=teacher.userprofile.zip_code, from_user_siret=teacher.userprofile.siret,
-                from_user_sap=teacher.userprofile.sap,admin_address=admin.userprofile.address,
-                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
+    for user in referent:
+        for prof in profs:
+            facs = Facture.objects.filter(from_user=prof,to_user=user,created__gte=start,created__lte=end,is_paid=True)
+            if facs.count() > 0:
+                print("")
+                print("%s - %s nbr: %s" % (prof, user, facs.count()))
+                sums_tt = sum(f.price_ht for f in facs)
+                sums_h = sum(f.h_qt for f in facs)
+                print("sums_tt %s sums_h %s" % (sums_tt,sums_h))
+                Attestation.objects.create(
+                    to_user=user, from_user=prof,price=sums_tt, nb_cours=sums_h, h_qt=sums_h, nb_adh=prof.userprofile.nb_adh,
+                    to_user_firstname=user.first_name, to_user_lastname=user.last_name,
+                    to_user_address=user.userprofile.address,
+                    to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
+                    to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
+                    from_user_firstname=prof.first_name, from_user_lastname=prof.last_name,
+                    from_user_address=prof.userprofile.address, from_user_city=prof.userprofile.city,
+                    from_user_zipcode=prof.userprofile.zip_code, from_user_siret=prof.userprofile.siret,
+                    from_user_sap=prof.userprofile.sap,admin_address=admin.userprofile.address,
+                    admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
+                prof.userprofile.nb_adh += 1
+                prof.userprofile.save()
+
 
 
 class Command(BaseCommand):

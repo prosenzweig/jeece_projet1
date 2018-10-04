@@ -9,7 +9,7 @@
 <div class="container container_extras">
     <div class="tab-content">
         <h3 class="text-center mt-2">Envoyez une invitation</h3>
-        <p>Envoyez une invitaion par email en cliquant sur le bouton juste en dessous:</p>
+        <p>Envoyez une invitation par email en cliquant sur le bouton juste en dessous:</p>
         {% include 'intranet/messages.html' with messages=messages %}
         <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:invitation' %}">
             {% csrf_token %}
