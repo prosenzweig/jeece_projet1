@@ -20,24 +20,26 @@
         <p>Élève(s):</p>
         <ol>
         {% for e in eleves %}
-            <li>{{e}}</li>
+            <li class="my-2 ml-5">{{e}} <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_eleve_adh' id=e.pk %}" role="button">Editer</a>
+             <a class="btn btn-danger btn-sm" href="{% url 'intranet:remove_eleve_adh' id=e.pk %}" role="button">Supprimer</a></li>
         {% endfor %}
         </ol>
      {% endif %}
      <p>Vos frais d'ahésion s'élèvent donc à {{price}}€</p>
-     <form action="{% url 'intranet:checkout_inscription' %}" role='form' method="POST">
-        {% csrf_token %}
-        <input type="text" name="fac_id" id="fac_id" value="{{price}}" hidden required>
-        <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-            data-image="{% static 'intranet/img/efp_logo.png' %}"
-            data-key="{{key}}"
-            data-amount="{{ price|stripe }}"
-            data-name="Ecole Française de Piano"
-            data-description="Adhésion EFP"
-            data-currency="eur"
-            data-locale="fr">
-        </script>
-    </form>
+     {% include 'intranet/checkout_adh.html' %}<br>
+     <!--<form action="{% url 'intranet:checkout_inscription' %}" role='form' method="POST">-->
+        <!--{% csrf_token %}-->
+        <!--<input type="text" name="fac_id" id="fac_id" value="{{price}}" hidden required>-->
+        <!--<script src="https://checkout.stripe.com/checkout.js" class="stripe-button"-->
+            <!--data-image="{% static 'intranet/img/efp_logo.png' %}"-->
+            <!--data-key="{{key}}"-->
+            <!--data-amount="{{ price|stripe }}"-->
+            <!--data-name="Ecole Française de Piano"-->
+            <!--data-description="Adhésion EFP"-->
+            <!--data-currency="eur"-->
+            <!--data-locale="fr">-->
+        <!--</script>-->
+    <!--</form>-->
     <a class="btn btn-info btn-sm mt-3" href="{% url 'intranet:creation_inscription' %}" role="button">Retour</a>
  </div>
 {% endblock content %}

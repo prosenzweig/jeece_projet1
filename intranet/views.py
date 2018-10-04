@@ -644,6 +644,7 @@ def validation_eleve(request, id, result):
     return redirect('intranet:cours_eleve')
 
 
+
 @login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def documents(request):
@@ -933,8 +934,57 @@ def checkout_inscription(request):
         form = PriceForm(request.POST)
         if form.is_valid():
             # print("VALIDDE!!!")
-            price = float(form.cleaned_data["fac_id"].replace(',','.'))
+            token = request.POST['stripeToken']
+
             prix = Prix.objects.get(end=None)
+            if not request.user.is_staff:
+                nb_eleve = Eleve.objects.filter(referent=request.user).count()
+                p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
+
+            price = prix.adhesion_prof if request.user.is_staff else p
+            description = "EFP_%s_ADH" % request.user.last_name
+
+            try:
+                charge = stripe.Charge.create(
+                    amount=int(round(price,2) * 100),
+                    currency="eur",
+                    description=description,
+                    source=token
+                )
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
+
             admin = User.objects.get(is_superuser=True)
             user = request.user
 
@@ -1441,6 +1491,38 @@ def remove_eleve(request, id):
     return redirect('intranet:mon_compte')
 
 @login_required
+def remove_eleve_adh(request, id):
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        messages.error(request, "Impossible d'effectuer cette action.")
+        return redirect('intranet:creation_adhesion')
+
+    eleves = Eleve.objects.filter(referent=request.user)
+    if len(eleves) == 1:
+        messages.warning(request,"Vous devez avoir au minimum un élève.")
+        return redirect('intranet:creation_adhesion')
+    else:
+        e.delete()
+        messages.success(request, "Élève supprimé.")
+    return redirect('intranet:creation_adhesion')
+
+@login_required
+def remove_eleve_cr(request, id):
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        messages.error(request, "Impossible d'effectuer cette action.")
+        return redirect('intranet:creation_eleves')
+
+    eleves = Eleve.objects.filter(referent=request.user)
+    if len(eleves) == 1:
+        messages.warning(request,"Vous devez avoir au minimum un élève.")
+        return redirect('intranet:creation_eleves')
+    else:
+        e.delete()
+        messages.success(request, "Élève supprimé.")
+    return redirect('intranet:creation_eleves')
+
+@login_required
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def edit_eleve(request, id):
     nots = nb_new_notifs(request.user)
@@ -1459,6 +1541,56 @@ def edit_eleve(request, id):
         else:
             messages.warning(request,"Impossible de valider les changements.")
             return redirect('intranet:mon_compte')
+
+    else:
+        form = EditEleveForm(instance=e)
+    return render(request, 'intranet/edit_eleve.html', locals())
+
+@login_required
+# @user_passes_test(lambda u: u.userprofile.is_adherent)
+def edit_eleve_adh(request, id):
+    nots = nb_new_notifs(request.user)
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        messages.warning(request,"Action impossible")
+        return redirect('intranet:creation_adhesion')
+
+    if request.method == 'POST':
+        form = EditEleveForm(request.POST)
+        if form.is_valid():
+            np = form.cleaned_data["nom_prenom"]
+            e.nom_prenom = np
+            e.save()
+            messages.success(request, "Changements validés.")
+            return redirect('intranet:creation_adhesion')
+        else:
+            messages.warning(request,"Impossible de valider les changements.")
+            return redirect('intranet:creation_adhesion')
+
+    else:
+        form = EditEleveForm(instance=e)
+    return render(request, 'intranet/edit_eleve.html', locals())
+
+@login_required
+# @user_passes_test(lambda u: u.userprofile.is_adherent)
+def edit_eleve_cr(request, id):
+    nots = nb_new_notifs(request.user)
+    e = Eleve.objects.get(pk=id)
+    if request.user != e.referent:
+        messages.warning(request, "Action impossible")
+        return redirect('intranet:creation_eleves')
+
+    if request.method == 'POST':
+        form = EditEleveForm(request.POST)
+        if form.is_valid():
+            np = form.cleaned_data["nom_prenom"]
+            e.nom_prenom = np
+            e.save()
+            messages.success(request, "Changements validés.")
+            return redirect('intranet:creation_eleves')
+        else:
+            messages.warning(request,"Impossible de valider les changements.")
+            return redirect('intranet:creation_eleves')
 
     else:
         form = EditEleveForm(instance=e)

@@ -51,7 +51,27 @@
                 <ol>
                 {% for e in eleves %}
                     <li class="my-2">{{e}} <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_eleve' id=e.pk %}" role="button">Editer</a>
-                        <a class="btn btn-danger btn-sm" href="{% url 'intranet:remove_eleve' id=e.pk %}" role="button">Supprimer</a></li>
+                        <a class="btn btn-danger btn-sm" data-toggle="modal" data-target="#my_modal_{{e.pk}}" role="button">Supprimer</a></li>
+                    <div class="modal fade" id="my_modal_{{e.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                     <div class="modal-dialog" role="document">
+                             <div class="modal-content">
+                                 <div class="modal-header">
+                                     <h5 class="modal-title" id="exampleModalLongTitle">Attention !</h5>
+                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                         <span aria-hidden="true">&times;</span>
+                                     </button>
+                                 </div>
+                                 <div class="modal-body">
+                                     Attention, vous allez supprimer un de vos élèves, cette action est irréversible !
+                                     Êtes-vous sûr de vouloir continuer ?
+                                 </div>
+                                 <div class="modal-footer">
+                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Non</button>
+                                     <a role="button" href="{% url 'intranet:remove_eleve' id=e.pk %}" class="btn btn-danger">Supprimer</a>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
                 {% endfor %}
                 </ol>
             <a class="btn btn-info btn-sm" href="{% url 'intranet:add_eleve' %}" role="button">Ajouter un élève</a>
