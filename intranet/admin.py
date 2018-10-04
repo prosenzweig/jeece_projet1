@@ -11,7 +11,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'stripe_account_id', 'lat', 'lgn')
+    list_display = ('user', 'phone_number', 'address', 'city', 'zip_code', 'country', 'siret', 'sap', 'stripe_account_id', 'nots_view', 'lat', 'lgn')
     search_fields = ('user', 'city', 'zip_code', 'iban')
     ordering = ('user',)
 

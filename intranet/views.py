@@ -67,9 +67,9 @@ def from_date_to_m_y(date):
 def nb_new_notifs(user):
     # print(user.last_login.date())
     if user.is_superuser:
-        nots = Notification.objects.filter(date__gte=user.last_login).count()
+        nots = Notification.objects.filter(date__gte=user.userprofile.nots_view).count()
     else:
-        nots = Notification.objects.filter(to_user=user, date__gte=user.last_login).count()
+        nots = Notification.objects.filter(to_user=user, date__gte=user.userprofile.nots_view).count()
     # print(nots)
     return nots
 
@@ -273,7 +273,7 @@ def gen_attest_pdf(request,fac_id):
     p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que " % (att.from_user_firstname, att.from_user_lastname.upper() ))
     p.drawString(75, 505, "M et Mme %s, domiciliés au %s, %s %s, " % (att.to_user_lastname.upper(),att.to_user_address, att.to_user_zipcode ,att.to_user_city))
     p.drawString(75, 490, "ont bénéficié de services à la personne : cours de piano")
-    p.drawString(75, 460, "En %s, le montant des atts effectivement acquittées représente" % (datetime.now().year-1))
+    p.drawString(75, 460, "En %s, le montant des attestations effectivement acquittées représente" % (datetime.now().year-1))
     p.drawString(75, 445, "une somme totale de : %s€." % att.price)
 
     p.setFont('Helvetica-Bold', 10)
@@ -408,10 +408,19 @@ def creation_inscription(request):
                     pass
 
             admin = User.objects.get(is_superuser=True)
-            Notification.objects.create(to_user=admin, from_user=request.user,
+
+            if request.user.is_staff:
+                Notification.objects.create(to_user=admin, from_user=request.user,
                                         object="Creation du compte %s %s (%s)" % (
                                         request.user.first_name, request.user.last_name, request.user.username),
-                                        text="Je viens de créer mon compte professeur!")
+                                        text="Je viens de compléter mon compte professeur!")
+            else:
+                Notification.objects.create(to_user=admin, from_user=request.user,
+                                            object="Creation du compte %s %s (%s)" % (
+                                                request.user.first_name, request.user.last_name, request.user.username),
+                                            text="Je viens de compléter mon compte!")
+
+
             if request.user.is_staff:
                 return redirect('intranet:creation_condition')
             else:
@@ -434,6 +443,11 @@ def creation_eleves(request):
                 name = f.cleaned_data.get('name')
                 if name:
                     Eleve.objects.create(referent=request.user, nom_prenom=name)
+                    admin = User.objects.get(is_superuser=True)
+                    Notification.objects.create(to_user=admin, from_user=request.user,
+                                                object="Ajout d'un élève %s %s (%s)" % (
+                                                request.user.first_name, request.user.last_name, request.user.username),
+                                                text="Je viens d'inscrire un élève: %s" % name)
 
             eleves_register = Eleve.objects.filter(referent=request.user)
 
@@ -441,11 +455,6 @@ def creation_eleves(request):
                 messages.warning(request,"Vous devez renseigner au moins un élève qui suivra les cours de paino.")
                 return redirect('intranet:creation_eleves')
 
-            admin = User.objects.get(is_superuser=True)
-            Notification.objects.create(to_user=admin, from_user=request.user,
-                                        object="Creation du compte %s %s (%s)" % (
-                                            request.user.first_name, request.user.last_name, request.user.username),
-                                        text="Je viens de créer mon compte!")
             return redirect('intranet:creation_condition')
     else:
         eleves = Eleve.objects.filter(referent=request.user)
@@ -875,11 +884,11 @@ def documents(request):
         return redirect('intranet:documents')
 
     if request.user.is_superuser:
-        factures_all = Facture.objects.all().order_by('-created')
-        attestation_list = Attestation.objects.all()
+        factures_all = Facture.objects.all().order_by('-pk')
+        attestation_list = Attestation.objects.all().order_by('-pk')
         filter = FactureFilter(request.GET, queryset=factures_all)
         page = request.GET.get('page', 1)
-        paginator = Paginator(filter.qs, 5)
+        paginator = Paginator(filter.qs, 10)
         current_path = request.get_full_path()
         new_current_path = re.sub(r'&page=\d+', '', current_path)
         # print(new_current_path)
@@ -891,9 +900,22 @@ def documents(request):
             filter_page = paginator.page(paginator.num_pages)
 
     else:
-        attestation_list =Attestation.objects.filter(to_user=request.user)
-        factures_list_paid = Facture.objects.filter(to_user=request.user,is_paid=True)
-        factures_list_not_paid = Facture.objects.filter(to_user=request.user,is_paid=False)
+        if request.user.is_staff:
+            attestation_list = Attestation.objects.filter(from_user=request.user).order_by('-pk')
+            factures_emises = Facture.objects.filter(from_user=request.user).order_by('-pk')
+            page = request.GET.get('page', 1)
+            paginator = Paginator(factures_emises, 10, 3)
+            try:
+                factures_emises_page = paginator.page(page)
+            except PageNotAnInteger:
+                factures_emises_page = paginator.page(1)
+            except EmptyPage:
+                factures_emises_page = paginator.page(paginator.num_pages)
+        else:
+            attestation_list = Attestation.objects.filter(to_user=request.user).order_by('-pk')
+
+        factures_list_paid = Facture.objects.filter(to_user=request.user,is_paid=True).order_by('-pk')
+        factures_list_not_paid = Facture.objects.filter(to_user=request.user,is_paid=False).order_by('-pk')
         price = Facture.objects.filter(to_user=request.user,is_paid=False).exclude(from_user__userprofile__stripe_account_id="StripeAccId").aggregate(Sum('price_ttc'))['price_ttc__sum']
         if price:
             price = round(price,2)
@@ -1055,8 +1077,8 @@ def checkout_inscription(request):
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def notifications(request):
-    request.user.last_login = datetime.now()
-    request.user.save()
+    request.user.userprofile.nots_view = datetime.now()
+    request.user.userprofile.save()
     nots = nb_new_notifs(request.user)
     """Minimal function rendering a template"""
     if request.user.is_superuser:
@@ -1731,6 +1753,11 @@ def gestion_factures(request):
 
             from_user.userprofile.nb_facture += 1
             from_user.userprofile.save()
+
+            Notification.objects.create(to_user=to_user, from_user=from_user,
+                                        object="Ajout d'une nouvelle facture entre %s et %s" % (to_user, from_user),
+                                        text="L'administrateur de l'EFP vient d'ajouter une nouvelle facture vous concernant!")
+
             messages.success(request, 'La nouvelle facture a bien été créée.')
             return redirect('intranet:gestion_factures')
         else:

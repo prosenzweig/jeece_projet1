@@ -62,6 +62,8 @@ class UserProfile(models.Model):
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True)
     is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
     stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
+    nots_view = models.DateTimeField(default=timezone.now,verbose_name="Date des dernières modifications")
+
     class Meta:
         verbose_name_plural = "Profils utilisateurs"
 
@@ -245,7 +247,7 @@ class Adhesion(models.Model):
         return self.end.strftime("%d/%m/%Y")
 
 def get_full_name(self):
-    return "%s (%s %s)" % (self.username, self.first_name, self.last_name)
+    return "%s %s (%s)" % (self.last_name, self.first_name, self.username)
 
 User.add_to_class("__str__", get_full_name)
 

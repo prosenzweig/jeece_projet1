@@ -58,6 +58,11 @@
         <h5 class="mt-5">Vos anciennes factures :</h5>
         {% include 'intranet/factures.html' with factures_list=factures_list_paid_page %}
         {% include 'intranet/paginator.html' with page_obj=factures_list_paid_page %}
+        {% if user.is_staff %}
+        <h5 class="mt-5">Vos factures émises :</h5>
+        {% include 'intranet/factures.html' with factures_list=factures_emises_page %}
+        {% include 'intranet/paginator.html' with page_obj=factures_emises_page %}
+        {% endif %}
     {% endif %}
      <h5 class="my-2">Attestations fiscales</h5>
      {% if attestation_list %}
