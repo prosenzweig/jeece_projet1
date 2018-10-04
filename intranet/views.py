@@ -931,126 +931,123 @@ def checkout(request):
 @login_required
 def checkout_inscription(request):
     if request.method == "POST":
-        form = PriceForm(request.POST)
-        if form.is_valid():
-            # print("VALIDDE!!!")
-            token = request.POST['stripeToken']
+        # print("VALIDDE!!!")
+        token = request.POST['stripeToken']
 
-            prix = Prix.objects.get(end=None)
-            if not request.user.is_staff:
-                nb_eleve = Eleve.objects.filter(referent=request.user).count()
-                p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
+        prix = Prix.objects.get(end=None)
+        if not request.user.is_staff:
+            nb_eleve = Eleve.objects.filter(referent=request.user).count()
+            p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
 
-            price = prix.adhesion_prof if request.user.is_staff else p
-            description = "EFP_%s_ADH" % request.user.last_name
+        price = prix.adhesion_prof if request.user.is_staff else p
+        description = "EFP_%s_ADH" % request.user.last_name
 
-            try:
-                charge = stripe.Charge.create(
-                    amount=int(round(price,2) * 100),
-                    currency="eur",
-                    description=description,
-                    source=token
-                )
-            except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
-                body = e.json_body
-                err = body.get('error', {})
-                print("Status is: %s" % e.http_status)
-                print("Type is: %s" % err.get('type'))
-                print("Code is: %s" % err.get('code'))
-                print("Param is: %s" % err.get('param'))
-                print("Message is: %s" % err.get('message'))
-            except stripe.error.RateLimitError as e:
-                # Too many requests made to the API too quickly
-                messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
-            except stripe.error.InvalidRequestError as e:
-                # Invalid parameters were supplied to Stripe's API
-                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
-            except stripe.error.AuthenticationError as e:
-                # Authentication with Stripe's API failed
-                # (maybe you changed API keys recently)
-                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
-            except stripe.error.APIConnectionError as e:
-                # Network communication with Stripe failed
-                pass
-            except stripe.error.StripeError as e:
-                # Display a very generic error to the user, and maybe send
-                # yourself an email
-                pass
-            except Exception as e:
-                # Something else happened, completely unrelated to Stripe
-                messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+        try:
+            charge = stripe.Charge.create(
+                amount=int(round(price,2) * 100),
+                currency="eur",
+                description=description,
+                source=token
+            )
+        except stripe.error.CardError as e:
+            messages.error(request, "Votre carte a été refusé")
+            body = e.json_body
+            err = body.get('error', {})
+            print("Status is: %s" % e.http_status)
+            print("Type is: %s" % err.get('type'))
+            print("Code is: %s" % err.get('code'))
+            print("Param is: %s" % err.get('param'))
+            print("Message is: %s" % err.get('message'))
+        except stripe.error.RateLimitError as e:
+            # Too many requests made to the API too quickly
+            messages.error(request, "Erreur de connexion avec l'API Stripe.")
+            pass
+        except stripe.error.InvalidRequestError as e:
+            # Invalid parameters were supplied to Stripe's API
+            messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+            pass
+        except stripe.error.AuthenticationError as e:
+            # Authentication with Stripe's API failed
+            # (maybe you changed API keys recently)
+            messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+            pass
+        except stripe.error.APIConnectionError as e:
+            # Network communication with Stripe failed
+            pass
+        except stripe.error.StripeError as e:
+            # Display a very generic error to the user, and maybe send
+            # yourself an email
+            pass
+        except Exception as e:
+            # Something else happened, completely unrelated to Stripe
+            messages.error(request, "Quelque chose d'anormal est survenu.")
+            pass
 
-            admin = User.objects.get(is_superuser=True)
-            user = request.user
+        admin = User.objects.get(is_superuser=True)
+        user = request.user
 
-            fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
+        fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
 
-            if request.user.is_staff:
+        if request.user.is_staff:
+            fac = Facture.objects.create(
+                to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
+                object_qt=1, h_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion Professeur",
+                facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
+                to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
+                to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
+                to_user_siret=user.userprofile.siret, to_user_sap =user.userprofile.sap,
+                from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
+                from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
+                from_user_sap =admin.userprofile.sap,admin_address=admin.userprofile.address,
+                admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
+        else:
+            nb = 1 if price == add_tva(prix.adhesion,prix.tva) else price/add_tva(prix.adhesion_reduc,prix.tva)
+            # print("nb eleves:",nb)
+            if nb == 1:
                 fac = Facture.objects.create(
-                    to_user=user, from_user=admin, object="Adhésion professeur", is_paid=True,
-                    object_qt=1, h_qt=1, tva=prix.tva, price_ht=1 * prix.adhesion_prof, price_ttc=price, type="Adhésion Professeur",
+                    to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
+                    object_qt=nb, h_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Élève",
                     facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
-                    to_user_firstname=user.first_name, to_user_lastname =user.last_name ,to_user_address =user.userprofile.address,
-                    to_user_city=user.userprofile.city, to_user_zipcode =user.userprofile.zip_code,
-                    to_user_siret=user.userprofile.siret, to_user_sap =user.userprofile.sap,
+                    to_user_firstname=user.first_name, to_user_lastname=user.last_name,
+                    to_user_address=user.userprofile.address,
+                    to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
+                    to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
                     from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
-                    from_user_address=admin.userprofile.address, from_user_city =admin.userprofile.city,
-                    from_user_zipcode=admin.userprofile.zip_code, from_user_siret =admin.userprofile.siret ,
-                    from_user_sap =admin.userprofile.sap,admin_address=admin.userprofile.address,
+                    from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                    from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                    from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
                     admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
             else:
-                nb = 1 if price == add_tva(prix.adhesion,prix.tva) else price/add_tva(prix.adhesion_reduc,prix.tva)
-                # print("nb eleves:",nb)
-                if nb == 1:
-                    fac = Facture.objects.create(
-                        to_user=user, from_user=admin, object="Adhésion élève", is_paid=True,
-                        object_qt=nb, h_qt=nb, tva=prix.tva, price_ht=nb * prix.adhesion, price_ttc=price, type="Adhésion Élève",
-                        facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
-                        to_user_firstname=user.first_name, to_user_lastname=user.last_name,
-                        to_user_address=user.userprofile.address,
-                        to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
-                        to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
-                        from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
-                        from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
-                        from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-                        from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
-                        admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
-                else:
-                    fac = Facture.objects.create(
-                        to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
-                        object_qt=nb, h_qt=nb,tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Élèves",
-                        facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
-                        to_user_firstname=user.first_name, to_user_lastname=user.last_name,
-                        to_user_address=user.userprofile.address,
-                        to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
-                        to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
-                        from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
-                        from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
-                        from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
-                        from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
-                        admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
+                fac = Facture.objects.create(
+                    to_user=user, from_user=admin, object="Adhésion élèves", is_paid=True,
+                    object_qt=nb, h_qt=nb,tva=prix.tva, price_ht=nb * prix.adhesion_reduc, price_ttc=price, type="Adhésion Élèves",
+                    facture_name=fac_name, nb_facture=admin.userprofile.nb_facture,
+                    to_user_firstname=user.first_name, to_user_lastname=user.last_name,
+                    to_user_address=user.userprofile.address,
+                    to_user_city=user.userprofile.city, to_user_zipcode=user.userprofile.zip_code,
+                    to_user_siret=user.userprofile.siret, to_user_sap=user.userprofile.sap,
+                    from_user_firstname=admin.first_name, from_user_lastname=admin.last_name,
+                    from_user_address=admin.userprofile.address, from_user_city=admin.userprofile.city,
+                    from_user_zipcode=admin.userprofile.zip_code, from_user_siret=admin.userprofile.siret,
+                    from_user_sap=admin.userprofile.sap,admin_address=admin.userprofile.address,
+                    admin_zipcode=admin.userprofile.zip_code, admin_city=admin.userprofile.city)
 
-            fac.is_paid = True
-            fac.save()
-            user.userprofile.is_adherent=True
-            user.userprofile.save()
-            admin.userprofile.nb_facture += 1
-            admin.userprofile.save()
-            Adhesion.objects.create(to_user=user)
-            user.backend = 'django.contrib.auth.backends.ModelBackend'
-            login(request, user)
-            messages.success(request, "Votre adhésion a bien été payée.")
-            return redirect('intranet:accueil')
-        else:
-            messages.warning(request, 'Action non aurotisée.')
-            return redirect('intranet:creation_adhesion')
+        fac.is_paid = True
+        fac.save()
+        user.userprofile.is_adherent=True
+        user.userprofile.save()
+        admin.userprofile.nb_facture += 1
+        admin.userprofile.save()
+        Adhesion.objects.create(to_user=user)
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, user)
+        messages.success(request, "Votre adhésion a bien été payée.")
+        return redirect('intranet:accueil')
     else:
-        messages.warning(request,'Action non aurotisée.')
+        messages.warning(request, 'Action non aurotisée.')
+        return redirect('intranet:creation_adhesion')
+
 
     return redirect('intranet:creation_adhesion')
 
