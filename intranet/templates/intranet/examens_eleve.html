@@ -29,21 +29,40 @@
                                     <tr>
 
                                     <td>{{e.nom_prenom}}</td>
-                                    <td><a>
-                                            <form action="{% url 'intranet:checkout_exam' %}" role='form' method="POST">
-                                            {% csrf_token %}
-                                            <input type="text" name="fac_id" id="fac_id" value="{{e.pk}}" hidden required>
-                                             <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
-                                                data-key="{{key}}"
-                                                data-amount="{{ exam_ttc|stripe }}"
-                                                data-name="Ecole Française de Piano"
-                                                data-description="Inscription Examen"
-                                                data-image="{% static 'intranet/img/efp_logo.png' %}"
-                                                data-locale="fr"
-                                                data-currency="eur">
-                                            </script>
-                                            </form>
-                                        </a></td>
+                                    <td>
+                                         <a class="btn btn-info btn-sm" data-toggle="modal" data-target="#my_modal_{{e.pk}}" role="button">Inscrire cet élève</a>
+                                         <div class="modal fade" id="my_modal_{{e.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                 <div class="modal-content">
+                                                     <div class="modal-header">
+                                                         <h5 class="modal-title" id="exampleModalLongTitle">Inscription examen</h5>
+                                                         <a type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                             <span aria-hidden="true">&times;</span>
+                                                         </a>
+                                                     </div>
+                                                     <div class="modal-body">
+                                                         <div class="mb-5">Voulez-vous inscire votre élève à l'examen ?</br>Les frais d'examens sont de {{exam_ttc}}€ par élève.</div>
+                                                         {% include 'intranet/checkout_examen.html' with e=e %}
+                                                     </div>
+                                                 </div>
+                                            </div>
+                                         </div>
+                                    </td>
+                                    <!--<td><a>-->
+                                            <!--<form action="{% url 'intranet:checkout_exam' %}" role='form' method="POST">-->
+                                            <!--{% csrf_token %}-->
+                                            <!--<input type="text" name="fac_id" id="fac_id" value="{{e.pk}}" hidden required>-->
+                                             <!--<script src="https://checkout.stripe.com/checkout.js" class="stripe-button"-->
+                                                <!--data-key="{{key}}"-->
+                                                <!--data-amount="{{ exam_ttc|stripe }}"-->
+                                                <!--data-name="Ecole Française de Piano"-->
+                                                <!--data-description="Inscription Examen"-->
+                                                <!--data-image="{% static 'intranet/img/efp_logo.png' %}"-->
+                                                <!--data-locale="fr"-->
+                                                <!--data-currency="eur">-->
+                                            <!--</script>-->
+                                            <!--</form>-->
+                                        <!--</a></td>-->
                                     </tr>
                                 {% endfor %}
                                 </tbody>

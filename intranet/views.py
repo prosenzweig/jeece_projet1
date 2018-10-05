@@ -147,12 +147,12 @@ def gen_pdf(request,fac_id):
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "École Française de Piano")
         p.setFont('Helvetica', 12)
-        p.drawString(50, 565, "Emmanuel BIRNBAUM")
-        p.drawString(50, 550, "%s"  % facture.from_user_address)
-        p.drawString(50, 535, "%s %s" % (facture.from_user_zipcode, facture.from_user_city))
-        p.drawString(50, 520, "01 85 09 93 87")
-        p.drawString(50, 505, "info@ecolefrancaisedepiano.fr")
-        p.drawString(50, 490, "https://www.ecolefrancaisedepiano.fr")
+        # p.drawString(50, 565, "Emmanuel BIRNBAUM")
+        p.drawString(50, 565, "%s"  % facture.from_user_address)
+        p.drawString(50, 550, "%s %s" % (facture.from_user_zipcode, facture.from_user_city))
+        p.drawString(50, 535, "01 85 09 93 87")
+        p.drawString(50, 520, "info@ecolefrancaisedepiano.fr")
+        p.drawString(50, 505, "https://www.ecolefrancaisedepiano.fr")
 
     else:
         p.setFont('Helvetica-Bold', 12)
@@ -214,13 +214,22 @@ def gen_pdf(request,fac_id):
     p.setFont('Helvetica', 11)
     p.drawString(200, 220, "%s" % facture.last.strftime("%d/%m/%Y"))
 
-
-    p.setFont('Helvetica-Bold', 10)
-    p.drawCentredString(300,60,'Ecole Française de Piano - SASU EFP')
-    p.setFont('Helvetica-Oblique', 8)
-    # p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
-    p.drawCentredString(300,45,'%s %s %s' % (facture.admin_address,facture.admin_zipcode,facture.admin_city))
-    p.drawCentredString(300,30,'Numéro de SIRET: 811 905 934 00014 - Numéro de TVA: FR 90 811905934 - 811 905 934 R.C.S.Paris')
+    if facture.from_user.is_superuser:
+        p.setFont('Helvetica-Bold', 10)
+        p.drawCentredString(300,60,'Ecole Française de Piano - SASU EFP')
+        p.setFont('Helvetica-Oblique', 8)
+        # p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
+        p.drawCentredString(300,45,'%s %s %s' % (facture.admin_address,facture.admin_zipcode,facture.admin_city))
+        p.drawCentredString(300,30,'Numéro de SIRET: 811 905 934 00014 - Numéro de TVA: FR 90 811905934 - 811 905 934 R.C.S.Paris')
+    else:
+        p.setFont('Helvetica-Oblique', 9)
+        p.drawCentredString(300, 85, 'TVA non applicable, art. 293 B du CGI - Facture établie au nom et pour le compte de %s %s par la société : SASU EFP -' % (facture.from_user_firstname,facture.from_user_lastname))
+        p.drawCentredString(300, 75, 'Siret n°811 905 934 00014 - 811 905 934 R.C.S.Paris - %s %s %s' % (facture.admin_address,facture.admin_zipcode,facture.admin_city))
+        p.setFont('Helvetica-Bold', 9)
+        p.drawCentredString(300, 60, '%s %s' % (facture.from_user_firstname,facture.from_user_lastname))
+        p.setFont('Helvetica-Oblique', 8)
+        p.drawCentredString(300, 45, '%s %s %s' % (facture.from_user_address,facture.from_user_zipcode,facture.from_user_city))
+        p.drawCentredString(300, 35, 'Numéro de SIRET: %s' % (facture.from_user_siret))
 
     p.showPage()
     p.save()
@@ -778,6 +787,7 @@ def documents(request):
             fac_prof = [f for f in fac_list if f.from_user != admin]
             tt_ad = sum([float(f.price_ttc) for f in fac_list if f.from_user == admin])
             tt_prof = sum([float(f.price_ttc) for f in fac_list if f.from_user != admin])
+            des_pr = ','.join([f.facture_name for f in fac_list if f.from_user != admin])
             try:
                 charge = stripe.Charge.create(
                     amount= int(round(tt_ad+tt_prof,2)*100),
@@ -1840,6 +1850,7 @@ def checkout_exam(request):
         form = PriceForm(request.POST)
         if form.is_valid():
             eleve_id = form.cleaned_data["fac_id"]
+            token = request.POST['stripeToken']
             eleve = get_object_or_404(Eleve,pk=eleve_id)
             ex_list = Examen.objects.all()
             if ex_list:
@@ -1847,6 +1858,49 @@ def checkout_exam(request):
             else:
                 messages.warning(request, 'Action non aurotisée.')
                 return redirect('intranet:examens_eleve')
+
+            description = "EFP_%s_examen" % request.user.last_name
+            price = add_tva(exam.price,prix.tva)
+            try:
+                charge = stripe.Charge.create(
+                    amount=int(round(price, 2) * 100),
+                    currency="eur",
+                    description=description,
+                    source=token
+                )
+            except stripe.error.CardError as e:
+                messages.error(request, "Votre carte a été refusé")
+                body = e.json_body
+                err = body.get('error', {})
+                print("Status is: %s" % e.http_status)
+                print("Type is: %s" % err.get('type'))
+                print("Code is: %s" % err.get('code'))
+                print("Param is: %s" % err.get('param'))
+                print("Message is: %s" % err.get('message'))
+            except stripe.error.RateLimitError as e:
+                # Too many requests made to the API too quickly
+                messages.error(request, "Erreur de connexion avec l'API Stripe.")
+                pass
+            except stripe.error.InvalidRequestError as e:
+                # Invalid parameters were supplied to Stripe's API
+                messages.error(request, "Les paramètres transmis ne sont pas correctes.")
+                pass
+            except stripe.error.AuthenticationError as e:
+                # Authentication with Stripe's API failed
+                # (maybe you changed API keys recently)
+                messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
+                pass
+            except stripe.error.APIConnectionError as e:
+                # Network communication with Stripe failed
+                pass
+            except stripe.error.StripeError as e:
+                # Display a very generic error to the user, and maybe send
+                # yourself an email
+                pass
+            except Exception as e:
+                # Something else happened, completely unrelated to Stripe
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                pass
 
             user = request.user
             fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
