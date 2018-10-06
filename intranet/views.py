@@ -1259,6 +1259,7 @@ def graphs_evol(request):
 @user_passes_test(lambda u: u.is_superuser)
 def gestion_articles(request):
     """Members template to display all the members"""
+    nots = nb_new_notifs(request.user)
     form = ArticleForm()
     return render(request, 'intranet/gestion_articles.html', locals())
 
