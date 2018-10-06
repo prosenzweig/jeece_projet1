@@ -1129,7 +1129,7 @@ def statistiques(request):
     geo_list = UserProfile.objects.exclude(lat="0.0").exclude(lat="None")
     # print(geo_list)
     prof = User.objects.filter(is_staff=True, is_active=True).count()
-    eleve = Eleve.objects.filter().count()
+    eleve = Eleve.objects.exclude(referent=None).count()
     compte = User.objects.exclude(is_staff=True, is_active=False).count()
 
     return render(request, 'intranet/statistiques.html', locals())
