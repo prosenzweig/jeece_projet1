@@ -127,7 +127,7 @@ def gen_pdf(request,fac_id):
     # response['Content-Disposition'] = 'attachment;filename=facture_%s.pdf' % facture.pk
     fname = facture.facture_name
     chaine = unicodedata.normalize('NFKD', fname).encode('ASCII', 'ignore')
-    response['Content-Disposition'] = 'filename=A_%s.pdf' % chaine
+    response['Content-Disposition'] = 'filename=A_%s.pdf' % chaine[2:-1]
     buffer = BytesIO()
 
     p = canvas.Canvas(buffer)
