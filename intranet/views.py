@@ -116,10 +116,10 @@ def gen_pdf(request,fac_id):
     # Create the HttpResponse object with the appropriate PDF headers.
     facture = get_object_or_404(Facture,pk=fac_id)
     admin = User.objects.get(is_superuser=True)
-    if not request.user.is_superuser:
-        if facture.to_user != request.user and facture.from_user != request.user:
-            messages.warning(request,"Impossible d'accéder à la facture !")
-            return redirect('intranet:documents')
+    # if not request.user.is_superuser:
+    #     if facture.to_user != request.user and facture.from_user != request.user:
+    #         messages.warning(request,"Impossible d'accéder à la facture !")
+    #         return redirect('intranet:documents')
 
 
     response = HttpResponse(content_type='application/pdf')
