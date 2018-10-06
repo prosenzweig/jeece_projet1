@@ -113,18 +113,21 @@ def add_tva(value,arg):
 # Frais de Gestion PDF
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def gen_pdf(request,fac_id):
+    import unicodedata
     # Create the HttpResponse object with the appropriate PDF headers.
     facture = get_object_or_404(Facture,pk=fac_id)
     admin = User.objects.get(is_superuser=True)
-    # if not request.user.is_superuser:
-    #     if facture.to_user != request.user and facture.from_user != request.user:
-    #         messages.warning(request,"Impossible d'accéder à la facture !")
-    #         return redirect('intranet:documents')
+    if not request.user.is_superuser:
+        if facture.to_user != request.user and facture.from_user != request.user:
+            messages.warning(request,"Impossible d'accéder à la facture !")
+            return redirect('intranet:documents')
 
 
     response = HttpResponse(content_type='application/pdf')
     # response['Content-Disposition'] = 'attachment;filename=facture_%s.pdf' % facture.pk
-    response['Content-Disposition'] = 'filename=A_%s.pdf' % facture.facture_name
+    fname = facture.facture_name
+    chaine = unicodedata.normalize('NFKD', fname).encode('ASCII', 'ignore')
+    response['Content-Disposition'] = 'filename=A_%s.pdf' % chaine
     buffer = BytesIO()
 
     p = canvas.Canvas(buffer)

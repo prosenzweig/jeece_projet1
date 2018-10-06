@@ -83,7 +83,7 @@
                  <td>{{att.to_user}}</td>
                  <td>{{att.created}}</td>
                  <td>{{att.price}}</td>
-                <td><a href="{% url 'intranet:gen_attest_pdf' fac_id=att.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
+                <td><a target="_blank" href="{% url 'intranet:gen_attest_pdf' fac_id=att.pk %}"><i class="fa fa-file-text white-text" style="color: black;padding: 0;"></i></a></td>
             </tr>
             </tbody>
             {% endfor %}
