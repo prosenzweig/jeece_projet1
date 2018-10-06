@@ -1525,7 +1525,8 @@ def remove_eleve(request, id):
         messages.warning(request,"Vous devez avoir au minimum un élève.")
         return redirect('intranet:mon_compte')
     else:
-        e.delete()
+        e.referent = None
+        e.save()
         messages.success(request, "Élève supprimé.")
     return redirect('intranet:mon_compte')
 

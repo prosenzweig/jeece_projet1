@@ -193,7 +193,7 @@ class Facture(models.Model):
     admin_city = models.CharField(max_length=60, default=None, null=True, blank=True)
 
 class Eleve(models.Model):
-    referent = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
+    referent = models.ForeignKey(User, on_delete=models.CASCADE, default=None, null=True, blank=True)
     nom_prenom = models.CharField(max_length=100, default=None)
     class Meta:
         verbose_name = 'élève'
