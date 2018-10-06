@@ -244,6 +244,7 @@ def gen_pdf(request,fac_id):
 
 @user_passes_test(lambda u: u.userprofile.is_adherent)
 def gen_attest_pdf(request,fac_id):
+    import unicodedata
     # fac_id
     # Create the HttpResponse object with the appropriate PDF headers.
     att = get_object_or_404(Attestation,pk=fac_id)
@@ -254,7 +255,9 @@ def gen_attest_pdf(request,fac_id):
 
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'filename=attestation_%s_%s_%s.pdf' % (att.from_user_lastname,att.to_user_lastname,att.nb_adh)
+    fname = 'attestation_%s_%s_%s.pdf' % (att.from_user_lastname,att.to_user_lastname,att.nb_adh)
+    chaine = unicodedata.normalize('NFKD', fname).encode('ASCII', 'ignore')
+    response['Content-Disposition'] = 'filename=%s' % chaine[2:-1]
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
 
