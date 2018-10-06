@@ -1542,7 +1542,8 @@ def remove_eleve_adh(request, id):
         messages.warning(request,"Vous devez avoir au minimum un élève.")
         return redirect('intranet:creation_adhesion')
     else:
-        e.delete()
+        e.referent = None
+        e.save()
         messages.success(request, "Élève supprimé.")
     return redirect('intranet:creation_adhesion')
 
@@ -1558,7 +1559,8 @@ def remove_eleve_cr(request, id):
         messages.warning(request,"Vous devez avoir au minimum un élève.")
         return redirect('intranet:creation_eleves')
     else:
-        e.delete()
+        e.referent = None
+        e.save()
         messages.success(request, "Élève supprimé.")
     return redirect('intranet:creation_eleves')
 
