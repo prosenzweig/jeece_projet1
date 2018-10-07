@@ -9,7 +9,7 @@
             <h3 class="text-center mt-2 mb-3">Mes examens</h3>
             {% include 'intranet/messages.html' with messages=messages %}
             {% if form %}
-            <h5>Créer un nouvel examen:</h5>
+            <h5>Créez un nouvel examen:</h5>
                 <form method="post">
                     {% csrf_token %}
                     {% include 'intranet/bs4_form.html' with form=form %}

@@ -8,7 +8,7 @@
 {% block content %}
 <div class="container container_extras">
     <div class="tab-content">
-        <h3 class="text-center mt-2">Créer une relation</h3>
+        <h3 class="text-center mt-2">Créez une relation</h3>
         <p>Assignez un élève à un professeur pour lui permettre de suivre des cours avec celui-ci:</p>
         {% include 'intranet/messages.html' with messages=messages %}
         <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:relation' %}">
