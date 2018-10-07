@@ -14,8 +14,8 @@
          <p>Les élèves suivant sont déjà enregistrés:</p>
          <ol>
          {% for e in eleves %}
-             <li class="my-2">{{e}} <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_eleve_cr' id=e.pk %}" role="button">Editer</a>
-             <a class="btn btn-danger btn-sm" href="{% url 'intranet:remove_eleve_cr' id=e.pk %}" role="button">Supprimer</a></li>
+             <li class="my-2">{{e}} <a class="btn btn-warning btn-sm" href="{% url 'intranet:edit_eleve_cr' id=e.pk %}" role="button">Editez</a>
+             <a class="btn btn-danger btn-sm" href="{% url 'intranet:remove_eleve_cr' id=e.pk %}" role="button">Supprimez</a></li>
          {% endfor %}
          </ol>
      {% else %}
