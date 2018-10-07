@@ -26,7 +26,7 @@
                 <!--<a target="_blank" href="https://dashboard.stripe.com/oauth/authorize?response_type=code&client_id=ca_DfZv1K82vK9eUSchoB72BpFqej6WIAw0&scope=read_write" class="stripe-connect mb-4"><span>Connect with Stripe</span></a>-->
                 {% endif %}
             {% endif %}
-            <h5>Vos informations personnelles:</h5>
+            <h5>Vos informations personnelles :</h5>
             {% include 'intranet/messages.html' with messages=messages %}
             <p>Pseudo: {{ user }}</p>
             <p>Nom/Prénom: {{ user.last_name }} {{ user.first_name }}</p>

@@ -60,7 +60,7 @@ class UserProfile(models.Model):
     nb_facture = models.IntegerField(default=1)
     nb_adh= models.IntegerField(default=1,blank=True,null=True)
     stats = models.CharField(max_length=1, choices=STATS_CHOICES,null=True)
-    is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")
+    is_premium = models.BooleanField(default=False,help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€.")
     stripe_account_id = models.CharField(max_length=40,default="StripeAccId",blank=True,help_text='ex: acct_1D5xIp...')
     nots_view = models.DateTimeField(default=timezone.now,verbose_name="Date des dernières modifications")
 

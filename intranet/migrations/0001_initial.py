@@ -247,7 +247,7 @@ class Migration(migrations.Migration):
                 ('sap', models.CharField(blank=True, default='SAP', max_length=11)),
                 ('nb_facture', models.IntegerField(default=1)),
                 ('stats', models.CharField(blank=True, choices=[('A', 'Moteur de recherche Google'), ('B', 'Facebook'), ('C', 'Autre source internet'), ('D', 'Annuaire(pages jaunes...)'), ('E', 'Nebout & Hamm'), ('F', 'Falado'), ('G', 'Connaissance(famille, amis...)')], max_length=1, null=True)),
-                ('is_premium', models.BooleanField(default=False, help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€")),
+                ('is_premium', models.BooleanField(default=False, help_text="Permet d'annuler un cours à la dernière minute, les cours sont majorés de 10€.")),
                 ('stripe_account_id', models.CharField(blank=True, default='StripeAccId', help_text='ex: acct_1D5xIp...', max_length=40)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
