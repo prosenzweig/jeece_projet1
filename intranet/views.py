@@ -715,30 +715,31 @@ def documents(request):
                 print("Code is: %s" % err.get('code'))
                 print("Param is: %s" % err.get('param'))
                 print("Message is: %s" % err.get('message'))
+                return redirect('intranet:documents')
             except stripe.error.RateLimitError as e:
                 # Too many requests made to the API too quickly
                 messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.InvalidRequestError as e:
                 # Invalid parameters were supplied to Stripe's API
                 messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.AuthenticationError as e:
                 # Authentication with Stripe's API failed
                 # (maybe you changed API keys recently)
                 messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
-                pass
+                return redirect('intranet:documents')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
-                pass
+                return redirect('intranet:documents')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
                 messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+                return redirect('intranet:documents')
         elif admin in dest and len(dest) == 1:
             print("Que pour l'admin")
             tt_ad = sum([float(f.price_ttc) for f in fac_list])
@@ -763,30 +764,33 @@ def documents(request):
                 print("Code is: %s" % err.get('code'))
                 print("Param is: %s" % err.get('param'))
                 print("Message is: %s" % err.get('message'))
+                return redirect('intranet:documents')
             except stripe.error.RateLimitError as e:
                 # Too many requests made to the API too quickly
                 messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.InvalidRequestError as e:
                 # Invalid parameters were supplied to Stripe's API
                 messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.AuthenticationError as e:
                 # Authentication with Stripe's API failed
                 # (maybe you changed API keys recently)
                 messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
-                pass
+                messages.error(request, "Quelque chose d'anormal est survene.")
+                return redirect('intranet:documents')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
-                pass
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                return redirect('intranet:documents')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
                 messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+                return redirect('intranet:documents')
         elif admin in dest and len(dest) == 2:
             print("Cas Classique de Facturation")
             fac_ad = [f for f in fac_list if f.from_user == admin]
@@ -819,30 +823,33 @@ def documents(request):
                 print("Code is: %s" % err.get('code'))
                 print("Param is: %s" % err.get('param'))
                 print("Message is: %s" % err.get('message'))
+                return redirect('intranet:documents')
             except stripe.error.RateLimitError as e:
                 # Too many requests made to the API too quickly
                 messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.InvalidRequestError as e:
                 # Invalid parameters were supplied to Stripe's API
                 messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.AuthenticationError as e:
                 # Authentication with Stripe's API failed
                 # (maybe you changed API keys recently)
                 messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
-                pass
+                messages.error(request, "Problème de connexion..")
+                return redirect('intranet:documents')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
-                pass
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                return redirect('intranet:documents')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
                 messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+                return redirect('intranet:documents')
         else:
             dest_na = [d for d in dest if d != admin]
             fac_dest = Facture.objects.filter(to_user=request.user, from_user=dest_na[0], is_paid=False).exclude(
@@ -872,30 +879,31 @@ def documents(request):
                 print("Code is: %s" % err.get('code'))
                 print("Param is: %s" % err.get('param'))
                 print("Message is: %s" % err.get('message'))
+                return redirect('intranet:documents')
             except stripe.error.RateLimitError as e:
                 # Too many requests made to the API too quickly
                 messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.InvalidRequestError as e:
                 # Invalid parameters were supplied to Stripe's API
                 messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.AuthenticationError as e:
                 # Authentication with Stripe's API failed
                 # (maybe you changed API keys recently)
                 messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
+                return redirect('intranet:documents')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
-                pass
+                return redirect('intranet:documents')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
-                pass
+                return redirect('intranet:documents')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
                 messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+                return redirect('intranet:documents')
 
         return redirect('intranet:documents')
 
@@ -996,30 +1004,33 @@ def checkout_inscription(request):
             print("Code is: %s" % err.get('code'))
             print("Param is: %s" % err.get('param'))
             print("Message is: %s" % err.get('message'))
+            return redirect('intranet:creation_adhesion')
         except stripe.error.RateLimitError as e:
             # Too many requests made to the API too quickly
             messages.error(request, "Erreur de connexion avec l'API Stripe.")
-            pass
+            return redirect('intranet:creation_adhesion')
         except stripe.error.InvalidRequestError as e:
             # Invalid parameters were supplied to Stripe's API
             messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-            pass
+            return redirect('intranet:creation_adhesion')
         except stripe.error.AuthenticationError as e:
             # Authentication with Stripe's API failed
             # (maybe you changed API keys recently)
             messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-            pass
+            return redirect('intranet:creation_adhesion')
         except stripe.error.APIConnectionError as e:
             # Network communication with Stripe failed
-            pass
+            messages.error(request, "Problème de connection, réessayez svp.")
+            return redirect('intranet:creation_adhesion')
         except stripe.error.StripeError as e:
             # Display a very generic error to the user, and maybe send
             # yourself an email
-            pass
+            messages.error(request, "Quelque chose d'anormal est survenu.")
+            return redirect('intranet:creation_adhesion')
         except Exception as e:
             # Something else happened, completely unrelated to Stripe
             messages.error(request, "Quelque chose d'anormal est survenu.")
-            pass
+            return redirect('intranet:creation_adhesion')
 
         admin = User.objects.get(is_superuser=True)
         user = request.user
@@ -1887,30 +1898,33 @@ def checkout_exam(request):
                 print("Code is: %s" % err.get('code'))
                 print("Param is: %s" % err.get('param'))
                 print("Message is: %s" % err.get('message'))
+                return redirect('intranet:examens_eleve')
             except stripe.error.RateLimitError as e:
                 # Too many requests made to the API too quickly
                 messages.error(request, "Erreur de connexion avec l'API Stripe.")
-                pass
+                return redirect('intranet:examens_eleve')
             except stripe.error.InvalidRequestError as e:
                 # Invalid parameters were supplied to Stripe's API
                 messages.error(request, "Les paramètres transmis ne sont pas correctes.")
-                pass
+                return redirect('intranet:examens_eleve')
             except stripe.error.AuthenticationError as e:
                 # Authentication with Stripe's API failed
                 # (maybe you changed API keys recently)
                 messages.error(request, "Les clefs de l'API ne sont pas bonnes.")
-                pass
+                return redirect('intranet:examens_eleve')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
-                pass
+                messages.error(request, "Problème de connection réseaux.")
+                return redirect('intranet:examens_eleve')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
-                pass
+                messages.error(request, "Quelque chose d'anormal est survenu.")
+                return redirect('intranet:examens_eleve')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
                 messages.error(request, "Quelque chose d'anormal est survenu.")
-                pass
+                return redirect('intranet:examens_eleve')
 
             user = request.user
             fac_name = "EFP_%s_%s" % (user.last_name, admin.userprofile.nb_facture)
