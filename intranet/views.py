@@ -651,7 +651,7 @@ def validation_eleve(request, id, result):
             admin = User.objects.get(is_superuser=True)
             cour.is_unvalid = True
             cour.save()
-            messages.warning(request, 'Le cours a bien été réfuté. L\'administrateur en sera informé.')
+            messages.warning(request, 'Le cours a bien été refusé. L\'administrateur en sera informé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
                                         object="Problème Validation Cours",
                                         text="Il y a un problème dans le cours du %s que vous m'avez demandé de valider." % conv_date(str(cour.date)))

@@ -20,7 +20,7 @@ class InvitationForm(forms.Form):
 
 
 class ConditionForm(forms.Form):
-    condition = forms.BooleanField(label='J\'ai lu & j\'accepte les conditions générales d\'utilisation')
+    condition = forms.BooleanField(label='J\'ai lu et j\'accepte les conditions générales d\'utilisation')
 
 class RelationForm(forms.Form):
     eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True), required=True, label='Élève', help_text=" (pseudo de l'élève)", to_field_name="username")

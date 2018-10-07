@@ -159,7 +159,7 @@ body, html {
                 {% csrf_token %}
                 <span id="reauth-email" class="reauth-email"></span>
                 {{ form.as_p }}
-                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Valider</button>
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Validez</button>
             </form><!-- /form -->
             <a href="{% url 'intranet:reset_password' %}" class="forgot-password">
                 Mot de passe oublié ?
