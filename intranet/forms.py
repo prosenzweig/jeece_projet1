@@ -259,34 +259,35 @@ class LessonFrom(forms.Form):
         # self.fields['date'] = forms.DateField(initial=datetime.date.today, required=True)
 
 class FactureForm(forms.Form):
-     OBJECTS = (
-        ('cp','Cours de piano'),
-        ('fg','Frais de gestion'),
-        ('fc','Frais de commission'),
-        ('fa','Frais d\'adhésion'),
-        ('fp','Frais de préavis')
-     )
+     def __init__(self, *args, **kwargs):
+         OBJECTS = (
+             ('cp', 'Cours de piano'),
+             ('fg', 'Frais de gestion'),
+             ('fc', 'Frais de commission'),
+             ('fa', 'Frais d\'adhésion'),
+             ('fp', 'Frais de préavis')
+         )
+         super(FactureForm, self).__init__(*args, **kwargs)
+         self.fields['from_user'] = forms.ChoiceField(
+                widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
+                choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True, is_active=True))],
+                required=True, label="Emeteur")
+         self.fields['to_user'] = forms.ChoiceField(
+            widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),
+            choices=[(x.username, x) for i, x in enumerate(User.objects.filter(is_active=True))],
+            required=True, label="Destinataire")
 
-     from_user = forms.ChoiceField(
-            widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
-            choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True, is_active=True))],
-            required=True, label="Emeteur")
-     to_user = forms.ChoiceField(
-        widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),
-        choices=[(x.username, x) for i, x in enumerate(User.objects.filter(is_active=True))],
-        required=True, label="Destinataire")
+         self.fields['object'] = forms.ChoiceField(choices=OBJECTS,label="Objet")
 
-     object = forms.ChoiceField(choices=OBJECTS,label="Objet")
+         self.fields['nb_item'] = forms.IntegerField(
+                widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
+                required=True,min_value=1,max_value=1000,label='Unités',initial=1)
 
-     nb_item = forms.IntegerField(
-            widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
-            required=True,min_value=1,max_value=1000,label='Unités',initial=1)
+         self.fields['tva'] = forms.FloatField(
+             widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
+             required=True, min_value=0, max_value=1000, label='TVA', initial=20.00)
 
-     tva = forms.FloatField(
-         widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
-         required=True, min_value=0, max_value=1000, label='TVA', initial=20.00)
-
-     prix_ht = forms.FloatField(
-         widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
-         required=True, min_value=0, max_value=1000, label='Prix HT', initial=1.00)
+         self.fields['prix_ht'] = forms.FloatField(
+             widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),
+             required=True, min_value=0, max_value=1000, label='Prix HT', initial=1.00)
 
