@@ -14,7 +14,7 @@
         <form class="form-signin" method="POST"  role="form" action="{% url 'intranet:invitation' %}">
             {% csrf_token %}
             {{ form.as_p }}
-            <button class="btn btn-sm btn-primary btn-signin" type="submit">Inviter</button>
+            <button class="btn btn-sm btn-primary btn-signin" type="submit">Invitez</button>
         </form>
         <h3 class="text-center mt-2"> Liste des invitations </h3>
         {% if invitations_list %}
