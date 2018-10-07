@@ -127,7 +127,7 @@ def gen_pdf(request,fac_id):
     # response['Content-Disposition'] = 'attachment;filename=facture_%s.pdf' % facture.pk
     fname = facture.facture_name
     chaine = unicodedata.normalize('NFKD', fname).encode('ASCII', 'ignore')
-    response['Content-Disposition'] = 'filename=A_%s.pdf' % chaine[2:-1]
+    response['Content-Disposition'] = 'filename=A_%s.pdf' % chaine.decode('UTF-8')
     buffer = BytesIO()
 
     p = canvas.Canvas(buffer)
@@ -257,7 +257,7 @@ def gen_attest_pdf(request,fac_id):
     response = HttpResponse(content_type='application/pdf')
     fname = 'attestation_%s_%s_%s.pdf' % (att.from_user_lastname,att.to_user_lastname,att.nb_adh)
     chaine = unicodedata.normalize('NFKD', fname).encode('ASCII', 'ignore')
-    response['Content-Disposition'] = 'filename=%s' % chaine[2:-1]
+    response['Content-Disposition'] = 'filename=%s' % chaine.decode('UTF-8')
     buffer = BytesIO()
     p = canvas.Canvas(buffer)
 
@@ -1421,7 +1421,7 @@ def stripe_connect(request):
 def edit_compte(request):
     nots = nb_new_notifs(request.user)
     if request.method == 'POST':
-        form_user = EditUserForm(c, instance=request.user)
+        form_user = EditUserForm(request.POST, instance=request.user)
         form_profile = EditStaffProfileForm(request.POST, instance=request.user.userprofile) if request.user.is_staff else EditProfileForm(request.POST, instance=request.user.userprofile)
         if form_profile.is_valid() and form_user.is_valid():
             form_user.save()
