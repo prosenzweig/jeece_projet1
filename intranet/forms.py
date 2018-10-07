@@ -10,7 +10,7 @@ import datetime
 class LoginForm(forms.Form):
     # email = forms.EmailField(required=True, label='', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Email address', 'class':'form-control'}))
     username = forms.CharField(required=True, label='', max_length=100, widget=forms.TextInput(attrs={'placeholder': 'Pseudo', 'class':'form-control'}))
-    password = forms.CharField(required=True, label='', widget=forms.PasswordInput(attrs={'placeholder': 'mot de passe', 'class':'form-control'}))
+    password = forms.CharField(required=True, label='', widget=forms.PasswordInput(attrs={'placeholder': 'Mot de passe', 'class':'form-control'}))
 
 
 class InvitationForm(forms.Form):
