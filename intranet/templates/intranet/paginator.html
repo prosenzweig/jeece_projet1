@@ -1,4 +1,4 @@
-<ul class="pagination justify-content-center mb-4">
+<ul class="pagination justify-content-center mb-4 HORIZONTAL_SCROLL_NAV">
   {% if page_obj.has_previous %}
         {% if 'from_user' in request.get_full_path %}
         <li class="page-item"><a class="page-link" href="{{ path }}&page={{ page_obj.previous_page_number }}">&laquo;</a></li>

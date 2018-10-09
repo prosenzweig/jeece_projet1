@@ -28,20 +28,20 @@
             {% endif %}
             <h5>Vos informations personnelles :</h5>
             {% include 'intranet/messages.html' with messages=messages %}
-            <p>Pseudo: {{ user }}</p>
-            <p>Nom/Prénom: {{ user.last_name }} {{ user.first_name }}</p>
-            <p>Téléphone: {{ user.userprofile.phone_number }}</p>
-            <p>Email: {{ user.email }}</p>
-            <p>Adresse: {{ user.userprofile.address }}</p>
-            <p>Ville: {{ user.userprofile.city }}</p>
+            <p>Pseudo: {{ user.username }}</p>
+            <p>Nom/Prénom : {{ user.last_name }} {{ user.first_name }}</p>
+            <p>Téléphone : {{ user.userprofile.phone_number }}</p>
+            <p>Email : {{ user.email }}</p>
+            <p>Adresse : {{ user.userprofile.address }}</p>
             <p>Code postal: {{ user.userprofile.zip_code }}</p>
-            <p>Pays: {{ user.userprofile.country }} </p>
+            <p>Ville : {{ user.userprofile.city }}</p>
+            <p>Pays : {{ user.userprofile.country }} </p>
             {% if user.userprofile.avatar %}
             <img src="{{ user.userprofile.avatar.url }}" width="240">
             {% endif %}
             {% if user.is_staff %}
-            <p>SIRET: {{ user.userprofile.siret }}</p>
-            <p>SAP: {{ user.userprofile.sap }}</p>
+            <p>SIRET : {{ user.userprofile.siret }}</p>
+            <p>SAP : {{ user.userprofile.sap }}</p>
             <!--<p>ID Compte Stripe: {{ user.userprofile.stripe_account_id}} </p>-->
             {% endif %}
             <a class="btn btn-info btn-sm" href="{% url 'intranet:edit_compte' %}" role="button">Modifiez mon profil</a>

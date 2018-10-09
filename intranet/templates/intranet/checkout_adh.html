@@ -5,7 +5,7 @@
 <link rel="stylesheet" type="text/css" href="{% static 'intranet/css/checkout.css' %}">
 <div id="collapseStripe" class="wrapper" style="display: none;">
   <script src="https://js.stripe.com/v3/"></script>
-  <form action="{% url 'intranet:checkout_inscription' %}" method="post" id="payment-form" class="form-stripe" >
+  <form action="{% url 'intranet:checkout_inscription' %}" method="post" id="payment-form" class="form-stripe" style="">
     {% csrf_token %}
     <div class="stripe-form-row">
       <label for="card-element">
@@ -16,7 +16,7 @@
       <!-- Used to display form errors. -->
       <div id="card-errors" role="alert"></div>
     </div>
-    <button>Validez le Paiement</button>
+    <button class="">Validez</button>
   </form>
 
 </div>

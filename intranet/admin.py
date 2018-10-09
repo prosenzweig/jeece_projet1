@@ -1,6 +1,15 @@
 from django.contrib import admin
 from .models import (Article, Relation, UserProfile, Cour, Facture, Invitation, Notification, Prix, Attestation,Lesson,
                      Condition,Adhesion,Eleve,Stats,Examen,InscriptionExamen)
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+
+class MyUserAdmin(UserAdmin):
+    # override the default sort column
+    ordering = ('last_name', 'first_name', )
+    # if you want the date they joined or other columns displayed in the list,
+    # override list_display too
+    list_display = ('username', 'email', 'date_joined', 'first_name', 'last_name', 'is_staff')
 
 
 class ArticleAdmin(admin.ModelAdmin):
@@ -89,3 +98,6 @@ admin.site.register(Eleve, EleveAdmin)
 admin.site.register(Stats, StatsAdmin)
 admin.site.register(Examen, ExamenAdmin)
 admin.site.register(InscriptionExamen, InscriptionExamenAdmin)
+# finally replace the default UserAdmin with yours
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)

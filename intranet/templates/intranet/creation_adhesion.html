@@ -14,7 +14,7 @@
      {% if user.is_staff %}
      <p>Les frais d'adhésion sont facturés {{ad_prof}}€ pour chaque professeur et doivent être renouvelés tous les ans à partir de la date du premier paiement.</p>
      {% else %}
-     <p>Les frais d'adhésion sont facturés {{ad}}€ par élève (ou de {{ad_reduc}}€ à partir du deuxième) et doivent être renouvelés chaque année à partir de la date du premier paiement.</p>
+     <p>Les frais d'adhésion sont facturés {{ad}}€ par élève (ou {{ad_reduc}}€ à partir du deuxième) et doivent être renouvelés chaque année à partir de la date du premier paiement.</p>
      {% endif %}
      {% if eleves %}
         <p>Élève(s):</p>
@@ -40,7 +40,7 @@
             <!--data-locale="fr">-->
         <!--</script>-->
     <!--</form>-->
-    <a class="btn btn-info btn-sm mt-3" href="{% url 'intranet:creation_inscription' %}" role="button">Retour</a>
+    <a class="btn btn-secondary mt-5" href="{% url 'intranet:creation_inscription' %}" role="button">Retour</a>
  </div>
 {% endblock content %}
 

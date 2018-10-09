@@ -1,8 +1,10 @@
 Chère Madame, Cher Monsieur,
 
-Nous vous invitons &agrave; cr&eacute;er un compte sur l'intranet de l'Ecole Française de Piano.
+Vous venez de recevoir un email vous invitant à créer un compte sur l'intranet de l'École Française de Piano !
+
 Pour vous inscrire il vous suffit de cliquer sur ce lien:
 {{ protocol }}://{{ domain }}{% url 'intranet:creation' uuid=uuid %}
-Musicalement v&ocirc;tre,
+
+En vous remerciant par avance,
 
 L'administrateur du site {{ site_name }}

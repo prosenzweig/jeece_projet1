@@ -10,7 +10,6 @@ class FactureFilter(django_filters.FilterSet):
     class Meta:
         model = Facture
         fields = ['to_user', 'from_user', 'type', 'last', 'is_paid']
-
         labels = {
             'to_user': 'Émetteur',
             'from_user': 'Destinataire',

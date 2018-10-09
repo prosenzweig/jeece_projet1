@@ -155,3 +155,42 @@
 .badge1[data-badge="0"]:after {
 display: none;
 }
+
+.HORIZONTAL_SCROLL_NAV {
+
+	-webkit-overflow-scrolling: touch;
+
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+
+.HORIZONTAL_SCROLL_NAV>ul {
+
+	margin: 0 auto;
+}
+
+.HORIZONTAL_SCROLL_NAV::-webkit-scrollbar {
+
+  	height: 10px;
+}
+
+.HORIZONTAL_SCROLL_NAV::-webkit-scrollbar-track {
+
+  	-webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0);
+
+	-webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+
+.HORIZONTAL_SCROLL_NAV::-webkit-scrollbar-thumb {
+
+  	-webkit-border-radius: 10px;
+    border-radius: 10px;
+
+    background: rgba(0, 255, 255, 0.8);
+
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+	box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+}

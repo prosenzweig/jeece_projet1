@@ -4,11 +4,12 @@
 {% include 'intranet/nav_bar.html' with nots=nots %}
 {% endblock nav_bar %}
 
+{% load intranet_extras %}
 {% block content %}
  <div class="container container_extras">
             <h3 class="text-center mt-2 mb-3">Profil de {{ user }} </h3>
             <h5>Ajoutez un élève:</h5>
-            <p>Lorsque vous ajoutez un élève, les frais d'adhésion de l'élève sont de {{prix.adhesion_reduc}}€</p>
+            <p>Lorsque vous ajoutez un élève, les frais d'adhésion de l'élève sont de {{prix.adhesion_reduc|tva:prix.tva}}€</p>
             <form method="post">
                 {% csrf_token %}
                 {% include 'intranet/bs4_form.html' with form=form %}

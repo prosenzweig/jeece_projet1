@@ -23,8 +23,8 @@ class ConditionForm(forms.Form):
     condition = forms.BooleanField(label='J\'ai lu et j\'accepte les conditions générales d\'utilisation')
 
 class RelationForm(forms.Form):
-    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True), required=True, label='Élève', help_text=" (pseudo de l'élève)", to_field_name="username")
-    professeur = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True, is_active=True), required=True, help_text=" (pseudo du professeur)", to_field_name="username")
+    eleve = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=False, is_active=True).order_by('last_name','first_name'), required=True, label='Élève', help_text=" (pseudo de l'élève)", to_field_name="username")
+    professeur = forms.ModelChoiceField(queryset=User.objects.filter(is_staff=True, is_active=True).order_by('last_name','first_name'), required=True, help_text=" (pseudo du professeur)", to_field_name="username")
 
 class FactureIdForm(forms.Form):
     fac_id =forms.IntegerField(min_value=1,max_value=999999)
@@ -45,9 +45,9 @@ class RegistrationForm(UserCreationForm):
         attrs={'placeholder': 'Email', 'class':'form-control'}))
     username = forms.CharField(required=True, label='', max_length=20, widget=forms.TextInput(
         attrs={'placeholder': 'Pseudo', 'class':'form-control'}))
-    first_name = forms.CharField(required=False, label='', max_length=30, widget=forms.TextInput(
+    first_name = forms.CharField(required=True, label='', max_length=30, widget=forms.TextInput(
         attrs={'placeholder': 'Prénom', 'class': 'form-control'}))
-    last_name = forms.CharField(required=False, label='', max_length=30, widget=forms.TextInput(
+    last_name = forms.CharField(required=True, label='', max_length=30, widget=forms.TextInput(
         attrs={'placeholder': 'Nom', 'class': 'form-control'}))
     password1 = forms.CharField(required=True, label='',
                                widget=forms.PasswordInput(attrs={'placeholder': 'Mot de passe', 'class': 'form-control'}))
@@ -76,12 +76,16 @@ class RegistrationForm(UserCreationForm):
 
 
 class EditUserForm(forms.ModelForm):
+    first_name = forms.CharField(required=True, label='Prénom', max_length=30, widget=forms.TextInput(
+        attrs={'placeholder': 'Prénom', 'class': 'form-control'}))
+    last_name = forms.CharField(required=True, label='Nom', max_length=30, widget=forms.TextInput(
+        attrs={'placeholder': 'Nom', 'class': 'form-control'}))
     class Meta:
         model = User
         fields = (
             'email',
-            'first_name',
-            'last_name'
+            'last_name',
+            'first_name'
         )
 
 class EditEleveForm(forms.ModelForm):
@@ -91,7 +95,7 @@ class EditEleveForm(forms.ModelForm):
             'nom_prenom',
         )
         labels = {
-            'nom_prenom': 'Nom/prénom de l\'élève 00.00.00'
+            'nom_prenom': 'Nom/prénom de l\'élève - date de naissance'
         }
 EditEleveFormset = modelformset_factory(Eleve, fields=('nom_prenom',), extra=1, max_num=10,min_num=0)
 
@@ -102,7 +106,7 @@ class AddEleveForm(forms.ModelForm):
             'nom_prenom',
         )
         labels = {
-            'nom_prenom': 'Nom/prénom de l\'élève 00.00.00'
+            'nom_prenom': 'Nom/prénom de l\'élève - date de naissance'
         }
 
 class EditProfileForm(forms.ModelForm):
@@ -111,8 +115,8 @@ class EditProfileForm(forms.ModelForm):
         fields = (
             'phone_number',
             'address',
-            'city',
             'zip_code',
+            'city',
             'country',
             'is_premium',
             'stats'
@@ -133,8 +137,8 @@ class EditStaffProfileForm(forms.ModelForm):
         fields = (
             'phone_number',
             'address',
-            'city',
             'zip_code',
+            'city',
             'country',
             'siret',
             'sap',
@@ -231,7 +235,7 @@ ToMailFormset = formset_factory(ToMailForm, extra=1, max_num=100)
 
 class EleveForm(forms.Form):
     name = forms.CharField(
-        label='Nom/prénom de l\'élève 00.00.00',
+        label='Nom/prénom de l\'élève et date de naissance',
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': 'Max Dupont 01.01.99'
@@ -246,7 +250,7 @@ class LessonFrom(forms.Form):
         super(LessonFrom, self).__init__(*args, **kwargs)
         self.fields['eleve'] = forms.ChoiceField(
             widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
-            choices=[(x.student.username,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof))],
+            choices=[(x.student.username,x.student) for i,x in enumerate(Relation.objects.filter(teacher=prof).order_by('student__last_name','student__first_name'))],
             required=True,help_text="(pseudo de l'élève)", label="Élève")
         self.fields['nb_h'] = forms.IntegerField(
             widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
@@ -270,18 +274,18 @@ class FactureForm(forms.Form):
          super(FactureForm, self).__init__(*args, **kwargs)
          self.fields['from_user'] = forms.ChoiceField(
                 widget=forms.Select(attrs={'class': 'form-control','style':'width:20em','id': 'select-id'}),
-                choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True, is_active=True))],
-                required=True, label="Emeteur")
+                choices=[(x.username,x) for i,x in enumerate(User.objects.filter(is_staff=True, is_active=True).order_by('last_name','first_name'))],
+                required=True, label="Emetteur")
          self.fields['to_user'] = forms.ChoiceField(
             widget=forms.Select(attrs={'class': 'form-control', 'style': 'width:20em', 'id': 'select-id'}),
-            choices=[(x.username, x) for i, x in enumerate(User.objects.filter(is_active=True))],
+            choices=[(x.username, x) for i, x in enumerate(User.objects.filter(is_active=True).order_by('last_name','first_name'))],
             required=True, label="Destinataire")
 
          self.fields['object'] = forms.ChoiceField(choices=OBJECTS,label="Objet")
 
          self.fields['nb_item'] = forms.IntegerField(
                 widget=forms.NumberInput(attrs={'class': 'mr-2','placeholder':'01'}),
-                required=True,min_value=1,max_value=1000,label='Unités',initial=1)
+                required=True,min_value=1,max_value=1000,label='Unité',initial=1)
 
          self.fields['tva'] = forms.FloatField(
              widget=forms.NumberInput(attrs={'class': 'mr-2', 'placeholder': '01'}),

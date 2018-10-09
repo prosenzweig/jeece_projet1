@@ -7,11 +7,10 @@
 {% block content %}
  <div class="container container_extras" >
      <h3 class="text-center mt-2">Bienvenue sur l'intranet</h3>
-     <h5>Formulaire d'adhésion:</h5>
      {% include 'intranet/messages.html' with messages=messages %}
 
      <h6><b>CONDITIONS GÉNÉRALES D'UTILISATION</b></h6>
-     <p>Vous trouverez ci-dessous les conditions générales d'utilisation, merci d'en prendre note:</p>
+     <p>Vous trouverez ci-dessous les conditions générales d'utilisation, merci d'en prendre note :</p>
      <p><a target="_blank" href="{{ condition.file.url }}" >conditions générales de l'efp</a></p>
      <form method="post">
         {% csrf_token %}

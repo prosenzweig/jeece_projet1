@@ -144,9 +144,10 @@ def gen_pdf(request,fac_id):
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
 
     # Emetteur
-    if facture.type in ['Frais de gestion', 'Frais de commission', 'Adhésion élève', 'Adhésion élèves', 'Adhésion professeur',
-                        'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
-                        'Adhésion Professeur','Adhésion Éleve', 'Adhésion Élèves']:
+    # if facture.type in ['Frais de gestion', 'Frais de commission', 'Adhésion élève', 'Adhésion élèves', 'Adhésion professeur',
+    #                     'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
+    #                     'Adhésion Professeur','Adhésion Éleve', 'Adhésion Élèves']:
+    if facture.from_user.is_superuser:
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "École Française de Piano")
         p.setFont('Helvetica', 12)
@@ -437,7 +438,13 @@ def creation_inscription(request):
 
 
             if request.user.is_staff:
-                return redirect('intranet:creation_condition')
+                adh = Adhesion.objects.filter(to_user=request.user)
+                if adh:
+                    request.user.userprofile.is_adherent = True
+                    request.user.userprofile.save()
+                    return redirect('intranet:accueil')
+                else:
+                    return redirect('intranet:creation_adhesion')
             else:
                 return redirect('intranet:creation_eleves')
         else:
@@ -467,7 +474,7 @@ def creation_eleves(request):
             eleves_register = Eleve.objects.filter(referent=request.user)
 
             if not eleves_register:
-                messages.warning(request,"Vous devez renseigner au moins un élève qui suivra les cours de paino.")
+                messages.warning(request,"Vous devez renseigner au moins un élève qui suivra les cours de piano.")
                 return redirect('intranet:creation_eleves')
 
             return redirect('intranet:creation_condition')
@@ -594,7 +601,7 @@ def validation_prof(request, id):
         cour.save()
         messages.success(request, 'Cours validé !')
         Notification.objects.create(to_user=cour.relation.student,from_user=cour.relation.teacher,
-                                   object="Validation Cours %s" % conv_date(str(cour.date)),
+                                   object="Validation cours %s" % conv_date(str(cour.date)),
                                    text="Vous pouvez valider ou refuser un cours dans la section 'Mes cours'.")
     else:
         messages.error(request,'Action Impossible.')
@@ -653,7 +660,7 @@ def validation_eleve(request, id, result):
             cour.save()
             messages.warning(request, 'Le cours a bien été refusé. L\'administrateur en sera informé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
-                                        object="Problème Validation Cours",
+                                        object="Problème Validation cours",
                                         text="Il y a un problème dans le cours du %s que vous m'avez demandé de valider." % conv_date(str(cour.date)))
 
             context = {'date': conv_date(str(cour.date)), 't': cour.relation.teacher, 's': cour.relation.student,
@@ -707,7 +714,7 @@ def documents(request):
                 messages.success(request, "La facture a bien été payée.")
                 return redirect('intranet:documents')
             except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
+                messages.error(request, "Votre carte a été refusée")
                 body = e.json_body
                 err = body.get('error', {})
                 print("Status is: %s" % e.http_status)
@@ -756,7 +763,7 @@ def documents(request):
                 messages.success(request, "La facture a bien été payée.")
                 return redirect('intranet:documents')
             except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
+                messages.error(request, "Votre carte a été refusée")
                 body = e.json_body
                 err = body.get('error', {})
                 print("Status is: %s" % e.http_status)
@@ -815,7 +822,7 @@ def documents(request):
                 messages.success(request, "Les factures ont bien été payées.")
                 return redirect('intranet:documents')
             except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
+                messages.error(request, "Votre carte a été refusée")
                 body = e.json_body
                 err = body.get('error', {})
                 print("Status is: %s" % e.http_status)
@@ -871,7 +878,7 @@ def documents(request):
                 messages.warning(request, "Impossible de payer l'ensemble des factures d'un coup.")
                 return redirect('intranet:documents')
             except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
+                messages.error(request, "Votre carte a été refusée")
                 body = e.json_body
                 err = body.get('error', {})
                 print("Status is: %s" % e.http_status)
@@ -986,7 +993,7 @@ def checkout_inscription(request):
             p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
 
         price = prix.adhesion_prof if request.user.is_staff else p
-        description = "EFP_%s_ADH" % request.user.last_name
+        description = "EFP_%s_%s_ADH" % (request.user.last_name,admin.userprofile.nb_facture)
 
         try:
             charge = stripe.Charge.create(
@@ -996,7 +1003,7 @@ def checkout_inscription(request):
                 source=token
             )
         except stripe.error.CardError as e:
-            messages.error(request, "Votre carte a été refusé")
+            messages.error(request, "Votre carte a été refusée")
             body = e.json_body
             err = body.get('error', {})
             print("Status is: %s" % e.http_status)
@@ -1880,7 +1887,7 @@ def checkout_exam(request):
                 messages.warning(request, 'Action non aurotisée.')
                 return redirect('intranet:examens_eleve')
 
-            description = "EFP_%s_examen" % request.user.last_name
+            description = "EFP_%s_%s_examen" % (request.user.last_name,admin.userprofile.nb_facture)
             price = add_tva(exam.price,prix.tva)
             try:
                 charge = stripe.Charge.create(
@@ -1890,7 +1897,7 @@ def checkout_exam(request):
                     source=token
                 )
             except stripe.error.CardError as e:
-                messages.error(request, "Votre carte a été refusé")
+                messages.error(request, "Votre carte a été refusée")
                 body = e.json_body
                 err = body.get('error', {})
                 print("Status is: %s" % e.http_status)
