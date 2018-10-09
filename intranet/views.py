@@ -295,7 +295,7 @@ def gen_attest_pdf(request,fac_id):
     p.setFont('Helvetica-Bold', 10)
     p.drawString(75,400, "Intervenant :")
     p.setFont('Helvetica', 10)
-    p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.nb_cours,  (datetime.now().year-1)))
+    p.drawString(75, 380, "%s %s - %s heures pour l’année %s" % (att.from_user_firstname, att.from_user_lastname.upper(), att.h_qt,  (datetime.now().year-1)))
     p.drawString(75, 365, "Prix horaire de la prestation : %s€/heure" % (round(att.price/att.h_qt,2)))
 
     p.drawString(75, 330, "Fait pour valoir ce que de droit,")
