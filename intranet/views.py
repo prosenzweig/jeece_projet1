@@ -983,11 +983,13 @@ def checkout(request):
 
 @login_required
 def checkout_inscription(request):
+    admin = User.objects.get(is_superuser=True)
     if request.method == "POST":
         # print("VALIDDE!!!")
         token = request.POST['stripeToken']
 
         prix = Prix.objects.get(end=None)
+        p = 19
         if not request.user.is_staff:
             nb_eleve = Eleve.objects.filter(referent=request.user).count()
             p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
