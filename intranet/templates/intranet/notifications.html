@@ -4,6 +4,7 @@
 {% include 'intranet/nav_bar.html' with nots=nots %}
 {% endblock nav_bar %}
 
+{% load intranet_extras %}
 {% block content %}
  <div class="container container_extras" >
         <!--<div class="card card-container text-center">-->
@@ -13,7 +14,7 @@
             {% if notifications_list %}
                 {% for notif in notifications_list_page %}
                 <div class="card mb-3">
-                    <div class="card-header"><i class="fa fa-envelope-o" aria-hidden="true"></i>  {{notif.from_user}}  <i class="fa fa-at ml-3" aria-hidden="true"></i>  {{notif.to_user}}  <i class="fa fa-calendar ml-3" aria-hidden="true"></i>  <span class="text-xl-right">{{notif.date}}</span></div>
+                    <div class="card-header"><i class="fa fa-envelope-o" aria-hidden="true"></i>  {{notif.from_user}}  <i class="fa fa-at ml-3" aria-hidden="true"></i>  {{notif.to_user}}  <i class="fa fa-calendar ml-3" aria-hidden="true"></i>  <span class="text-xl-right">{{notif.date|live_time}}</span></div>
                     <div class="card-body">
                         <h5 class="card-title">{{notif.object}}</h5>
                         <p class="card-text">{{notif.text}}
@@ -25,7 +26,7 @@
                     </div>
                 </div>
                 {% endfor %}
-                {% include 'intranet/paginator.html' with page_obj=notifications_list_page %}
+                {% include 'intranet/paginator_notification.html' with page_obj=notifications_list_page %}
             {% else %}
             <p>Vous n'avez pas reçu de notifications</p>
             {% endif %}
