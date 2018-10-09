@@ -110,6 +110,7 @@ def auto_val_eleve():
                                             text="Votre facture est téléchargeable dans la section \"Mes documents\".")
             if teacher != admin:
                 # Frais de Gestion (de l'admin vers les élèves)
+                fac_name = "%s_%s_%s" % (admin.last_name, student.last_name, admin.userprofile.nb_facture)
                 Facture.objects.create(
                     to_user=student, from_user=admin, object="Frais de gestion - 60 min", is_paid=False,
                     object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=nbr_tt*prix.frais_gestion, price_ttc=add_tva(prix.frais_gestion*nbr_tt,prix.tva), type="Frais de Gestion",
