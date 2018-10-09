@@ -149,7 +149,7 @@ def factures_commissions():
 
         if nbr_tt > 0:
             # Frais de Commission de l'admin vers les profs
-            fac_name = "%s_%s_%s" % (admin.last_name, prof.last_name, prof.userprofile.nb_facture)
+            fac_name = "%s_%s_%s" % (admin.last_name, prof.last_name, admin.userprofile.nb_facture)
             Facture.objects.create(
                 to_user=prof, from_user=admin, object="Frais de commission - 60min", is_paid=False,
                 object_qt=nb_cours, h_qt=nbr_tt, tva=prix.tva, price_ht=prix.commission * nbr_tt,
