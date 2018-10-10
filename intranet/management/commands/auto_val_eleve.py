@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
+mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembre", "octobre","novembre","décembre"]
 
 ### CRONTAB ###
 # 50 23 5 * * cd /home/ecole01/intranet && /home/ecole01/venv/bin/python manage.py auto_val_eleve > /home/ecole01/logs/cron.log
@@ -129,7 +129,7 @@ def auto_val_eleve():
                 admin.userprofile.save()
 
                 Notification.objects.create(to_user=student, from_user=admin,
-                                            object="Factures Frais de Gestion %s" % conv_mois(last_m_y),
+                                            object="Facture Frais de Gestion %s" % conv_mois(last_m_y),
                                             text="Votre facture est téléchargeable dans la section \"Mes documents\".")
 
 def factures_commissions():
@@ -169,7 +169,7 @@ def factures_commissions():
             admin.userprofile.save()
 
             Notification.objects.create(to_user=prof, from_user=admin,
-                                        object="Factures frais de commission %s" % conv_mois(last_m_y),
+                                        object="Facture frais de commission %s" % conv_mois(last_m_y),
                                         text="Votre facture est téléchargeable dans la section \"Mes documents\".")
 
 class Command(BaseCommand):

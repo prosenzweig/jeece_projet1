@@ -143,10 +143,6 @@ def gen_pdf(request,fac_id):
     p.drawString(350, 705, "Date de facturation: %s" % facture.created.strftime("%d/%m/%Y"))
     p.drawString(350, 690, "Date d'échéance: %s" % facture.last.strftime("%d/%m/%Y"))
 
-    # Emetteur
-    # if facture.type in ['Frais de gestion', 'Frais de commission', 'Adhésion élève', 'Adhésion élèves', 'Adhésion professeur',
-    #                     'Frais de Gestion', 'Frais de Commission', 'Adhésion Eleve', 'Adhésion Elèves',
-    #                     'Adhésion Professeur','Adhésion Éleve', 'Adhésion Élèves']:
     if facture.from_user.is_superuser:
         p.setFont('Helvetica-Bold', 12)
         p.drawString(50, 580, "École Française de Piano")
@@ -177,10 +173,11 @@ def gen_pdf(request,fac_id):
     p.drawString(350, 550, "%s %s" % (facture.to_user_zipcode, facture.to_user_city))
     p.drawString(350, 535, "France")
 
-    if facture.type in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur']:
-        p.drawString(50, 400, "%s %s-%s" % (facture.type,facture.created.year,facture.created.year+1))
-    else:
-        p.drawString(50, 400, "%s" % facture.type)
+    # if facture.type in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur']:
+    #     p.drawString(50, 400, "%s %s-%s" % (facture.type,facture.created.year,facture.created.year+1))
+    # else:
+    #     p.drawString(50, 400, "%s" % facture.type)
+    p.drawString(50, 400, "%s" % facture.type)
     p.setFont('Helvetica-Bold', 12)
     p.setStrokeColorRGB(0.7, 0.7, 0.7)
     p.setFillColorRGB(0.7, 0.7, 0.7)
@@ -214,13 +211,13 @@ def gen_pdf(request,fac_id):
     p.drawString(510, 270, "%s €" % facture.price_ttc)
 
     p.setFont('Helvetica-Bold', 11)
-    p.drawString(50, 220, "Echéance:")
+    p.drawString(50, 220, "Échéance:")
     p.setFont('Helvetica', 11)
     p.drawString(200, 220, "%s" % facture.last.strftime("%d/%m/%Y"))
 
     if facture.from_user.is_superuser:
         p.setFont('Helvetica-Bold', 10)
-        p.drawCentredString(300,60,'Ecole Française de Piano - SASU EFP')
+        p.drawCentredString(300,60,'École Française de Piano - SASU EFP')
         p.setFont('Helvetica-Oblique', 8)
         # p.drawCentredString(300,45,'4 Rue du Champ de l\'Alouette 75013 Paris')
         p.drawCentredString(300,45,'%s %s %s' % (facture.admin_address,facture.admin_zipcode,facture.admin_city))
@@ -427,12 +424,12 @@ def creation_inscription(request):
 
             if request.user.is_staff:
                 Notification.objects.create(to_user=admin, from_user=request.user,
-                                        object="Creation du compte %s %s (%s)" % (
+                                        object="Création du compte %s %s (%s)" % (
                                         request.user.first_name, request.user.last_name, request.user.username),
                                         text="Je viens de compléter mon compte professeur!")
             else:
                 Notification.objects.create(to_user=admin, from_user=request.user,
-                                            object="Creation du compte %s %s (%s)" % (
+                                            object="Création du compte %s %s (%s)" % (
                                                 request.user.first_name, request.user.last_name, request.user.username),
                                             text="Je viens de compléter mon compte!")
 
@@ -650,7 +647,7 @@ def validation_eleve(request, id, result):
             cour.save()
             messages.success(request, 'Le cours a bien été validé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
-                                       object="Cours Validé !",
+                                       object="Cours validé !",
                                        text="J'ai bien validé le cours du %s" % conv_date(str(cour.date)))
 
 
@@ -660,7 +657,7 @@ def validation_eleve(request, id, result):
             cour.save()
             messages.warning(request, 'Le cours a bien été refusé. L\'administrateur en sera informé.')
             Notification.objects.create(to_user=cour.relation.teacher, from_user=cour.relation.student,
-                                        object="Problème Validation cours",
+                                        object="Problème validation cours",
                                         text="Il y a un problème dans le cours du %s que vous m'avez demandé de valider." % conv_date(str(cour.date)))
 
             context = {'date': conv_date(str(cour.date)), 't': cour.relation.teacher, 's': cour.relation.student,
@@ -1186,8 +1183,8 @@ def graphs_membres(request):
 def graphs_stats(request):
     f = mtf.Figure()
 
-    labels = ['Moteur de recherche Google', 'Facebook', 'Autre source internet',  'Annuaire(pages jaunes...)',
-             'Nebout & Hamm', 'Falado', 'Connaissance(famille, amis...)']
+    labels = ['Moteur de recherche (Google, Yahoo...)', 'Réseau social (Facebook, Twitter...)', 'Connaissance (famille, amis...)',  'Librairie musicale Falado',
+             'Nebout & Hamm', 'Annuaire en ligne (Pages jaunes, Yelp...) ', 'Prospectus, flyers', 'Autre']
 
     a = UserProfile.objects.filter(stats='A').count()
     b = UserProfile.objects.filter(stats='B').count()
@@ -1196,8 +1193,10 @@ def graphs_stats(request):
     e = UserProfile.objects.filter(stats='E').count()
     f = UserProfile.objects.filter(stats='F').count()
     g = UserProfile.objects.filter(stats='G').count()
-    sizes = [a,b,c,d,e,f,g]
-    explode = (0, 0, 0, 0, 0, 0, 0)
+    h = UserProfile.objects.filter(stats='H').count()
+
+    sizes = [a,b,c,d,e,f,g,h]
+    explode = (0, 0, 0, 0, 0, 0, 0, 0)
     # print(sizes)
     fig2, ax2 = plt.subplots()
     ax2.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',

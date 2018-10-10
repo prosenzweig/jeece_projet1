@@ -27,13 +27,14 @@ class Article(models.Model):
 
 class UserProfile(models.Model):
     STATS_CHOICES = (
-        ('A', 'Moteur de recherche Google'),
-        ('B', 'Facebook'),
-        ('C', 'Autre source internet'),
-        ('D', 'Annuaire(pages jaunes...)'),
+        ('A', 'Moteur de recherche (Google, Yahoo...)'),
+        ('B', 'Réseau social (Facebook, Twitter...)'),
+        ('C', 'Connaissance (famille, amis...)'),
+        ('D', 'Librairie musicale Falado'),
         ('E', 'Nebout & Hamm'),
-        ('F', 'Falado'),
-        ('G', 'Connaissance(famille, amis...)'),
+        ('F', 'Annuaire en ligne (Pages jaunes, Yelp...)'),
+        ('G', 'Prospectus, flyers'),
+        ('H', 'Autre'),
     )
 
     user = models.OneToOneField(User,  on_delete=models.CASCADE)  # La liaison OneToOne vers le modèle User

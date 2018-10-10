@@ -76,6 +76,8 @@ class RegistrationForm(UserCreationForm):
 
 
 class EditUserForm(forms.ModelForm):
+    email = forms.EmailField(required=True, label='Email', max_length=50, widget=forms.TextInput(
+        attrs={'placeholder': 'Email', 'class': 'form-control'}))
     first_name = forms.CharField(required=True, label='Prénom', max_length=30, widget=forms.TextInput(
         attrs={'placeholder': 'Prénom', 'class': 'form-control'}))
     last_name = forms.CharField(required=True, label='Nom', max_length=30, widget=forms.TextInput(

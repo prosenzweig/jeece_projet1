@@ -24,7 +24,7 @@ def live_time(value):
 
 @register.filter
 def mois(value):
-    liste_mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
+    liste_mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembre", "octobre","novembre","décembre"]
     try:
         m =value.split('_')
         return '%s %s' % (liste_mois[int(m[0])-1], m[1])

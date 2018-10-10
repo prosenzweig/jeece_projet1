@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 jours = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembtre", "octobre","novembre","décembre"]
+mois = ["janvier", u"février", "mars", "avril", "mai", "juin", "juillet", u"août", "septembre", "octobre","novembre","décembre"]
 
 # Lancement Automatique de auto_val_prof
 
