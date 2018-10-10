@@ -991,7 +991,7 @@ def checkout_inscription(request):
             nb_eleve = Eleve.objects.filter(referent=request.user).count()
             p = add_tva(prix.adhesion_reduc*nb_eleve,prix.tva) if nb_eleve > 1 else add_tva(prix.adhesion,prix.tva)
 
-        price = prix.adhesion_prof if request.user.is_staff else p
+        price =  add_tva(prix.adhesion_prof,prix.tva) if request.user.is_staff else p
         description = "EFP_%s_%s_ADH" % (request.user.last_name,admin.userprofile.nb_facture)
 
         try:
