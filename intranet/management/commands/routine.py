@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
+from django.utils import timezone
 from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notification,Prix,Facture,Lesson,Stats,Eleve,Adhesion
 
 from datetime import datetime,timedelta,date
@@ -22,7 +23,7 @@ def conv_mois(value):
 def check():
     adhesions = Adhesion.objects.all()
     for adhesion in adhesions:
-        diff = adhesion.end - date.today()
+        diff = adhesion.end - timezone.now()
         # print(diff.days)
         if diff.days < 1:
             adhesion.to_user.userprofile.is_adherent = False

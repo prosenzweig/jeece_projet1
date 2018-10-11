@@ -5,6 +5,18 @@ from django.db.models.signals import post_save
 from datetime import datetime, timedelta, date
 from django.contrib.auth.models import User
 
+def one_more_day():
+    return timezone.now() + timezone.timedelta(days=1)
+
+def seven_more_days():
+    return timezone.now() + timezone.timedelta(days=7)
+
+def thirty_more_days():
+    return timezone.now() + timezone.timedelta(days=30)
+
+def one_more_year():
+    return timezone.now() + timezone.timedelta(days=365)
+
 class Article(models.Model):
     titre = models.CharField(max_length=100)
     auteur = models.CharField(max_length=50, default="admin")
@@ -133,8 +145,8 @@ class Attestation(models.Model):
     from_user = models.ForeignKey(User, related_name='User_professor', on_delete=models.DO_NOTHING,verbose_name="Emetteur")
     price = models.SmallIntegerField(verbose_name="Prix")
     nb_cours = models.SmallIntegerField(default=None, null=True, blank=True,verbose_name="Nombre de cours")
-    created = models.DateField(default=date.today(), verbose_name='date d\'émission')
-    last = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date d\'échéance')
+    created = models.DateField(default=timezone.now, verbose_name='date d\'émission')
+    last = models.DateField(default=one_more_year, verbose_name='date d\'échéance')
     h_qt = models.FloatField(default=None,null=True, blank=True)
     nb_adh = models.IntegerField(default=1)
     # TO USER
@@ -167,8 +179,8 @@ class Facture(models.Model):
     object_qt = models.FloatField(default=None)
     h_qt = models.FloatField(default=1,null=True, blank=True)
     type = models.CharField(max_length=60,default=None)
-    created = models.DateField(default=date.today(), verbose_name='date d\'émission')
-    last = models.DateField(default=date.today() + timedelta(days=7), verbose_name='date d\'échéance')
+    created = models.DateField(default=timezone.now, verbose_name='date d\'émission')
+    last = models.DateField(default=seven_more_days, verbose_name='date d\'échéance')
     is_paid = models.BooleanField(default=False,verbose_name='Payé')
 
     facture_name = models.CharField(max_length=60,default=None, null=True, blank=True,verbose_name="Nom") # NomEmmeteur_NomDest_ID
@@ -210,7 +222,7 @@ class Notification(models.Model):
     text = models.CharField(max_length=340)
 
 class Prix(models.Model):
-    start = models.DateField(default=date.today()+timedelta(days=1), verbose_name='Début')
+    start = models.DateField(default=one_more_day, verbose_name='Début')
     end = models.DateField(default=None, verbose_name='Fin',null=True, blank=True)
     tva = models.FloatField(max_length=5, default=20.00,verbose_name="TVA") # 20,00
     adhesion =  models.FloatField(max_length=5, default=66.67)
@@ -225,12 +237,12 @@ class Prix(models.Model):
         verbose_name_plural = "Prix"
 
 class Condition(models.Model):
-    start = models.DateField(default=date.today() + timedelta(days=1), verbose_name='Début')
+    start = models.DateField(default=one_more_day, verbose_name='Début')
     end = models.BooleanField(default=False, blank=True,verbose_name="Fin")
     file = models.FileField(upload_to='documents/',blank=True,default=None,null=True,verbose_name="Fichier")
 
 class Stats(models.Model):
-    date = models.DateField(default=date.today())
+    date = models.DateField(default=timezone.now)
     nb_prof = models.IntegerField(default=0,blank=True,null=True)
     nb_user = models.IntegerField(default=0,blank=True,null=True)
     nb_eleve = models.IntegerField(default=0,blank=True,null=True)
@@ -239,8 +251,8 @@ class Stats(models.Model):
 
 class Adhesion(models.Model):
     to_user = models.ForeignKey(User, related_name='Adhérent', on_delete=models.DO_NOTHING,verbose_name="Adhérent")
-    created = models.DateField(default=date.today(), verbose_name='date d\'émission')
-    end = models.DateField(default=date.today() + timedelta(days=365), verbose_name='date de fin')
+    created = models.DateField(default=timezone.now, verbose_name='date d\'émission')
+    end = models.DateField(default=one_more_year, verbose_name='date de fin')
     class Meta:
         verbose_name = 'adhésion'
         verbose_name_plural = "adhésions"
@@ -255,7 +267,7 @@ User.add_to_class("__str__", get_full_name)
 class Examen(models.Model):
     name = models.CharField(max_length=140,verbose_name="Nom")
     description = models.CharField(max_length=340,verbose_name="Description")
-    last = models.DateField(default=date.today() + timedelta(days=30), verbose_name='Clôture des inscriptions')
+    last = models.DateField(default=thirty_more_days, verbose_name='Clôture des inscriptions')
     price = models.FloatField(max_length=5, default=40.00, verbose_name='Prix de l\'examen par élèves')
 
 

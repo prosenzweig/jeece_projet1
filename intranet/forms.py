@@ -261,7 +261,8 @@ class LessonFrom(forms.Form):
             widget=forms.NumberInput(attrs={'class': 'mx-2','placeholder':'00'}),
             required=True,min_value=0,max_value=59,label='min',initial=00)
         self.fields['date'] = forms.DateField(
-            widget=forms.SelectDateWidget(years=range(datetime.date.today().year, datetime.date.today().year+1),attrs={'class': 'ml-2'}), required=True,label="Date du cours")
+            widget=forms.SelectDateWidget(years=range(timezone.now().year, timezone.now().year+1),attrs={'class': 'ml-2'}), required=True,label="Date du cours")
+            #widget=forms.SelectDateWidget(years=range(datetime.date.today().year, datetime.date.today().year+1),attrs={'class': 'ml-2'}), required=True,label="Date du cours")
         # self.fields['date'] = forms.DateField(initial=datetime.date.today, required=True)
 
 class FactureForm(forms.Form):

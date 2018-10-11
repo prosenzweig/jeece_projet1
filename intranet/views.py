@@ -22,7 +22,7 @@ from intranet.models import Article,UserProfile,Invitation,Relation,Cour,Notific
     Lesson,Attestation,Condition,Adhesion,Stats,InscriptionExamen,Examen
 
 from django.db.models import Q, Sum
-
+from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm
@@ -1365,7 +1365,7 @@ def prix(request):
             frais_gestion = form.cleaned_data["frais_gestion"]
             if Prix.objects.all():
                 last_price = Prix.objects.get(end=None)
-                last_price.end = date.today()
+                last_price.end = timezone.now()
                 last_price.save()
             Prix.objects.get_or_create(tva=tva,adhesion=adhesion,cours=cours,commission=commission,frais_gestion=frais_gestion,
                                        adhesion_reduc=adhesion_reduc, adhesion_prof=adhesion_prof,cours_premium=cours_premium,
@@ -1853,7 +1853,7 @@ def examens_eleve(request):
     prix = Prix.objects.get(end=None)
     if ex_list:
         ex = ex_list[0]
-        diff = ex.last - date.today()
+        diff = ex.last - timezone.now()
         if diff.days > 0:
             exam = ex
             exam_ttc = add_tva(exam.price,prix.tva)
