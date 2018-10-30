@@ -522,7 +522,7 @@ def cours_prof(request):
     def last_day_of_month(any_day):
         next_month = any_day.replace(day=28) + timedelta(days=4)  # this will never fail
         last_day = next_month - timedelta(days=next_month.day)
-        return last_day.replace(hour=0,minute=0,second=0) - datetime.now()
+        return last_day.replace(hour=23,minute=59,second=0) - datetime.now()
 
     m_y = "%s_%s" % (datetime.now().month, datetime.now().year)
     nots = nb_new_notifs(request.user)
