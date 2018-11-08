@@ -683,7 +683,10 @@ def documents(request):
     if request.method == "POST":
         print("JE VEUX PAYER!")
         token = request.POST['stripeToken']
+
         stripe_customer_id = request.user.customer.stripe_id
+        #stripe_customer_id = "cu_test007"
+
         # print(request.user, stripe_customer_id)
         # print("Token",token)
 
@@ -735,10 +738,12 @@ def documents(request):
                 return redirect('intranet:documents')
             except stripe.error.APIConnectionError as e:
                 # Network communication with Stripe failed
+                messages.error(request, "Quelque chose d'anormal est survenu.")
                 return redirect('intranet:documents')
             except stripe.error.StripeError as e:
                 # Display a very generic error to the user, and maybe send
                 # yourself an email
+                messages.error(request, "Quelque chose d'anormal est survenu.")
                 return redirect('intranet:documents')
             except Exception as e:
                 # Something else happened, completely unrelated to Stripe
@@ -958,6 +963,7 @@ def documents(request):
             factures_list_paid_page = paginator.page(paginator.num_pages)
 
     user = User.objects.get(id=request.user.id)
+    #key = str(uuid.uuid4())
     return render(request, 'intranet/documents.html', locals())
 
 @login_required

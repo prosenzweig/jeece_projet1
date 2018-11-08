@@ -24,9 +24,8 @@
 
 <div id="stripe-token-handler" class="is-hidden">Transaction en cours: <span class="token"></span></div>
 
-
-
 <script src="{% static 'intranet/js/checkout.js' %}"></script>
+<script src="{% static 'intranet/js/jquery-3.3.1.min.js' %}"></script>
 <!-- script for toggling display of the form -->
 <script type="text/javascript">
     function toggleDisplay() {
@@ -37,5 +36,8 @@
           x.style.display = "none";
       }
     };
+    jQuery('#payment-form').submit(function(){
+        $(this).find(':submit').attr( 'disabled','disabled' );
+    });
 </script>
 </div>

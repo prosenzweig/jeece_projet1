@@ -26,4 +26,11 @@
 
 
 <script src="{% static 'intranet/js/checkout.js' %}"></script>
+<script src="{% static 'intranet/js/jquery-3.3.1.min.js' %}"></script>
+<!-- script for toggling display of the form -->
+<script type="text/javascript">
+    jQuery('#payment-form').submit(function(){
+        $(this).find(':submit').attr( 'disabled','disabled' );
+    });
+</script>
 </div>
