@@ -26,8 +26,8 @@ from django.utils import timezone
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm
-from django.contrib.staticfiles.storage import staticfiles_storage
-from django.templatetags.static import static
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.contrib.staticfiles.finders import find
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
@@ -103,6 +103,11 @@ def last_3_mois():
         t1 = "%s_%s" % (mn, my)
         return (t3, t2, t1)
 
+def get_static(path):
+    if settings.DEBUG:
+        return find(path)
+    else:
+        return static(path)
 
 def add_tva(value,arg):
     try:
@@ -131,10 +136,13 @@ def gen_pdf(request,fac_id):
     buffer = BytesIO()
 
     p = canvas.Canvas(buffer)
-    logo = ImageReader("https://scontent-cdt1-1.xx.fbcdn.net/v/t1.0-9/10435640_175219366143139_807238508633238110_n.png?_nc_cat=0&oh=f71fd724af3b36a77c5e2369a880beff&oe=5BEF1DBB")
-    # logo = ImageReader("https://static.wixstatic.com/media/ac3cde_87eef0b3e8904e2eb87cf9c4b69c6baa.png/v1/fill/w_61,h_61,al_c,q_80,usm_0.66_1.00_0.01/ac3cde_87eef0b3e8904e2eb87cf9c4b69c6baa.webp")
+    #prefix = 'https://' if request.is_secure() else 'http://'
+    #image_url = prefix + request.get_host() + get_static('intranet/img/efp_logo.png')
+    image_url = get_static('intranet/img/efp_logo.png')
+    logo = ImageReader(image_url)
+    #logo = ImageReader("https://scontent-cdt1-1.xx.fbcdn.net/v/t1.0-9/10435640_175219366143139_807238508633238110_n.png?_nc_cat=0&oh=f71fd724af3b36a77c5e2369a880beff&oe=5BEF1DBB")
 
-    p.drawImage(logo, 50, 600, mask='auto')
+    p.drawImage(logo, 50, 600, width=198,height=202, mask='auto')
     p.setLineWidth(.3)
     H, L = 830, 587
     p.setFont('Helvetica-Bold', 16)

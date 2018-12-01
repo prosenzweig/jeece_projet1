@@ -16,8 +16,8 @@
             <div class="card-body">
                 <h5 class="card-title">{{art.titre}}</h5>
                 {% if art.photo %}
-                    <img src="{{ art.photo.url }}" class="img-responsive rounded mr-3" height=300 width=400 align="left">
-                    <div class="card-text" style="padding-left: 400px;">{{art.contenu|linebreaks }}</div>
+                    <img src="{{ art.photo.url }}" class="img-responsive rounded mr-3" height=30% width=40% align="left">
+                    <div class="card-text" style="padding-left: 40%;">{{art.contenu|linebreaks }}</div>
                 {% else %}
                  <div class="card-text">{{art.contenu|linebreaks }} </div>
                 {% endif %}
