@@ -104,10 +104,7 @@ def last_3_mois():
         return (t3, t2, t1)
 
 def get_static(path):
-    if settings.DEBUG:
         return find(path)
-    else:
-        return static(path)
 
 def add_tva(value,arg):
     try:
