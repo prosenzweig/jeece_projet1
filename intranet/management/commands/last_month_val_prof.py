@@ -20,9 +20,9 @@ def conv_mois(value):
         return None
 
 def auto_val_prof():
-    m_y = "%s_%s" % (datetime.now().month, datetime.now().year)
+    m_y = "%s_%s" % (datetime.now().month-1, datetime.now().year)
     relation_all = Relation.objects.all()
-    print("Fonction Auto Val Prof : Mois %s" % m_y)
+    print("Fonction Last Month Val Prof : Mois %s" % m_y)
     for relation in relation_all:
         # Validation des cours non validé
         lessons_of_the_month_by_relation_unvalid = Lesson.objects.filter(relation=relation,mois=m_y,is_valid_t=False)
@@ -47,7 +47,7 @@ def stats():
 
 class Command(BaseCommand):
     def handle(self, **options):
-        print("*** Lancement du Crontab %s ***" % datetime.now())
+        print("!!! Lancement Manuel %s !!!" % datetime.now())
         auto_val_prof()
         stats()
-        print("*** Fin du Crontab %s ***" % datetime.now())
+        print("!!! Fin du patch %s !!!" % datetime.now())

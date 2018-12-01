@@ -174,5 +174,7 @@ def factures_commissions():
 
 class Command(BaseCommand):
     def handle(self, **options):
+        print("*** Lancement du Crontab %s ***" % datetime.now())
         auto_val_eleve()
         factures_commissions()
+        print("*** Fin du Crontab %s ***" % datetime.now())
