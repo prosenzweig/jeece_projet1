@@ -197,7 +197,11 @@ def gen_pdf(request,fac_id):
     p.setFont('Helvetica', 12)
     p.drawString(55, 340, "%s" % facture.object)
     p.drawString(220, 340, "%s" % facture.created.strftime("%d/%m/%Y"))
-    p.drawString(300, 340, "%s" % facture.object_qt)
+    if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur'] and \
+       str(facture.created) > "2018-12-03" :
+        p.drawString(300, 340, "%s" % facture.h_qt)
+    else:
+        p.drawString(300, 340, "%s" % facture.object_qt)
     if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur','Adhésion élève', 'Adhésion élèves', 'Adhésion professeur']:
         p.drawString(350, 340, "%s€" % str(round(facture.price_ht / facture.h_qt,2)))
     else:
