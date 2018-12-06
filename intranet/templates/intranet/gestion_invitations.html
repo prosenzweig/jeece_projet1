@@ -55,7 +55,7 @@
                     </tbody>
                 </table>
             </div>
-        {% include 'intranet/paginator.html' with page_obj=invit_page %}
+        {% include 'intranet/paginator_notification.html' with page_obj=invit_page %}
         {% else %}
         <p>Vous n'avez pas envoyé d'invitation</p>
         {% endif %}
