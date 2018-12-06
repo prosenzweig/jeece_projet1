@@ -5,6 +5,17 @@ from datetime import timedelta
 register = template.Library()
 
 @register.filter
+def qt_dec(facture):
+    try:
+        if facture.type not in ['Adhésion Elève', 'Adhésion Elèves', 'Adhésion Professeur', 'Adhésion élève',
+                                'Adhésion élèves', 'Adhésion professeur'] and str(facture.created) > "2018-12-03":
+            return facture.h_qt
+        else:
+            return facture.object_qt
+    except (ValueError, ZeroDivisionError):
+        return facture.h_qt
+
+@register.filter
 def divide(value, arg):
     try:
         return int(value) / int(arg)

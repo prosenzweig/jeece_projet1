@@ -24,7 +24,7 @@
                 <td>{{ facture.from_user }}</td>
                 <td>{{ facture.to_user }}</td>
                 <td>{{ facture.type }}</td>
-                <td>{{ facture.object_qt }}</td>
+                <td>{{ facture|qt_dec }}</td>
                 <td>{{ facture.tva }}</td>
                 <td>{{ facture.price_ttc }}€</td>
                 <td>{{ facture.last|date:"d/m/Y"  }}</td>

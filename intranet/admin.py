@@ -58,7 +58,8 @@ class EleveAdmin(admin.ModelAdmin):
     list_display=('referent','nom_prenom')
 
 class FactureAdmin(admin.ModelAdmin):
-    list_display = ('to_user','from_user', 'facture_name', 'nb_facture', 'type', 'object', 'object_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
+    list_display = ('to_user','from_user', 'facture_name', 'nb_facture', 'type', 'object', 'object_qt', 'h_qt', 'tva', 'price_ht', 'price_ttc', 'created', 'last', 'is_paid')
+    #search_fields = ('to_user','from_user','facture_name','type')
 
 class InvitationAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'email', 'is_staff', 'is_free', 'valid')

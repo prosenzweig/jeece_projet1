@@ -940,7 +940,6 @@ def documents(request):
             filter_page = paginator.page(1)
         except EmptyPage:
             filter_page = paginator.page(paginator.num_pages)
-
     else:
         if request.user.is_staff:
             attestation_list = Attestation.objects.filter(from_user=request.user).order_by('-pk')
