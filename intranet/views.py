@@ -290,12 +290,12 @@ def gen_attest_pdf(request,fac_id):
     p.drawString(75, 615, "France")
 
     p.setFont('Helvetica-Bold', 14)
-    p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE - %s" % att.pk)
+    p.drawString(150, 550, "ATTESTATION FISCALE ANNUELLE %s - %s" % (int(att.created.strftime("%Y"))-1,att.pk))
     p.setFont('Helvetica', 10)
     p.drawString(75, 520, "Je soussigné, %s %s, professeur indépendant de piano, certifie que " % (att.from_user_firstname, att.from_user_lastname.upper() ))
     p.drawString(75, 505, "M et Mme %s, domiciliés au %s, %s %s, " % (att.to_user_lastname.upper(),att.to_user_address, att.to_user_zipcode ,att.to_user_city))
     p.drawString(75, 490, "ont bénéficié de services à la personne : cours de piano")
-    p.drawString(75, 460, "En %s, le montant des attestations effectivement acquittées représente" % (datetime.now().year-1))
+    p.drawString(75, 460, "En %s, le montant des factures effectivement acquittées représente" % (int(att.created.strftime("%Y"))-1))
     p.drawString(75, 445, "une somme totale de : %s€." % att.price)
 
     p.setFont('Helvetica-Bold', 10)
