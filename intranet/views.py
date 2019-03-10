@@ -1867,7 +1867,7 @@ def examens_eleve(request):
     prix = Prix.objects.get(end=None)
     if ex_list:
         ex = ex_list[0]
-        diff = ex.last - timezone.now()
+        diff = ex.last - timezone.now().date()
         if diff.days > 0:
             exam = ex
             exam_ttc = add_tva(exam.price,prix.tva)
