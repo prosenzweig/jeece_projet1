@@ -56,7 +56,7 @@
         {% include 'intranet/checkout.html' %}<br><br>
         {% endif %}
         <h5 class="mt-5">Vos anciennes factures :</h5>
-        {% include 'intranet/factures.html' with factures_list=factures_list_paid_pageq %}
+        {% include 'intranet/factures.html' with factures_list=factures_list_paid_page %}
         {% include 'intranet/paginator_notification.html' with page_obj=factures_list_paid_page %}
         {% if user.is_staff %}
         <h5 class="mt-5">Vos factures émises :</h5>

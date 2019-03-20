@@ -695,14 +695,11 @@ def documents(request):
 
         stripe_customer_id = request.user.customer.stripe_id
         #stripe_customer_id = "cu_test007"
-
         # print(request.user, stripe_customer_id)
         # print("Token",token)
 
         fac_list = Facture.objects.filter(to_user=request.user, is_paid=False).exclude(
             from_user__userprofile__stripe_account_id="StripeAccId")
-
-
         description = ", ".join([f.facture_name for f in fac_list])
         dest = set([f.from_user for f in fac_list])
 
