@@ -1,7 +1,9 @@
 {% load static %}
 <div>
+<!--<div id="card" class="form-control">-->
+<button onclick="toggleDisplay();" class="btn btn-info mr-3">Payez vos frais d'examen</button><br><br>
 <link rel="stylesheet" type="text/css" href="{% static 'intranet/css/checkout.css' %}">
-<div id="collapseStripe" class="wrapper">
+<div id="collapseStripe" class="wrapper" style="display: none;">
   <script src="https://js.stripe.com/v3/"></script>
   <form action="{% url 'intranet:checkout_exam' %}" method="post" id="payment-form" class="form-stripe mt-2" >
     {% csrf_token %}
@@ -29,6 +31,14 @@
 <script src="{% static 'intranet/js/jquery-3.3.1.min.js' %}"></script>
 <!-- script for toggling display of the form -->
 <script type="text/javascript">
+    function toggleDisplay() {
+      var x = document.getElementById("collapseStripe");
+      if (x.style.display === "none") {
+          x.style.display = "block";
+      } else {
+          x.style.display = "none";
+      }
+    };
     jQuery('#payment-form').submit(function(){
         $(this).find(':submit').attr( 'disabled','disabled' );
     });
